@@ -1,4 +1,4 @@
-import QtQuick 2.15
+import QtQuick 2.14
 import Qt.labs.platform 1.0
 
 Label {

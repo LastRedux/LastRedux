@@ -1,4 +1,4 @@
-import QtQuick 2.15
+import QtQuick 2.14
 
 import Kale 1.0
 
