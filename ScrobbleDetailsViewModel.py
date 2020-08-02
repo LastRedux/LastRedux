@@ -1,51 +1,40 @@
 from PySide2 import QtCore
 
-from ApplicationViewModel import *
+from ScrobbleHistoryViewModel import *
 
 class ScrobbleDetailsViewModel(QtCore.QObject):
-  scrobble_changed = QtCore.Signal()
+  scrobble_data_changed = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
-    self.__application = None
-  
-  def application_selected_scrobble_changed(self):
-    # TODO: Load scrobble data from Last.fm API
-    self.scrobble_changed.emit()
 
-  def get_application(self):
-    return self.__application
+    # Store a reference to the scrobble history view model instance that provides data
+    self.__scrobble_history_reference = None
 
-  def set_application(self, new_application):
-    if new_application:
-      self.__application = new_application
-      self.__application.selected_scrobble_changed.connect(self.application_selected_scrobble_changed)
-      self.scrobble_changed.emit()
-  
-  # Selected scrobble
-  def get_track(self):
-    if self.__application:
-      if self.__application.selected_scrobble:
-        return self.__application.selected_scrobble.track
-    
-    return ''
-  
-  def get_artist(self):
-    if self.__application:
-      if self.__application.selected_scrobble:
-        return self.__application.selected_scrobble.artist
-    
-    return ''
-  
-  def get_album(self):
-    if self.__application:
-      if self.__application.selected_scrobble:
-        return self.__application.selected_scrobble.album
-    
-    return ''
-  
-  # Properties
-  application = QtCore.Property(ApplicationViewModel, get_application, set_application)
-  track = QtCore.Property(str, get_track, notify=scrobble_changed)
-  artist = QtCore.Property(str, get_artist, notify=scrobble_changed)
-  album = QtCore.Property(str, get_album, notify=scrobble_changed)
+  # --- Qt Property Getters and Setters ---
+
+  def get_scrobble_history_reference(self):
+    return self.__scrobble_history_reference
+
+  def set_scrobble_history_reference(self, new_reference):
+    # Only change the view model reference if there is a new one (don't reload when closing the app)
+    if new_reference:
+      self.__scrobble_history_reference = new_reference
+
+      # Connect to scrobble selection change on view model, so when a new scrobble is selected, details will update
+      self.__scrobble_history_reference.selected_scrobble_changed.connect(lambda: self.scrobble_data_changed.emit())
+
+      # Update scrobble data because the scrobble data changed signal won't be triggered upon connection
+      self.scrobble_data_changed.emit()
+
+  def get_scrobble_data(self):
+    if self.__scrobble_history_reference:
+      return self.__scrobble_history_reference.selected_scrobble.track
+
+  # --- Qt Properties ---
+
+  # Allow the __scrobble_history_reference to be set in the view
+  scrobbleHistoryReference = QtCore.Property(ScrobbleHistoryViewModel, get_scrobble_history_reference, set_scrobble_history_reference)
+
+  # Make the __scrobble_history_reference available to the view
+  scrobbleData = QtCore.Property('QVariant', get_scrobble_data, notify=scrobble_data_changed)

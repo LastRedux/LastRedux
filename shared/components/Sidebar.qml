@@ -8,7 +8,7 @@ import '../../views'
 Rectangle {
   id: root
 
-  property ApplicationViewModel viewModel
+  property ScrobbleHistoryViewModel viewModel
 
   color: '#1E1E1E'
 
@@ -30,7 +30,7 @@ Rectangle {
   Component {
     id: scrobblesPage
 
-    Scrobbles {
+    ScrobbleHistory {
       id: scrobbles
 
       viewModel: root.viewModel

@@ -19,14 +19,18 @@ Window {
   width: 900
   height: 589
 
-  ApplicationViewModel {
-    id: applicationViewModel
+  // --- Scrobble History ---
+  
+  // View model
+  ScrobbleHistoryViewModel {
+    id: scrobbleHistoryViewModel
   }
 
+  // View
   Sidebar {
     id: sidebar
 
-    viewModel: applicationViewModel
+    viewModel: scrobbleHistoryViewModel
 
     anchors {
       top: parent.top
@@ -35,30 +39,34 @@ Window {
     }
   }
 
-  ScrobbleDetailsViewModel {
-    id: scrobbleDetailsViewModel
+  // --- Scrobble Details ---
+  
+  // // View model
+  // ScrobbleDetailsViewModel {
+  //   id: scrobbleDetailsViewModel
 
-    application: applicationViewModel
-  }
+  //   scrobbleHistoryReference: scrobbleHistoryViewModel
+  // }
 
-  ScrobbleDetails {
-    id: scrobbleDetails
+  // // View
+  // ScrobbleDetails {
+  //   id: scrobbleDetails
 
-    viewModel: scrobbleDetailsViewModel
+  //   viewModel: scrobbleDetailsViewModel
 
-    anchors {
-      top: parent.top
-      right: parent.right
-      bottom: parent.bottom
-      left: sidebar.right
-    }
-  }
+  //   anchors {
+  //     top: parent.top
+  //     right: parent.right
+  //     bottom: parent.bottom
+  //     left: sidebar.right
+  //   }
+  // }
 
   Timer {
     interval: 1000
     repeat: true
     running: true
 
-    onTriggered: applicationViewModel.checkForNewTrack()
+    onTriggered: scrobbleHistoryViewModel.getNewMediaPlayerData()
   }
 }

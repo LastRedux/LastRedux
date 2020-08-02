@@ -2,7 +2,8 @@ import os
 
 from PySide2 import QtCore, QtSql
 
-from LastFmWrapper import LastFmWrapper
+from models import Scrobble
+from wrappers.LastFmApiWrapper import LastFmApiWrapper
 
 # Constants
 API_KEY = os.environ['LASTREDUX_LASTFM_API_KEY']
@@ -43,10 +44,7 @@ if session_key == '':
   # Wait for input
   input()
 
-  session_key = lastfm.get_session_key(auth_token)
-
-  print(f'Session key: {session_key}')
-
+  session_key = lastfm.get_new_session_key(auth_token)
   query = QtSql.QSqlQuery()
 
   # Set up the query but don't run it
@@ -54,15 +52,15 @@ if session_key == '':
   
   # Automatically escapes the string
   query.bindValue(':session_key', session_key)
+  print('set session key')
 
   # Run the query
   query.exec_()
 
-r = lastfm._LastFmWrapper__lastfm_request({
-  'method': 'track.updateNowPlaying',
-  'artist': 'nom',
-  'track': 'start',
-  'sk': session_key
-}, http_method='POST')
+lastfm.session_key = session_key
+
+test_scrobble = Scrobble('Dream Catcher', 'Vexento', 'Dream Catcher - Single')
+
+r = lastfm.submit_scrobble(test_scrobble)
 
 print(r)

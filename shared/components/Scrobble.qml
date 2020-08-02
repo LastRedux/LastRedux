@@ -2,7 +2,7 @@ import QtQuick 2.14
 
 Item {
   property alias selected: background.visible
-  property string track: '???'
+  property string name: '???'
   property string artist: '???'
   property string timestamp
 
@@ -51,7 +51,7 @@ Item {
       elide: Text.ElideRight
       maximumLineCount: 2
       style: kTitleSecondary
-      text: track
+      text: name
       wrapMode: Text.Wrap
 
       width: parent.width

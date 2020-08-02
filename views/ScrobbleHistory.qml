@@ -8,7 +8,7 @@ import '../shared/components'
 Item {
   id: root
 
-  property ApplicationViewModel viewModel
+  property ScrobbleHistoryViewModel viewModel
 
   // Now scrobbling section
   Column {
@@ -52,9 +52,12 @@ Item {
 
     Scrobble {
       selected: viewModel && viewModel.selectedScrobbleIndex === -1
-      track: viewModel && viewModel.currentScrobble['track']
-      artist: viewModel && viewModel.currentScrobble['artist']
+      name: viewModel && viewModel.currentScrobbleData.name
+      artist: viewModel && viewModel.currentScrobbleData.artist
 
+      // TODO: Add loved attribute
+
+      // Set the selected scrobble index in the view model to -1, which represents the currently selected item in the scrobble history
       onSelect: viewModel.selectedScrobbleIndex = -1
       
       width: parent.width
@@ -84,7 +87,7 @@ Item {
     ScrobbleHistoryListModel {
       id: listModel
 
-      application: viewModel
+      scrobbleHistoryReference: viewModel
     }
 
     ListView {
@@ -131,7 +134,7 @@ Item {
 
       delegate: Scrobble {
         selected: viewModel && viewModel.selectedScrobbleIndex === model.index
-        track: model.track
+        name: model.name
         artist: model.artist
         timestamp: model.timestamp
 
