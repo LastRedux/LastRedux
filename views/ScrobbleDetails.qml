@@ -7,214 +7,246 @@ import '../shared/components'
 Item {
   property ScrobbleDetailsViewModel viewModel
 
-  // Song details
-  Rectangle {
-    id: songDetails
-    
-    color: '#111'
-
-    height: coverArt.height + 30 * 2
-
-    anchors {
-      top: parent.top
-      right: parent.right
-      left: parent.left
+  property bool canDisplayScrobble: {
+    // Don't do just viewModel && viewModel.scrobbleData because we need to return a bool value instead of an undefined viewModel.scrobbleData
+    if (viewModel && viewModel.scrobbleData) {
+      return true
     }
 
-    Picture {
-      id: coverArt
+    return false
+  }
 
-      width: 160
+  // No song playing page
+  Item {
+    visible: !canDisplayScrobble
+
+    anchors.fill: parent
+
+    Label {
+      opacity: 0.5
+      style: kTitleSecondary
+      
+      text: 'No Scrobble Selected'
+
+      anchors.centerIn: parent
+    }
+  }
+
+  // Song info page
+  Item {
+    visible: canDisplayScrobble
+
+    anchors.fill: parent
+    
+    // Song details
+    Rectangle {
+      id: songDetails
+      
+      color: '#111'
+
+      height: coverArt.height + 30 * 2
 
       anchors {
         top: parent.top
-        left: parent.left
-
-        margins: 30
-      }
-    }
-
-    Column {
-      spacing: 10
-
-      anchors {
-        top: coverArt.top
         right: parent.right
-        left: coverArt.right
+        left: parent.left
+      }
 
-        topMargin: 10
-        rightMargin: 30
-        leftMargin: 20
+      Picture {
+        id: coverArt
+
+        width: 160
+
+        anchors {
+          top: parent.top
+          left: parent.left
+
+          margins: 30
+        }
       }
 
       Column {
-        spacing: 5
+        spacing: 10
 
-        width: parent.width
+        anchors {
+          top: coverArt.top
+          right: parent.right
+          left: coverArt.right
 
-        Link {
-          elide: Text.ElideRight
-          style: kTitlePrimary
-          text: viewModel && viewModel.track
+          topMargin: 10
+          rightMargin: 30
+          leftMargin: 20
+        }
+
+        Column {
+          spacing: 5
 
           width: parent.width
+
+          Link {
+            elide: Text.ElideRight
+            style: kTitlePrimary
+            text: canDisplayScrobble && viewModel.scrobbleData.name
+
+            width: parent.width
+          }
+
+          Link {
+            elide: Text.ElideRight
+            text: canDisplayScrobble && viewModel.scrobbleData.artist.name
+
+            width: parent.width
+          }
+
+          Row {
+            spacing: 3
+            
+            Label {
+              style: kBodyPrimary
+              text: 'from'
+            }
+
+            Link {
+              text: canDisplayScrobble && viewModel.scrobbleData.album.name
+            }
+          }
+        }
+
+        Label {
+          style: kTitleTertiary
+          text: '## plays'
+        }
+      }
+    }
+
+    // Artist details
+    Item {
+      id: artistDetails
+
+      anchors {
+        top: songDetails.bottom
+        right: parent.right
+        left: parent.left
+      }
+
+      Picture {
+        id: artistAvatar
+
+        width: 106
+
+        anchors {
+          top: parent.top
+          left: parent.left
+
+          margins: 30
+        }
+      }
+
+      Column {
+        spacing: 15
+
+        anchors {
+          top: artistAvatar.top
+          right: parent.right
+          left: artistAvatar.right
+
+          topMargin: 10
+          rightMargin: 30
+          leftMargin: 20
         }
 
         Link {
           elide: Text.ElideRight
-          text: viewModel && viewModel.artist
+          style: kTitlePrimary
+          text: canDisplayScrobble && viewModel.scrobbleData.artist.name
 
           width: parent.width
         }
 
         Row {
-          spacing: 3
+          id: row
+
+          property int columnSpacing: 3
+
+          spacing: 20
+
+          Column {
+            spacing: row.columnSpacing
+
+            Label {
+              style: kNumber
+              text: '###'
+            }
+
+            Label {
+              style: kTitleTertiary
+              text: 'Listeners'
+            }
+          }
+
+          Column {
+            spacing: row.columnSpacing
+            
+            Label {
+              style: kNumber
+              text: '###'
+            }
+
+            Label {
+              style: kTitleTertiary
+              text: 'Plays'
+            }
+          }
+
+          Column {
+            spacing: row.columnSpacing
+            
+            Label {
+              style: kNumber
+              text: '###'
+            }
+
+            Label {
+              style: kTitleTertiary
+              text: 'Plays in Library'
+            }
+          }
+        }
+
+        Column {
+          spacing: 5
+
+          width: parent.width
           
-          Label {
-            style: kBodyPrimary
-            text: 'from'
+          // TODO: Move styles for selectable text to component
+          TextEdit {
+            id: textEdit
+
+            color: '#FFF'
+            readOnly: true
+            renderType: Text.NativeRendering
+            selectByMouse: true
+            selectionColor: Qt.rgba(255, 255, 255, 0.15)
+            text: 'Artist Bio'
+            wrapMode: Text.Wrap
+
+            font {
+              letterSpacing: 0.25
+              weight: Font.Medium
+            }
+
+            width: parent.width
+
+            TextContextMenu {
+              text: textEdit
+
+              anchors.fill: parent
+            }
           }
 
           Link {
-            text: viewModel && viewModel.album
+            text: 'Read more on Last.fm'
           }
-        }
-      }
-
-      Label {
-        style: kTitleTertiary
-        text: '## plays'
-      }
-    }
-  }
-
-  // Artist details
-  Item {
-    id: artistDetails
-
-    anchors {
-      top: songDetails.bottom
-      right: parent.right
-      left: parent.left
-    }
-
-    Picture {
-      id: artistAvatar
-
-      width: 106
-
-      anchors {
-        top: parent.top
-        left: parent.left
-
-        margins: 30
-      }
-    }
-
-    Column {
-      spacing: 15
-
-      anchors {
-        top: artistAvatar.top
-        right: parent.right
-        left: artistAvatar.right
-
-        topMargin: 10
-        rightMargin: 30
-        leftMargin: 20
-      }
-
-      Link {
-        elide: Text.ElideRight
-        style: kTitlePrimary
-        text: viewModel && viewModel.artist
-
-        width: parent.width
-      }
-
-      Row {
-        id: row
-
-        property int columnSpacing: 3
-
-        spacing: 20
-
-        Column {
-          spacing: row.columnSpacing
-
-          Label {
-            style: kNumber
-            text: '###'
-          }
-
-          Label {
-            style: kTitleTertiary
-            text: 'Listeners'
-          }
-        }
-
-        Column {
-          spacing: row.columnSpacing
-          
-          Label {
-            style: kNumber
-            text: '###'
-          }
-
-          Label {
-            style: kTitleTertiary
-            text: 'Plays'
-          }
-        }
-
-        Column {
-          spacing: row.columnSpacing
-          
-          Label {
-            style: kNumber
-            text: '###'
-          }
-
-          Label {
-            style: kTitleTertiary
-            text: 'Plays in Library'
-          }
-        }
-      }
-
-      Column {
-        spacing: 5
-
-        width: parent.width
-        
-        // TODO: Move styles for selectable text to component
-        TextEdit {
-          id: textEdit
-
-          color: '#FFF'
-          readOnly: true
-          renderType: Text.NativeRendering
-          selectByMouse: true
-          selectionColor: Qt.rgba(255, 255, 255, 0.15)
-          text: 'Artist Bio'
-          wrapMode: Text.Wrap
-
-          font {
-            letterSpacing: 0.25
-            weight: Font.Medium
-          }
-
-          width: parent.width
-
-          TextContextMenu {
-            text: textEdit
-
-            anchors.fill: parent
-          }
-        }
-
-        Link {
-          text: 'Read more on Last.fm'
         }
       }
     }

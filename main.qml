@@ -41,26 +41,26 @@ Window {
 
   // --- Scrobble Details ---
   
-  // // View model
-  // ScrobbleDetailsViewModel {
-  //   id: scrobbleDetailsViewModel
+  // View model
+  ScrobbleDetailsViewModel {
+    id: scrobbleDetailsViewModel
 
-  //   scrobbleHistoryReference: scrobbleHistoryViewModel
-  // }
+    scrobbleHistoryReference: scrobbleHistoryViewModel
+  }
 
-  // // View
-  // ScrobbleDetails {
-  //   id: scrobbleDetails
+  // View
+  ScrobbleDetails {
+    id: scrobbleDetails
 
-  //   viewModel: scrobbleDetailsViewModel
+    viewModel: scrobbleDetailsViewModel
 
-  //   anchors {
-  //     top: parent.top
-  //     right: parent.right
-  //     bottom: parent.bottom
-  //     left: sidebar.right
-  //   }
-  // }
+    anchors {
+      top: parent.top
+      right: parent.right
+      bottom: parent.bottom
+      left: sidebar.right
+    }
+  }
 
   Timer {
     interval: 1000

@@ -4,10 +4,10 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtQml
 
-from PlatformIntegrations import *
-from ScrobbleHistoryViewModel import *
-from ScrobbleDetailsViewModel import *
-from ScrobbleHistoryListModel import *
+from PlatformIntegrations import PlatformIntegrations
+from ScrobbleHistoryViewModel import ScrobbleHistoryViewModel
+from ScrobbleDetailsViewModel import ScrobbleDetailsViewModel
+from ScrobbleHistoryListModel import ScrobbleHistoryListModel
 
 # Get the built application path
 if getattr(sys, 'frozen', False):

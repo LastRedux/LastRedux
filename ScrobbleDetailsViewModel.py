@@ -28,8 +28,10 @@ class ScrobbleDetailsViewModel(QtCore.QObject):
       self.scrobble_data_changed.emit()
 
   def get_scrobble_data(self):
-    if self.__scrobble_history_reference:
-      return self.__scrobble_history_reference.selected_scrobble.track
+    if self.__scrobble_history_reference and self.__scrobble_history_reference.selected_scrobble:
+        return self.__scrobble_history_reference.selected_scrobble.track
+    
+    return None
 
   # --- Qt Properties ---
 
