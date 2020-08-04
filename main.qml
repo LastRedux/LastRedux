@@ -61,12 +61,4 @@ Window {
       left: sidebar.right
     }
   }
-
-  Timer {
-    interval: 1000
-    repeat: true
-    running: true
-
-    onTriggered: scrobbleHistoryViewModel.getNewMediaPlayerData()
-  }
 }

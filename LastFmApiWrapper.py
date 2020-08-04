@@ -18,7 +18,7 @@ class LastFmApiWrapper:
     Example: md5("api_keyxxxxxxxxxxmethodauth.getSessiontokenyyyyyyilovecher")
     '''
 
-    # Remove format key from payload    
+    # Remove format key from payload
     data = payload.copy()
 
     del data['format']

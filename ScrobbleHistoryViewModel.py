@@ -1,6 +1,7 @@
 import time
 
 from PySide2 import QtCore
+from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
 
 from models import Scrobble
@@ -20,7 +21,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
   def __init__(self):
     QtCore.QObject.__init__(self)
 
-    self.media_player = AppleMusicPlugin()
+    self.media_player = MockPlayerPlugin()
     
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
@@ -45,7 +46,12 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       'track_finish': None
     }
 
-    self.getNewMediaPlayerData()
+    # Start polling interval to check for new media player data
+    timer = QtCore.QTimer(self)
+    timer.timeout.connect(self.get_new_media_player_data)
+    timer.start(1000)
+
+    self.get_new_media_player_data()
 
   # --- Qt Property Getters and Setters ---
   
@@ -61,11 +67,8 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     
     # TODO: Detect when nothing playing
 
-    # Return an empty scrobble data object if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
-    return {
-      'name': '',
-      'artist': ''
-    }
+    # Return None if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
+    return None
 
   def get_current_scrobble_percentage(self):
     '''Return the percentage of the track that has played compared to a user-set percentage of the track length'''
@@ -141,8 +144,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
       self.selected_scrobble_index_changed.emit()
 
-  @QtCore.Slot()
-  def getNewMediaPlayerData(self):
+  def get_new_media_player_data(self):
     if self.media_player.has_track_loaded():
       current_track = self.media_player.get_current_track()
 
@@ -162,11 +164,43 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       # Only update the furthest reached position in the track if it's further than the last recorded furthest position
       # This is because if the user scrubs backward in the track, the scrobble progress bar will stop moving until they reach the previous furthest point reached in the track
       # TODO: Add support for different scrobble submission styles such as counting seconds of playback
-      if player_position > self.__playback_data['furthest_player_position_reached']:
+      if player_position >= self.__playback_data['furthest_player_position_reached']:
         self.__playback_data['furthest_player_position_reached'] = player_position
       
       # Update scrobble progress bar UI
       self.current_scrobble_percentage_changed.emit()
+    else: # There is no track loaded (player is stopped)
+      if self.__current_scrobble:
+        self.__current_scrobble = None
+
+        # Update the UI in current scrobble sidebar item
+        self.current_scrobble_data_changed.emit()
+
+        # If the current scrobble is selected, deselect it
+        if self.__selected_scrobble_index == -1:
+          self.__selected_scrobble_index = None
+          self.selected_scrobble = None
+          
+          # Update the current scrobble highlight and song details pane views
+          self.selected_scrobble_index_changed.emit()
+          self.selected_scrobble_changed.emit()
+
+  # --- Mock Slots ---
+
+  @QtCore.Slot(int)
+  def MOCK_playSong(self, song_num):
+    self.media_player.current_track = self.media_player.SONGS[song_num]
+    self.media_player.has_track_loaded_variable = True
+    self.media_player.player_position = 0
+
+  @QtCore.Slot()
+  def MOCK_stopSong(self):
+    self.media_player.has_track_loaded_variable = False
+    self.media_player.current_track = {}
+
+  @QtCore.Slot()
+  def MOCK_moveTo75Percent(self):
+    self.media_player.player_position = self.__playback_data['track_finish'] * 0.75
       
   # --- Private Functions ---
       
@@ -190,7 +224,16 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     if self.__selected_scrobble_index == -1:
       self.selected_scrobble = self.__current_scrobble
 
-      # Update UI content in details pane
+      # Update details pane view
+      self.selected_scrobble_changed.emit()
+    elif self.__selected_scrobble_index is None:
+      self.__selected_scrobble_index = -1
+      self.selected_scrobble = self.__current_scrobble
+      
+      # Update the current scrobble highlight and song details pane views
+      self.selected_scrobble_index_changed.emit()
+
+      # Update details pane view
       self.selected_scrobble_changed.emit()
 
     # Update cached media player track playback data

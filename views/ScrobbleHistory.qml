@@ -10,6 +10,15 @@ Item {
 
   property ScrobbleHistoryViewModel viewModel
 
+  property bool canDisplayCurrentScrobble: {
+    // Don't do just viewModel && viewModel.scrobbleData because we need to return a bool value instead of an undefined viewModel.scrobbleData
+    if (viewModel && viewModel.currentScrobbleData) {
+      return true
+    }
+
+    return false
+  }
+
   // Now scrobbling section
   Column {
     id: nowScrobbling
@@ -24,43 +33,80 @@ Item {
       topMargin: 10
     }
 
-    Item {
-      width: parent.width
-      height: nowScrobblingTitle.height
+    Button {
+      text: 'Play 1st song'
 
-      Label {
-        id: nowScrobblingTitle
-
-        style: kTitleTertiary
-        text: 'Now Scrobbling'
-
-        x: 15
-      }
-
-      ScrobbleMeter {
-        percentage: viewModel ? viewModel.currentScrobblePercentage : 0
-
-        anchors {
-          right: parent.right
-
-          rightMargin: 15
-
-          verticalCenter: parent.verticalCenter
-        }
-      }
+      onClicked: viewModel.MOCK_playSong(0)
     }
 
-    Scrobble {
-      selected: viewModel && viewModel.selectedScrobbleIndex === -1
-      name: viewModel && viewModel.currentScrobbleData.name
-      artist: viewModel && viewModel.currentScrobbleData.artist
+    Button {
+      text: 'Play 2nd song'
 
-      // TODO: Add loved attribute
+      onClicked: viewModel.MOCK_playSong(1)
+    }
 
-      // Set the selected scrobble index in the view model to -1, which represents the currently selected item in the scrobble history
-      onSelect: viewModel.selectedScrobbleIndex = -1
+    Button {
+      text: 'Play 3rd song'
+
+      onClicked: viewModel.MOCK_playSong(2)
+    }
+
+    Button {
+      text: 'Stop song'
+
+      onClicked: viewModel.MOCK_stopSong()
+    }
+
+    Button {
+      text: 'Move song to 75%'
+
+      onClicked: viewModel.MOCK_moveTo75Percent()
+    }
+
+    Column {
+      visible: canDisplayCurrentScrobble
+      spacing: 8
       
       width: parent.width
+
+      Item {
+        width: parent.width
+        height: nowScrobblingTitle.height
+
+        Label {
+          id: nowScrobblingTitle
+
+          style: kTitleTertiary
+          text: 'Now Scrobbling'
+
+          x: 15
+        }
+
+        ScrobbleMeter {
+          percentage: viewModel ? viewModel.currentScrobblePercentage : 0
+
+          anchors {
+            right: parent.right
+
+            rightMargin: 15
+
+            verticalCenter: parent.verticalCenter
+          }
+        }
+      }
+
+      Scrobble {
+        selected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
+        name: canDisplayCurrentScrobble && viewModel.currentScrobbleData.name
+        artist: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artist
+
+        // TODO: Add loved attribute
+
+        // Set the selected scrobble index in the view model to -1, which represents the currently selected item in the scrobble history
+        onSelect: viewModel.selectedScrobbleIndex = -1
+        
+        width: parent.width
+      }
     }
   }
 
@@ -133,7 +179,7 @@ Item {
       }
 
       delegate: Scrobble {
-        selected: viewModel && viewModel.selectedScrobbleIndex === model.index
+        selected: viewModel && !!viewModel.selectedScrobbleIndex === model.index // Convert to bool because None is index 0 apparently
         name: model.name
         artist: model.artist
         timestamp: model.timestamp
