@@ -1,8 +1,9 @@
 from datetime import datetime
 
-# Entry in scrobble history with track information and a timestamp
 class Scrobble:
   def __init__(self, track, artist, album, timestamp=datetime.now()):
+    '''Entry in scrobble history with track information and a timestamp'''
+
     self.track = {
       'is_additional_data_downloaded': False,
       'name': track,
@@ -13,7 +14,10 @@ class Scrobble:
 
       'album': {
         'name': album,
-        'lastfm_url': None
+        'lastfm_url': None,
+        'plays': None,
+        'image_url': None,
+        'image_url_small': None
       },
 
       'artist': {

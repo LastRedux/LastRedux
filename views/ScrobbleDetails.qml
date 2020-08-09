@@ -55,6 +55,8 @@ Item {
       Picture {
         id: coverArt
 
+        source: canDisplayScrobble && viewModel.scrobbleData.album.image_url
+
         width: 160
 
         anchors {

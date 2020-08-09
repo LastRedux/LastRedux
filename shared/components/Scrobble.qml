@@ -5,6 +5,7 @@ Item {
   property string name: '???'
   property string artist: '???'
   property string timestamp
+  property alias imageSource: coverArt.source
 
   signal select
 

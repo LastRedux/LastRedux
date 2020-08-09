@@ -93,11 +93,32 @@ class LastFmApiWrapper:
     #   print(response_json)
 
   def get_track_info(self, scrobble):
-    '''Get info about a Scrobble object from a user's Last.fm library'''
+    '''Get track info about a Scrobble object from a user's Last.fm library'''
 
     return self.__lastfm_request({
       'method': 'track.getInfo',
       'track': scrobble.track['name'],
+      'artist': scrobble.track['artist']['name'],
+      'username': self.__username,
+      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+    })
+
+  def get_album_info(self, scrobble):
+    '''Get album info about a Scrobble object from a user's Last.fm library'''
+
+    return self.__lastfm_request({
+      'method': 'album.getInfo',
+      'artist': scrobble.track['artist']['name'],
+      'album': scrobble.track['album']['name'],
+      'username': self.__username,
+      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+    })
+
+  def get_artist_info(self, scrobble):
+    '''Get artist info about a Scrobble object from a user's Last.fm library'''
+
+    return self.__lastfm_request({
+      'method': 'artist.getInfo',
       'artist': scrobble.track['artist']['name'],
       'username': self.__username,
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time

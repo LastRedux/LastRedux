@@ -1,8 +1,8 @@
 import QtQuick 2.14
 import QtGraphicalEffects 1.0
 
-Rectangle {
-  color: '#666'
+Image {
+  id: root
 
   width: 33
   height: width
@@ -16,4 +16,10 @@ Rectangle {
       verticalOffset: 1
     }
   }
+
+  // Rectangle {
+  //   color: '#666'
+    
+  //   anchors.fill: parent
+  // }
 }

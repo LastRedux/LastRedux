@@ -129,11 +129,10 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       return {
         'name': self.__current_scrobble.track['name'],
         'artist': self.__current_scrobble.track['artist']['name'],
-        'loved': False # TODO: Request loved bool from Last.fm
+        'loved': False, # TODO: Request loved bool from Last.fm
+        'imageUrl': self.__current_scrobble.track['album']['image_url_small'] # The scrobble history album arts are small so we don't want to render the full size art
       }
     
-    # TODO: Detect when nothing playing
-
     # Return None if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
     return None
 
@@ -352,14 +351,18 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     '''Fetch and attach information from Last.fm to the __current_scrobble Scrobble object'''
 
     # Synchronously get data for scrobble from lastfm (in the separate thread this function runs in)
-    resp = self.lastfm.get_track_info(scrobble)
+    track_response = self.lastfm.get_track_info(scrobble)
 
-    # Don't try and load data for a track that doesn't exist yet
+    # Don't try and load data for a track that doesn't exist on Last.fm yet
     # TODO: Handle rate limit condition
-    if 'error' in resp:
+    if 'error' in track_response:
       return
 
-    track_info = resp['track']
+    track_info = track_response['track'] # Response won't have a track key if it's an error
+
+    # Get album and artist info once we know the track is in Last.fm's database
+    album_info = self.lastfm.get_album_info(scrobble)['album']
+    artist_info = self.lastfm.get_artist_info(scrobble)['artist']
 
     # Replace scrobble track property with new data
     scrobble.track = {
@@ -368,25 +371,24 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       'lastfm_url': track_info['url'],
       'is_loved': bool(track_info['userloved']), # Convert 1/0 to True/False
       'plays': track_info['userplaycount'],
-      # 'tags': [],
+      'tags': track_info['toptags']['tag'],
 
-      # TODO: Call album.getInfo to get album info for a scrobble
-      
       'album': {
-        'name': scrobble.track['album']['name']
-        # 'lastfm_url': 
+        'name': album_info['name'], #scrobble.track['album']['name']
+        'lastfm_url': album_info['url'],
+        'plays': album_info['userplaycount'],      
+        'image_url': album_info['image'][4]['#text'], # Pick mega size in images array
+        'image_url_small': album_info['image'][0]['#text'] # Pick small size in images array
       },
 
-      # TODO: Call artist.getInfo to get artist info for a scrobble
-
       'artist': {
-        'name': scrobble.track['artist']['name'],
-        'lastfm_url': track_info['artist']['url'],
-        # 'global_listeners': None,
-        # 'global_plays': None,
-        # 'plays': None,
-        # 'bio': None,
-        # 'tags': []
+        'name': artist_info['name'],
+        'lastfm_url': artist_info['url'],
+        'global_listeners': artist_info['stats']['listeners'],
+        'global_plays': artist_info['stats']['playcount'],
+        'plays': artist_info['stats']['userplaycount'],
+        'bio': artist_info['bio']['content'],
+        'tags': artist_info['tags']['tag']
       }
     }
 
