@@ -114,7 +114,23 @@ Item {
 
         Label {
           style: kTitleTertiary
-          text: '## plays'
+          visible: canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded
+
+          text: {
+            if (canDisplayScrobble) {
+              if (viewModel.scrobbleData.is_additional_data_downloaded) {
+                const playCount = viewModel.scrobbleData.plays
+
+                if (playCount === 1) {
+                  return '1 play'
+                } else {
+                  return `${playCount} plays`
+                }
+              }
+            }
+
+            return ''
+          }
         }
       }
     }

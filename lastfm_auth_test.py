@@ -3,7 +3,7 @@ import os
 from PySide2 import QtCore, QtSql
 
 from models import Scrobble
-from wrappers.LastFmApiWrapper import LastFmApiWrapper
+from LastFmApiWrapper import LastFmApiWrapper
 
 # Constants
 API_KEY = os.environ['LASTREDUX_LASTFM_API_KEY']
@@ -14,12 +14,7 @@ db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
 db.setDatabaseName('db.sqlite')
 
 # Last.fm setup
-lastfm = LastFmWrapper(API_KEY, CLIENT_SECRET)
-
-if db.open():
-  print('connection succeeded')
-else:
-  print('connection failed')
+lastfm = LastFmApiWrapper(API_KEY, CLIENT_SECRET)
 
 # Execute SQL to find the row that matches our criteria
 query = QtSql.QSqlQuery('SELECT value FROM settings WHERE key = ("session_key")')
@@ -56,11 +51,3 @@ if session_key == '':
 
   # Run the query
   query.exec_()
-
-lastfm.session_key = session_key
-
-test_scrobble = Scrobble('Dream Catcher', 'Vexento', 'Dream Catcher - Single')
-
-r = lastfm.submit_scrobble(test_scrobble)
-
-print(r)

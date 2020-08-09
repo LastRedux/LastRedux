@@ -4,6 +4,7 @@ from datetime import datetime
 class Scrobble:
   def __init__(self, track, artist, album, timestamp=datetime.now()):
     self.track = {
+      'is_additional_data_downloaded': False,
       'name': track,
       'lastfm_url': None,
       'is_loved': False,

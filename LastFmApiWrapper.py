@@ -8,9 +8,10 @@ class LastFmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
 
   def __init__(self, api_key, client_secret):
-    self.api_key = api_key
-    self.client_secret = client_secret
-    self.session_key = None
+    self.__api_key = api_key
+    self.__client_secret = client_secret
+    self.__session_key = None
+    self.__username = None
 
   def __generate_method_signature(self, payload):
     '''Create an api method signature from the request payload (in alphabetical order by key) with the client secret
@@ -20,7 +21,6 @@ class LastFmApiWrapper:
 
     # Remove format key from payload
     data = payload.copy()
-
     del data['format']
 
     # Generate param string by concatenating keys and values
@@ -28,7 +28,7 @@ class LastFmApiWrapper:
     param = [key + str(data[key]) for key in keys]
 
     # Append client secret to the param string
-    param = ''.join(param) + self.client_secret
+    param = ''.join(param) + self.__client_secret
 
     # Unicode encode param before hashing
     param = param.encode()
@@ -43,11 +43,11 @@ class LastFmApiWrapper:
     
     headers = {'user-agent': self.USER_AGENT}
 
-    payload['api_key'] = self.api_key
+    payload['api_key'] = self.__api_key
     payload['format'] = 'json'
 
-    if self.session_key:
-      payload['sk'] = self.session_key
+    if self.__session_key:
+      payload['sk'] = self.__session_key
 
     # Generate method signature after all other keys are added to the payload
     payload['api_sig'] = self.__generate_method_signature(payload)
@@ -66,6 +66,10 @@ class LastFmApiWrapper:
       'method': 'auth.getToken'
     })['token']
 
+  def set_login_info(self, session_key, username):
+    self.__session_key = session_key
+    self.__username = username
+
   def open_authorization_url(self, auth_token):
     '''Launch default browser to allow user to authorize our app'''
     
@@ -79,20 +83,33 @@ class LastFmApiWrapper:
       'token': auth_token
     })
 
-    try:
-      session_key = response_json['session']['key']
-      self.session_key = session_key
+    # TODO: Return both session key and username
 
-      return session_key
-    except KeyError:
-      print(response_json)
+    # try:
+    #   session_data = response_json['session']
+
+    #   return session_data
+    # except KeyError:
+    #   print(response_json)
+
+  def get_track_info(self, scrobble):
+    '''Get info about a Scrobble object from a user's Last.fm library'''
+
+    return self.__lastfm_request({
+      'method': 'track.getInfo',
+      'track': scrobble.track['name'],
+      'artist': scrobble.track['artist']['name'],
+      'username': self.__username,
+      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+    })
 
   def submit_scrobble(self, scrobble):
     '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
+
     return self.__lastfm_request({
       'method': 'track.scrobble',
-      'track': scrobble.track,
-      'artist': scrobble.artist,
-      'album': scrobble.album,
+      'track': scrobble.track['name'],
+      'artist': scrobble.track['artist']['name'],
+      'album': scrobble.track['album']['name'],
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
     }, http_method='POST')

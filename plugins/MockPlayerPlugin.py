@@ -4,21 +4,21 @@ class MockPlayerPlugin(MediaPlayerPlugin):
   SONGS = [{
     'name': 'Rain On Me',
     'artist': 'Lady Gaga & Ariana Grande',
-    'album': 'Rain On Me - Single',
+    'album': 'Chromatica',
     'start': 0,
-    'finish': 182
+    'finish': 240
   }, {
-    'name': 'Dream Catcher',
-    'artist': 'Vexento',
-    'album': 'Dream Catcher - Single',
+    'name': 'Girlfriend',
+    'artist': 'Charlie Puth',
+    'album': 'Girlfriend - Single',
     'start': 0,
-    'finish': 100
+    'finish': 177
   }, {
-    'name': 'Talk',
-    'artist': 'Duumu',
-    'album': 'Talk - Single',
+    'name': 'Funny',
+    'artist': 'Zedd & Jasmine Thompson',
+    'album': 'Funny - Single',
     'start': 0,
-    'finish': 300
+    'finish': 221
   }]
 
   def __init__(self):

@@ -179,7 +179,14 @@ Item {
       }
 
       delegate: Scrobble {
-        selected: viewModel && !!viewModel.selectedScrobbleIndex === model.index // Convert to bool because None is index 0 apparently
+        selected: {
+          // -2 represents no selection because Qt doesn't understand Python's None value
+          if (viewModel && viewModel.selectedScrobbleIndex !== -2) {
+            return viewModel.selectedScrobbleIndex === model.index
+          }
+          
+          return false
+        } 
         name: model.name
         artist: model.artist
         timestamp: model.timestamp
