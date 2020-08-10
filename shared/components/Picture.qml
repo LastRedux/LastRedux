@@ -17,9 +17,34 @@ Image {
     }
   }
 
-  // Rectangle {
-  //   color: '#666'
+  Image {
+    id: placeholder
+
+    opacity: 1
+    source: '../resources/placeholder.png'
     
-  //   anchors.fill: parent
-  // }
+    anchors.fill: parent
+
+    states: State {
+      name: 'loaded'
+      when: root.status === Image.Ready
+
+      PropertyChanges {
+        target: placeholder
+        opacity: 0
+      }
+    }
+
+    transitions: Transition {
+      from: ''
+      to: 'loaded'
+
+      PropertyAnimation {
+        target: placeholder
+        property: 'opacity'
+        duration: 450
+        easing.type: Easing.OutQuint
+      }
+    }
+  }
 }

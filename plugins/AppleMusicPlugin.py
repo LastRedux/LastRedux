@@ -1,4 +1,3 @@
-from Foundation import *
 from ScriptingBridge import SBApplication
 
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin

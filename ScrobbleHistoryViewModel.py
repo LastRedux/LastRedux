@@ -47,6 +47,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
   post_append_scrobble = QtCore.Signal()
+  scrobble_album_image_changed = QtCore.Signal(int)
 
   # Thread worker signals
   get_new_media_player_data = QtCore.Signal()
@@ -127,10 +128,11 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     
     if self.__current_scrobble:
       return {
+        'isAdditionalDataDownloaded': self.__current_scrobble.track['is_additional_data_downloaded'],
         'name': self.__current_scrobble.track['name'],
         'artist': self.__current_scrobble.track['artist']['name'],
         'loved': False, # TODO: Request loved bool from Last.fm
-        'imageUrl': self.__current_scrobble.track['album']['image_url_small'] # The scrobble history album arts are small so we don't want to render the full size art
+        'albumImageUrl': self.__current_scrobble.track['album']['image_url_small'] # The scrobble history album arts are small so we don't want to render the full size art
       }
     
     # Return None if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
@@ -378,7 +380,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
         'lastfm_url': album_info['url'],
         'plays': album_info['userplaycount'],      
         'image_url': album_info['image'][4]['#text'], # Pick mega size in images array
-        'image_url_small': album_info['image'][0]['#text'] # Pick small size in images array
+        'image_url_small': album_info['image'][1]['#text'] # Pick medium size in images array
       },
 
       'artist': {
@@ -400,6 +402,12 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     # TODO: Make separate signal that only updates is_loved data because the other data shown doesn't change
     if self.__current_scrobble == scrobble:
       self.current_scrobble_data_changed.emit()
+    
+    # Also update image of history item if scrobble is already in history (check every item for find index)
+    for i, history_item in enumerate(self.scrobble_history):
+      if history_item == scrobble:
+        self.scrobble_album_image_changed.emit(i)
+        # No break just in case track is somehow scrobbled twice before image loads
 
   # --- Qt Properties ---
   

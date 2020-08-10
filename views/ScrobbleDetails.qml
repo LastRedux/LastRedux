@@ -55,7 +55,13 @@ Item {
       Picture {
         id: coverArt
 
-        source: canDisplayScrobble && viewModel.scrobbleData.album.image_url
+        source: {
+          if (canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded) {
+            return viewModel.scrobbleData.album.image_url
+          }
+          
+          return ''
+        }
 
         width: 160
 
@@ -147,10 +153,13 @@ Item {
         left: parent.left
       }
 
-      Picture {
+      Rectangle {
         id: artistAvatar
 
+        opacity: 0.1
+
         width: 106
+        height: width
 
         anchors {
           top: parent.top

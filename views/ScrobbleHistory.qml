@@ -99,7 +99,14 @@ Item {
         selected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
         name: canDisplayCurrentScrobble && viewModel.currentScrobbleData.name
         artist: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artist
-        imageSource: canDisplayCurrentScrobble && viewModel.currentScrobbleData.imageUrl
+
+        imageSource: {
+          if (canDisplayCurrentScrobble && viewModel.currentScrobbleData.isAdditionalDataDownloaded) {
+            return viewModel.currentScrobbleData.albumImageUrl
+          }
+          
+          return ''
+        }
 
         // TODO: Add loved attribute
 
@@ -192,7 +199,7 @@ Item {
         name: model.name
         artist: model.artist
         timestamp: model.timestamp
-        // imageSource: canDisplayCurrentScrobble && viewModel.currentScrobbleData.album.image_url
+        imageSource: model.isAdditionalDataDownloaded ? model.albumImageUrl : ''
 
         onSelect: viewModel.selectedScrobbleIndex = model.index
 
