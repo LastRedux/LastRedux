@@ -9,6 +9,7 @@
     "type": "python",
     "program": "${workspaceFolder}/app.py",
     "console": "externalTerminal",
+    "pythonPath": "${env:HOME}/.pyenv/shims/python",
     "args": [
       "--style",
       "fusion"
