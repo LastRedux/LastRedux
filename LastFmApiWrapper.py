@@ -73,9 +73,9 @@ class LastFmApiWrapper:
   def open_authorization_url(self, auth_token):
     '''Launch default browser to allow user to authorize our app'''
     
-    webbrowser.open(f'http://www.last.fm/api/auth/?api_key={self.api_key}&token={auth_token}')
+    webbrowser.open(f'http://www.last.fm/api/auth/?api_key={self.__api_key}&token={auth_token}')
 
-  def get_new_session_key(self, auth_token):
+  def get_new_session(self, auth_token):
     '''Use an auth token to get a session key to access the user's account (does not expire)'''
     
     response_json = self.__lastfm_request({
@@ -83,14 +83,15 @@ class LastFmApiWrapper:
       'token': auth_token
     })
 
-    # TODO: Return both session key and username
+    try:
+      session_data = response_json['session']
 
-    # try:
-    #   session_data = response_json['session']
-
-    #   return session_data
-    # except KeyError:
-    #   print(response_json)
+      return {
+        'session_key': session_data['key'],
+        'username': session_data['name']
+      }
+    except KeyError:
+      print(response_json)
 
   def get_track_info(self, scrobble):
     '''Get track info about a Scrobble object from a user's Last.fm library'''

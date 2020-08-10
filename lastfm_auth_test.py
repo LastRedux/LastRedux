@@ -13,41 +13,58 @@ CLIENT_SECRET = os.environ['LASTREDUX_LASTFM_CLIENT_SECRET']
 db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
 db.setDatabaseName('db.sqlite')
 
+if db.open():
+  print('sqlite connection succeeded')
+else:
+  print('sqlite connection failed')
+
 # Last.fm setup
 lastfm = LastFmApiWrapper(API_KEY, CLIENT_SECRET)
 
 # Execute SQL to find the row that matches our criteria
-query = QtSql.QSqlQuery('SELECT value FROM settings WHERE key = ("session_key")')
+query = QtSql.QSqlQuery('SELECT value FROM settings WHERE key in ("session_key", "username")')
 
 # Get column id for value in settings
 idValue = query.record().indexOf("value")
 
-# Iterate through the list of results which only has one item
-query.next()
-
 # Get the value of the column of the row that we found
+query.next()
 session_key = query.value(idValue)
 
-print(session_key)
+# Get next value from query
+query.next()
+username = query.value(idValue)
 
-if session_key == '':
+if session_key:
+  print(f'Welcome back {username}')
+else:
   # Last.fm auth
   auth_token = lastfm.get_auth_token()
 
   lastfm.open_authorization_url(auth_token)
 
   # Wait for input
-  input()
+  input('Hit enter after authorizing access to Last.fm in your web browser ')
 
-  session_key = lastfm.get_new_session_key(auth_token)
-  query = QtSql.QSqlQuery()
+  # Get session key from lastfm
+  session = lastfm.get_new_session(auth_token)
+  
+  session_key = session['session_key']
+  username = session['username']
 
-  # Set up the query but don't run it
-  query.prepare('UPDATE settings SET value = :session_key WHERE (key = "session_key")')
+  session_key_query = QtSql.QSqlQuery()
+  username_query = QtSql.QSqlQuery()
+
+  # Set up the queries but don't run it
+  session_key_query.prepare('UPDATE settings SET value = :session_key WHERE (key = "session_key")')
+  username_query.prepare('UPDATE settings SET value = :username WHERE (key = "username")')
   
   # Automatically escapes the string
-  query.bindValue(':session_key', session_key)
-  print('set session key')
+  session_key_query.bindValue(':session_key', session_key)
+  username_query.bindValue(':username', username)
 
-  # Run the query
-  query.exec_()
+  # Run the queries
+  session_key_query.exec_()
+  username_query.exec_()
+
+  print(f'Welcome {username} ({session_key})')
