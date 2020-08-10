@@ -40,257 +40,273 @@ Item {
 
     anchors.fill: parent
     
-    // Song details
-    Rectangle {
-      id: songDetails
+    Flickable {
+      id: scrollArea
       
-      color: '#111'
+      contentHeight: column.height
 
-      height: coverArt.height + 30 * 2
-
-      anchors {
-        top: parent.top
-        right: parent.right
-        left: parent.left
-      }
-
-      Picture {
-        id: coverArt
-
-        source: {
-          if (canDisplayEntireScrobble) {
-            return viewModel.scrobbleData.album.image_url
-          }
-          
-          return ''
-        }
-
-        width: 160
-
-        anchors {
-          top: parent.top
-          left: parent.left
-
-          margins: 30
-        }
-      }
+      anchors.fill: parent
 
       Column {
-        spacing: 10
+        id: column
 
-        anchors {
-          top: coverArt.top
-          right: parent.right
-          left: coverArt.right
+        width: scrollArea.width
 
-          topMargin: 10
-          rightMargin: 30
-          leftMargin: 20
-        }
+        // Song details
+        Rectangle {
+          id: songDetails
+          
+          color: '#111'
 
-        Column {
-          spacing: 5
+          width: column.width
+          height: coverArt.height + 30 * 2
 
-          width: parent.width
+          Picture {
+            id: coverArt
 
-          Link {
-            elide: Text.ElideRight
-            style: kTitlePrimary
-            text: canDisplayScrobble && viewModel.scrobbleData.name
-            address: canDisplayEntireScrobble && viewModel.scrobbleData.lastfm_url
-
-            width: parent.width
-          }
-
-          Link {
-            elide: Text.ElideRight
-            text: canDisplayScrobble && viewModel.scrobbleData.artist.name
-            address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-
-            width: parent.width
-          }
-
-          Row {
-            spacing: 3
-            
-            Label {
-              style: kBodyPrimary
-              text: 'from'
+            source: {
+              if (canDisplayEntireScrobble) {
+                return viewModel.scrobbleData.album.image_url
+              }
+              
+              return ''
             }
 
-            Link {
-              text: canDisplayScrobble && viewModel.scrobbleData.album.name
-              address: canDisplayEntireScrobble && viewModel.scrobbleData.album.lastfm_url
+            width: 160
+
+            anchors {
+              top: parent.top
+              left: parent.left
+
+              margins: 30
             }
           }
-        }
 
-        Label {
-          style: kTitleTertiary
-          visible: canDisplayEntireScrobble
+          Column {
+            spacing: 10
 
-          text: {
-            if (canDisplayScrobble) {
-              if (viewModel.scrobbleData.is_additional_data_downloaded) {
-                const playCount = viewModel.scrobbleData.plays
+            anchors {
+              top: coverArt.top
+              right: parent.right
+              left: coverArt.right
 
-                if (playCount === 1) {
-                  return '1 play'
-                } else {
-                  return `${playCount} plays`
+              topMargin: 10
+              rightMargin: 30
+              leftMargin: 20
+            }
+
+            Column {
+              spacing: 5
+
+              width: parent.width
+
+              Link {
+                elide: Text.ElideRight
+                style: kTitlePrimary
+                text: canDisplayScrobble && viewModel.scrobbleData.name
+                address: canDisplayEntireScrobble && viewModel.scrobbleData.lastfm_url
+
+                width: parent.width
+              }
+
+              Link {
+                elide: Text.ElideRight
+                text: canDisplayScrobble && viewModel.scrobbleData.artist.name
+                address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
+
+                width: parent.width
+              }
+
+              Row {
+                spacing: 3
+                
+                Label {
+                  style: kBodyPrimary
+                  text: 'from'
+                }
+
+                Link {
+                  text: canDisplayScrobble && viewModel.scrobbleData.album.name
+                  address: canDisplayEntireScrobble && viewModel.scrobbleData.album.lastfm_url
                 }
               }
             }
 
-            return ''
+            Label {
+              style: kTitleTertiary
+              visible: canDisplayEntireScrobble
+
+              text: {
+                if (canDisplayScrobble) {
+                  if (viewModel.scrobbleData.is_additional_data_downloaded) {
+                    const plays = viewModel.scrobbleData.plays
+
+                    if (plays == 1) { // Triple equals check fails for some reason
+                      return '1 play'
+                    } else {
+                      return `${plays} plays`
+                    }
+                  }
+                }
+
+                return ''
+              }
+            }
+          }
+        }
+
+        // Artist details
+        Item {
+          id: artistDetails
+
+          width: column.width
+          height: artistDetailsContent.y + artistDetailsContent.height + 30
+
+          Picture {
+            id: artistAvatar
+
+            type: kArtist
+
+            source: {
+              if (canDisplayEntireScrobble) {
+                return viewModel.scrobbleData.artist.image_url
+              }
+
+              return ''
+            }
+
+            width: 106
+            height: width
+
+            anchors {
+              top: parent.top
+              left: parent.left
+
+              margins: 30
+            }
+          }
+
+          Column {
+            id: artistDetailsContent
+
+            spacing: 15
+
+            anchors {
+              top: artistAvatar.top
+              right: parent.right
+              left: artistAvatar.right
+
+              topMargin: 10
+              rightMargin: 30
+              leftMargin: 20
+            }
+
+            Link {
+              elide: Text.ElideRight
+              style: kTitlePrimary
+              text: canDisplayScrobble && viewModel.scrobbleData.artist.name
+              address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
+
+              width: parent.width
+            }
+
+            Row {
+              id: row
+
+              property int columnSpacing: 3
+
+              spacing: 20
+              visible: canDisplayEntireScrobble
+
+              Column {
+                spacing: row.columnSpacing
+
+                Label {
+                  style: kNumber
+                  text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
+                }
+
+                Label {
+                  style: kTitleTertiary
+                  text: 'Listeners'
+                }
+              }
+
+              Column {
+                spacing: row.columnSpacing
+                
+                Label {
+                  style: kNumber
+                  text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
+                }
+
+                Label {
+                  style: kTitleTertiary
+                  text: 'Plays'
+                }
+              }
+
+              Column {
+                spacing: row.columnSpacing
+                
+                Label {
+                  style: kNumber
+                  text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''
+                }
+
+                Label {
+                  style: kTitleTertiary
+                  text: 'Plays in Library'
+                }
+              }
+            }
+
+            Column {
+              spacing: 5
+
+              width: parent.width
+              
+              // TODO: Move styles for selectable text to component
+              TextEdit {
+                id: textEdit
+
+                color: '#FFF'
+                readOnly: true
+                renderType: Text.NativeRendering
+                selectByMouse: true
+                selectionColor: Qt.rgba(255, 255, 255, 0.15)
+                text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : ''
+                wrapMode: Text.Wrap
+
+                font {
+                  letterSpacing: 0.25
+                  weight: Font.Medium
+                }
+
+                width: parent.width
+
+                TextContextMenu {
+                  text: textEdit
+
+                  anchors.fill: parent
+                }
+              }
+
+              Link {
+                text: 'Read more on Last.fm'
+                address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
+                visible: canDisplayEntireScrobble && viewModel.scrobbleData.artist.bio
+              }
+            }
           }
         }
       }
     }
 
-    // Artist details
-    Item {
-      id: artistDetails
+    WheelScrollArea {
+      flickable: scrollArea
 
-      anchors {
-        top: songDetails.bottom
-        right: parent.right
-        left: parent.left
-      }
-
-      Picture {
-        id: artistAvatar
-
-        type: kArtist
-
-        source: {
-          if (canDisplayEntireScrobble) {
-            return viewModel.scrobbleData.artist.image_url
-          }
-
-          return ''
-        }
-
-        width: 106
-        height: width
-
-        anchors {
-          top: parent.top
-          left: parent.left
-
-          margins: 30
-        }
-      }
-
-      Column {
-        spacing: 15
-
-        anchors {
-          top: artistAvatar.top
-          right: parent.right
-          left: artistAvatar.right
-
-          topMargin: 10
-          rightMargin: 30
-          leftMargin: 20
-        }
-
-        Link {
-          elide: Text.ElideRight
-          style: kTitlePrimary
-          text: canDisplayScrobble && viewModel.scrobbleData.artist.name
-          address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-
-          width: parent.width
-        }
-
-        Row {
-          id: row
-
-          property int columnSpacing: 3
-
-          spacing: 20
-
-          Column {
-            spacing: row.columnSpacing
-
-            Label {
-              style: kNumber
-              text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
-            }
-
-            Label {
-              style: kTitleTertiary
-              text: 'Listeners'
-            }
-          }
-
-          Column {
-            spacing: row.columnSpacing
-            
-            Label {
-              style: kNumber
-              text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
-            }
-
-            Label {
-              style: kTitleTertiary
-              text: 'Plays'
-            }
-          }
-
-          Column {
-            spacing: row.columnSpacing
-            
-            Label {
-              style: kNumber
-              text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''
-            }
-
-            Label {
-              style: kTitleTertiary
-              text: 'Plays in Library'
-            }
-          }
-        }
-
-        Column {
-          spacing: 5
-
-          width: parent.width
-          
-          // TODO: Move styles for selectable text to component
-          TextEdit {
-            id: textEdit
-
-            color: '#FFF'
-            readOnly: true
-            renderType: Text.NativeRendering
-            selectByMouse: true
-            selectionColor: Qt.rgba(255, 255, 255, 0.15)
-            text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : ''
-            wrapMode: Text.Wrap
-
-            font {
-              letterSpacing: 0.25
-              weight: Font.Medium
-            }
-
-            width: parent.width
-
-            TextContextMenu {
-              text: textEdit
-
-              anchors.fill: parent
-            }
-          }
-
-          Link {
-            text: 'Read more on Last.fm'
-            address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-          }
-        }
-      }
+      anchors.fill: scrollArea
     }
   }
 }

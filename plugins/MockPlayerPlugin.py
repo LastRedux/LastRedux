@@ -1,5 +1,3 @@
-from plugins.MediaPlayerPlugin import MediaPlayerPlugin
-
 class MockPlayerPlugin():
   SONGS = [{
     'name': 'Rain On Me',

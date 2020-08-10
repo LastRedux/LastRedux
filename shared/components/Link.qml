@@ -45,6 +45,7 @@ Label {
     anchors.fill: parent
   }
 
+  // TODO: Add Python class to interface with clipboard through Qt
   Menu {
     id: contextMenu
 
