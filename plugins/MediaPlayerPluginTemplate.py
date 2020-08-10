@@ -1,6 +1,7 @@
-# Base class for interfacing with media players
 class MediaPlayerPlugin():
   def __init__(self):
+    '''Base class for interfacing with media players'''
+    
     pass
 
   def has_track_loaded(self):

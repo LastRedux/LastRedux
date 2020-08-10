@@ -1,8 +1,6 @@
 from ScriptingBridge import SBApplication
 
-from plugins.MediaPlayerPlugin import MediaPlayerPlugin
-
-class AppleMusicPlugin(MediaPlayerPlugin):
+class AppleMusicPlugin():
   # From Music.app BridgeSupport enum definitions
   STOPPED_STATE = 1800426323
   PAUSED_STATE = 1800426352

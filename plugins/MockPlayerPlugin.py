@@ -1,6 +1,6 @@
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
-class MockPlayerPlugin(MediaPlayerPlugin):
+class MockPlayerPlugin():
   SONGS = [{
     'name': 'Rain On Me',
     'artist': 'Lady Gaga & Ariana Grande',
