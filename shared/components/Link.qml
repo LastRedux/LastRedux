@@ -3,12 +3,15 @@ import Qt.labs.platform 1.0
 
 Label {
   id: root
+
+  property bool isContextMenuPreviouslyOpened: false
+  property string address
   
   signal onClicked
 
   // color: mouseArea.containsMouse ? '#00A0FF' : '#FFF'
   style: kTitleSecondary
-  font.underline: mouseArea.containsMouse
+  font.underline: address ? mouseArea.containsMouse : false
 
   MouseArea {
     id: mouseArea
@@ -16,16 +19,26 @@ Label {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     cursorShape: Qt.PointingHandCursor
     hoverEnabled: true
+    visible: address
     
     onClicked: {
+      // Work around Qt bug where clicking outside of a link after the context menu opens triggers a click event
+      // TODO: File bug report with Qt
+      if (isContextMenuPreviouslyOpened) {
+        isContextMenuPreviouslyOpened = false
+        return
+      }
+
       if (mouse.button === Qt.LeftButton) {
         root.onClicked()
+        Qt.openUrlExternally(root.address)
       }
     }
 
     onPressed: {
       if (mouse.button === Qt.RightButton) {
         contextMenu.open()
+        isContextMenuPreviouslyOpened = true
       }
     }
 

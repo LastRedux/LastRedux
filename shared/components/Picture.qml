@@ -4,6 +4,11 @@ import QtGraphicalEffects 1.0
 Image {
   id: root
 
+  readonly property int kTrack: 0
+  readonly property int kArtist: 1
+
+  property int type: kTrack
+
   width: 33
   height: width
 
@@ -21,7 +26,7 @@ Image {
     id: placeholder
 
     opacity: 1
-    source: '../resources/placeholder.png'
+    source: `../resources/${type === kArtist ? 'artistP' : 'p'}laceholder.png`
     
     anchors.fill: parent
 

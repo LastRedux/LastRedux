@@ -22,6 +22,7 @@ class Scrobble:
 
       'artist': {
         'name': artist,
+        'image_url': None,
         'lastfm_url': None,
         'global_listeners': None,
         'global_plays': None,

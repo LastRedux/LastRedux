@@ -16,6 +16,8 @@ Item {
     return false
   }
 
+  property bool canDisplayEntireScrobble: canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded
+
   // No song playing page
   Item {
     visible: !canDisplayScrobble
@@ -56,7 +58,7 @@ Item {
         id: coverArt
 
         source: {
-          if (canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded) {
+          if (canDisplayEntireScrobble) {
             return viewModel.scrobbleData.album.image_url
           }
           
@@ -95,6 +97,7 @@ Item {
             elide: Text.ElideRight
             style: kTitlePrimary
             text: canDisplayScrobble && viewModel.scrobbleData.name
+            address: canDisplayEntireScrobble && viewModel.scrobbleData.lastfm_url
 
             width: parent.width
           }
@@ -102,6 +105,7 @@ Item {
           Link {
             elide: Text.ElideRight
             text: canDisplayScrobble && viewModel.scrobbleData.artist.name
+            address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
 
             width: parent.width
           }
@@ -116,13 +120,14 @@ Item {
 
             Link {
               text: canDisplayScrobble && viewModel.scrobbleData.album.name
+              address: canDisplayEntireScrobble && viewModel.scrobbleData.album.lastfm_url
             }
           }
         }
 
         Label {
           style: kTitleTertiary
-          visible: canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded
+          visible: canDisplayEntireScrobble
 
           text: {
             if (canDisplayScrobble) {
@@ -153,10 +158,18 @@ Item {
         left: parent.left
       }
 
-      Rectangle {
+      Picture {
         id: artistAvatar
 
-        opacity: 0.1
+        type: kArtist
+
+        source: {
+          if (canDisplayEntireScrobble) {
+            return viewModel.scrobbleData.artist.image_url
+          }
+
+          return ''
+        }
 
         width: 106
         height: width
@@ -186,6 +199,7 @@ Item {
           elide: Text.ElideRight
           style: kTitlePrimary
           text: canDisplayScrobble && viewModel.scrobbleData.artist.name
+          address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
 
           width: parent.width
         }
@@ -202,7 +216,7 @@ Item {
 
             Label {
               style: kNumber
-              text: '###'
+              text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
             }
 
             Label {
@@ -216,7 +230,7 @@ Item {
             
             Label {
               style: kNumber
-              text: '###'
+              text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
             }
 
             Label {
@@ -230,7 +244,7 @@ Item {
             
             Label {
               style: kNumber
-              text: '###'
+              text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''
             }
 
             Label {
@@ -254,7 +268,7 @@ Item {
             renderType: Text.NativeRendering
             selectByMouse: true
             selectionColor: Qt.rgba(255, 255, 255, 0.15)
-            text: 'Artist Bio'
+            text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : ''
             wrapMode: Text.Wrap
 
             font {
@@ -273,6 +287,7 @@ Item {
 
           Link {
             text: 'Read more on Last.fm'
+            address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
           }
         }
       }
