@@ -53,10 +53,18 @@ Item {
         width: scrollArea.width
 
         // Song details
-        Rectangle {
+        PictureBackground {
           id: songDetails
+
+          property url albumImage: {
+            if (canDisplayEntireScrobble) {
+              return viewModel.scrobbleData.album.image_url
+            }
+            
+            return ''
+          }
           
-          color: '#111'
+          source: albumImage
 
           width: column.width
           height: coverArt.height + 30 * 2
@@ -64,13 +72,7 @@ Item {
           Picture {
             id: coverArt
 
-            source: {
-              if (canDisplayEntireScrobble) {
-                return viewModel.scrobbleData.album.image_url
-              }
-              
-              return ''
-            }
+            source: songDetails.albumImage
 
             width: 160
 

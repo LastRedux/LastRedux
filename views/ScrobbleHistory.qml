@@ -33,34 +33,38 @@ Item {
       topMargin: 10
     }
 
-    Button {
-      text: 'Play 1st song'
+    Column {
+      visible: viewModel.isUsingMockPlayerPlugin
+      
+      Button {
+        text: 'Play 1st song'
 
-      onClicked: viewModel.MOCK_playSong(0)
-    }
+        onClicked: viewModel.MOCK_playSong(0)
+      }
 
-    Button {
-      text: 'Play 2nd song'
+      Button {
+        text: 'Play 2nd song'
 
-      onClicked: viewModel.MOCK_playSong(1)
-    }
+        onClicked: viewModel.MOCK_playSong(1)
+      }
 
-    Button {
-      text: 'Play 3rd song'
+      Button {
+        text: 'Play 3rd song'
 
-      onClicked: viewModel.MOCK_playSong(2)
-    }
+        onClicked: viewModel.MOCK_playSong(2)
+      }
 
-    Button {
-      text: 'Stop song'
+      Button {
+        text: 'Stop song'
 
-      onClicked: viewModel.MOCK_stopSong()
-    }
+        onClicked: viewModel.MOCK_stopSong()
+      }
 
-    Button {
-      text: 'Move song to 75%'
+      Button {
+        text: 'Move song to 75%'
 
-      onClicked: viewModel.MOCK_moveTo75Percent()
+        onClicked: viewModel.MOCK_moveTo75Percent()
+      }
     }
 
     Column {

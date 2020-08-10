@@ -59,6 +59,8 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
   current_scrobble_data_changed = QtCore.Signal()
   current_scrobble_percentage_changed = QtCore.Signal()
 
+  is_using_mock_player_plugin_changed = QtCore.Signal()
+
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
 
@@ -170,6 +172,9 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       self.submit_scrobble(self.__current_scrobble)
 
     return scrobble_percentage
+  
+  def get_is_using_mock_player_plugin(self):
+    return self.media_player is MockPlayerPlugin
     
   def get_selected_scrobble_index(self):
     '''Make the private selected scrobble index variable available to the UI'''
@@ -452,6 +457,8 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
 
   # Make current scrobble percentage available to the view
   currentScrobblePercentage = QtCore.Property(float, get_current_scrobble_percentage, notify=current_scrobble_percentage_changed)
+
+  isUsingMockPlayerPlugin = QtCore.Property(bool, get_is_using_mock_player_plugin, notify=is_using_mock_player_plugin_changed)
 
   # Make the current scrobble index available to the view
   selectedScrobbleIndex = QtCore.Property(int, get_selected_scrobble_index, set_selected_scrobble_index, notify=selected_scrobble_index_changed)
