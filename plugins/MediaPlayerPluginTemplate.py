@@ -1,4 +1,4 @@
-class MediaPlayerPlugin():
+class MediaPlayerPluginTemplate():
   def __init__(self):
     '''Base class for interfacing with media players'''
     
