@@ -59,6 +59,12 @@ class LastFmApiWrapper:
     else:
       raise Exception('Invalid HTTP method') 
 
+  def __is_logged_in(self):
+    if not self.__session_key or not self.__username:
+      raise Exception('Last.fm api wrapper not logged in')
+    
+    return True
+
   def get_auth_token(self):
     '''Request an authorization token used to get a the session key (lasts 60 minutes)'''
     
@@ -95,6 +101,9 @@ class LastFmApiWrapper:
 
   def get_track_info(self, scrobble):
     '''Get track info about a Scrobble object from a user's Last.fm library'''
+    
+    if not self.__is_logged_in():
+      return 
 
     return self.__lastfm_request({
       'method': 'track.getInfo',
@@ -106,6 +115,9 @@ class LastFmApiWrapper:
 
   def get_album_info(self, scrobble):
     '''Get album info about a Scrobble object from a user's Last.fm library'''
+    
+    if not self.__is_logged_in():
+      return 
 
     return self.__lastfm_request({
       'method': 'album.getInfo',
@@ -118,6 +130,9 @@ class LastFmApiWrapper:
   def get_artist_info(self, scrobble):
     '''Get artist info about a Scrobble object from a user's Last.fm library'''
 
+    if not self.__is_logged_in():
+      return 
+
     return self.__lastfm_request({
       'method': 'artist.getInfo',
       'artist': scrobble.track['artist']['name'],
@@ -127,6 +142,9 @@ class LastFmApiWrapper:
 
   def submit_scrobble(self, scrobble):
     '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
+
+    if not self.__is_logged_in():
+      return 
 
     return self.__lastfm_request({
       'method': 'track.scrobble',
