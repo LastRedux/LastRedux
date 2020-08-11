@@ -19,26 +19,6 @@ Window {
   width: 900
   height: 589
 
-  // --- Scrobble History ---
-  
-  // View model
-  ScrobbleHistoryViewModel {
-    id: scrobbleHistoryViewModel
-  }
-
-  // View
-  Sidebar {
-    id: sidebar
-
-    viewModel: scrobbleHistoryViewModel
-
-    anchors {
-      top: parent.top
-      bottom: parent.bottom
-      left: parent.left
-    }
-  }
-
   // --- Scrobble Details ---
   
   // View model
@@ -59,6 +39,26 @@ Window {
       right: parent.right
       bottom: parent.bottom
       left: sidebar.right
+    }
+  }
+
+  // --- Scrobble History ---
+  
+  // View model
+  ScrobbleHistoryViewModel {
+    id: scrobbleHistoryViewModel
+  }
+
+  // View
+  Sidebar {
+    id: sidebar
+
+    viewModel: scrobbleHistoryViewModel
+
+    anchors {
+      top: parent.top
+      bottom: parent.bottom
+      left: parent.left
     }
   }
 }

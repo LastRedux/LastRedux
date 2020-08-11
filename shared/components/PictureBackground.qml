@@ -4,15 +4,17 @@ import QtGraphicalEffects 1.0
 Item {
   id: root
 
+  // Passthrough so source can be set from outside of component
   property alias source: image.source
 
   states: State {
     name: 'loaded'
     when: image.status === Image.Ready
 
+    // After image is loaded, fade out image overlay and fade in reflection
     PropertyChanges {
       target: overlay
-      color: '#000'
+      color: '#000' // Switch to black overlay color after image load instead of gray
       opacity: 0.5
     }
 
@@ -25,12 +27,15 @@ Item {
   transitions: Transition {
     id: transition
     
+    // Only run transition when switching to loaded from initial state
+    // When the image is swapped out the component will instantly switch back to initial state
     from: ''
     to: 'loaded'
     
     readonly property int transitionDuration: 450
     readonly property int transitionEasing: Easing.OutQuint
 
+    // Animate all properties with the same duration
     ColorAnimation {
       target: overlay
       duration: transition.transitionDuration
@@ -53,12 +58,14 @@ Item {
   }
 
   // --- Reflection ---
+
+  // Clone rendered texture of the already blurred image in order to add a color overlay to it
   ShaderEffectSource {
     id: reflectionSource
 
     sourceItem: blurredImage
     
-    visible: false
+    visible: false // This will then be masked, so render off screen at first
 
     height: image.height
 
@@ -81,10 +88,11 @@ Item {
     id: reflection
 
     maskSource: mask
-    opacity: 0
-    source: reflectionSource
+    opacity: 0 // Will be faded in through component state once image loads
+    source: reflectionSource // Apply mask to the cloned, recolored image
 
-    // Transformation matrix for vertical flip
+    // Use transformation matrix to vertically flip view
+    // Must be done on final shown item, doesn't work if used on item earlier in chain like ShaderEffectSource
     transform: Matrix4x4 {
       matrix: Qt.matrix4x4( 1, 0, 0, 0, 0, -1, 0, reflection.height, 0, 0, 1, 0, 0, 0, 0, 1)
     }
@@ -98,6 +106,7 @@ Item {
     }
   }
 
+  // Mask must be as big as image so a container is used
   Item {
     id: mask
 
@@ -111,7 +120,10 @@ Item {
       left: parent.left
     }
 
-    LinearGradient {
+    Image {
+      fillMode: Image.TileHorizontally
+      source: '../resources/effects/trackDetailsReflectionMask.png'
+      
       height: 55
 
       // Anchor at bottom to compensate for flipped final image
@@ -120,73 +132,42 @@ Item {
         right: parent.right
         left: parent.left
       }
-
-      gradient: Gradient {
-        GradientStop { position: 1; color: Qt.rgba(1, 1, 1, 0.25)}
-        GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0)}
-      }
     }
   }
 
   // --- Shadow ---
-  LinearGradient {
-    height: 3
 
-    anchors {
-      top: parent.bottom
-      right: parent.right
-      left: parent.left
-    }
+  Image {
+    fillMode: Image.TileHorizontally
+    source: '../resources/effects/trackDetailsShadow.png'
 
-    gradient: Gradient {
-      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.075)}
-      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0)}
-    }
-  }
-
-  LinearGradient {
-    height: 8
-
-    anchors {
-      top: parent.bottom
-      right: parent.right
-      left: parent.left
-    }
-
-    gradient: Gradient {
-      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.075)}
-      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0)}
-    }
-  }
-
-  LinearGradient {
     height: 16
 
+    // Position outside of and under bounding box
     anchors {
       top: parent.bottom
       right: parent.right
       left: parent.left
-    }
-
-    gradient: Gradient {
-      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.1)}
-      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0)}
     }
   }
 
   // --- Image ---
+
+  // Invisible image that will be blurred and then reflected
   Image {
     id: image
 
-    fillMode: Image.PreserveAspectCrop
+    fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
     visible: false
 
     anchors.fill: parent
   }
 
+  // Blurred image stretched over the main area
   FastBlur {
     id: blurredImage
 
+    cached: true // Redraw only when image is changed, not every frame
     radius: 128
     source: image
 
@@ -194,6 +175,8 @@ Item {
   }
 
   // --- Image Overlay ---
+
+  // Functions as placeholder background when no image is loaded, otherwise is used to darken the image
   Rectangle {
     id: overlay
 
