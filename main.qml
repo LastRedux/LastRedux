@@ -11,7 +11,6 @@ Window {
   id: application
 
   color: '#171717'
-  flags: Qt.Window
   title: 'LastRedux'
   visible: true
 
@@ -62,6 +61,7 @@ Window {
   }
 
   // --- Sidebar ---
+
   SidebarBackground {
     id: sidebar
 

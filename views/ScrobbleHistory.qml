@@ -34,7 +34,7 @@ Item {
     }
 
     Column {
-      visible: viewModel.isUsingMockPlayerPlugin
+      visible: viewModel && viewModel.isUsingMockPlayerPlugin
       
       Button {
         text: 'Play 1st song'

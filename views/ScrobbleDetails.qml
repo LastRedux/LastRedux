@@ -2,6 +2,7 @@ import QtQuick 2.14
 
 import Kale 1.0
 
+import 'ScrobbleDetails'
 import '../shared/components'
 
 Item {
@@ -52,109 +53,26 @@ Item {
 
         width: scrollArea.width
 
-        // Song details
-        PictureBackground {
-          id: songDetails
+        TrackDetails {
+          trackName: canDisplayScrobble && viewModel.scrobbleData.name
+          trackLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.lastfm_url
+          trackPlays: canDisplayEntireScrobble ? viewModel.scrobbleData.plays : undefined
 
-          property url albumImage: {
+          artistName: canDisplayScrobble && viewModel.scrobbleData.artist.name
+          artistLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
+
+          albumName: canDisplayScrobble && viewModel.scrobbleData.album.name
+          albumLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.album.lastfm_url
+
+          albumImageUrl: {
             if (canDisplayEntireScrobble) {
               return viewModel.scrobbleData.album.image_url
             }
             
             return ''
           }
-          
-          source: albumImage
 
           width: column.width
-          height: coverArt.height + 30 * 2
-
-          Picture {
-            id: coverArt
-
-            source: songDetails.albumImage
-
-            width: 160
-
-            anchors {
-              top: parent.top
-              left: parent.left
-
-              margins: 30
-            }
-          }
-
-          Column {
-            spacing: 10
-
-            anchors {
-              top: coverArt.top
-              right: parent.right
-              left: coverArt.right
-
-              topMargin: 10
-              rightMargin: 30
-              leftMargin: 20
-            }
-
-            Column {
-              spacing: 5
-
-              width: parent.width
-
-              Link {
-                elide: Text.ElideRight
-                style: kTitlePrimary
-                text: canDisplayScrobble && viewModel.scrobbleData.name
-                address: canDisplayEntireScrobble && viewModel.scrobbleData.lastfm_url
-
-                width: parent.width
-              }
-
-              Link {
-                elide: Text.ElideRight
-                text: canDisplayScrobble && viewModel.scrobbleData.artist.name
-                address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-
-                width: parent.width
-              }
-
-              Row {
-                spacing: 3
-                
-                Label {
-                  style: kBodyPrimary
-                  text: 'from'
-                }
-
-                Link {
-                  text: canDisplayScrobble && viewModel.scrobbleData.album.name
-                  address: canDisplayEntireScrobble && viewModel.scrobbleData.album.lastfm_url
-                }
-              }
-            }
-
-            Label {
-              style: kTitleTertiary
-              visible: canDisplayEntireScrobble
-
-              text: {
-                if (canDisplayScrobble) {
-                  if (viewModel.scrobbleData.is_additional_data_downloaded) {
-                    const plays = viewModel.scrobbleData.plays
-
-                    if (plays == 1) { // Triple equals check fails for some reason
-                      return '1 play'
-                    } else {
-                      return `${plays} plays`
-                    }
-                  }
-                }
-
-                return ''
-              }
-            }
-          }
         }
 
         // Artist details
