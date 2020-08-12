@@ -83,7 +83,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     self.thread_worker.finished_getting_media_player_data.connect(self.process_new_media_player_data)
     
     # Initialize media player plugin
-    self.media_player = AppleMusicPlugin()
+    self.media_player = MockPlayerPlugin()
 
     # Initialize Last.fm API wrapper
     self.lastfm = LastFmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
@@ -174,7 +174,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     return scrobble_percentage
   
   def get_is_using_mock_player_plugin(self):
-    return self.media_player is MockPlayerPlugin
+    return isinstance(self.media_player, MockPlayerPlugin)
     
   def get_selected_scrobble_index(self):
     '''Make the private selected scrobble index variable available to the UI'''
@@ -405,7 +405,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
         'global_listeners': artist_info['stats']['listeners'],
         'global_plays': artist_info['stats']['playcount'],
         'plays': artist_info['stats']['userplaycount'],
-        'bio': artist_info['bio']['content'].split(' <')[0], # Remove read more on Last.fm link because a QML Link component is used instead
+        'bio': artist_info['bio']['content'].split(' <')[0].strip(), # Remove read more on Last.fm link because a QML Link component is used instead
         'tags': artist_info['tags']['tag'],
         'image_url': ''
       }

@@ -1,4 +1,5 @@
 import QtQuick 2.14
+import QtQuick.Controls 2.14
 import QtQuick.Window 2.14
 
 import Kale 1.0
@@ -14,7 +15,7 @@ Window {
   title: 'LastRedux'
   visible: true
 
-  minimumWidth: 860
+  minimumWidth: 866
   minimumHeight: 540
   width: 900
   height: 589
@@ -49,16 +50,48 @@ Window {
     id: scrobbleHistoryViewModel
   }
 
-  // View
-  Sidebar {
-    id: sidebar
+  // View (will be loaded into sidebar)
+  Component {
+    id: scrobbleHistoryPage
 
-    viewModel: scrobbleHistoryViewModel
+    ScrobbleHistory {
+      id: scrobbleHistory
+
+      viewModel: scrobbleHistoryViewModel
+    }
+  }
+
+  // --- Sidebar ---
+  SidebarBackground {
+    id: sidebar
 
     anchors {
       top: parent.top
       bottom: parent.bottom
       left: parent.left
+    }
+
+    StackView {
+      id: stackView
+
+      initialItem: scrobbleHistoryPage
+
+      anchors {
+        top: tabBar.bottom
+        right: parent.right
+        bottom: parent.bottom
+        left: parent.left
+      }
+    }
+
+    TabBarBackground {
+      id: tabBar
+
+      anchors {
+        top: parent.top
+        right: parent.right
+        left: parent.left
+      }
     }
   }
 }
