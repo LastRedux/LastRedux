@@ -89,7 +89,7 @@ Item {
 
           imageUrl: {
             if (canDisplayEntireScrobble) {
-              return viewModel.scrobbleData.album.image_url
+              return viewModel.scrobbleData.artist.image_url
             }
             
             return ''

@@ -117,7 +117,7 @@ PictureBackground {
 
     text: {
       if (trackPlays) {
-        if (trackPlays == 1) { // Triple equals check fails for some reason
+        if (trackPlays === '1') { // track plays is string, not int
           return '1 play'
         } else {
           return `${trackPlays} plays`

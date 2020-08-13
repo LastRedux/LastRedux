@@ -388,13 +388,13 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       'name': scrobble.track['name'],
       'lastfm_url': track_info['url'],
       'is_loved': bool(track_info['userloved']), # Convert 1/0 to True/False
-      'plays': track_info['userplaycount'],
+      'plays': '{:,}'.format(int(track_info['userplaycount'])),
       'tags': track_info['toptags']['tag'],
 
       'album': {
         'name': album_info['name'], #scrobble.track['album']['name']
         'lastfm_url': album_info['url'],
-        'plays': album_info['userplaycount'],      
+        'plays': '{:,}'.format(int(album_info['userplaycount'])),      
         'image_url': album_info['image'][4]['#text'], # Pick mega size in images array
         'image_url_small': album_info['image'][1]['#text'] # Pick medium size in images array
       },
@@ -402,9 +402,9 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       'artist': {
         'name': artist_info['name'],
         'lastfm_url': artist_info['url'],
-        'global_listeners': artist_info['stats']['listeners'],
-        'global_plays': artist_info['stats']['playcount'],
-        'plays': artist_info['stats']['userplaycount'],
+        'global_listeners': '{:,}'.format(int(artist_info['stats']['listeners'])),
+        'global_plays': '{:,}'.format(int(artist_info['stats']['playcount'])),
+        'plays': '{:,}'.format(int(artist_info['stats']['userplaycount'])),
         'bio': artist_info['bio']['content'].split(' <')[0].strip(), # Remove read more on Last.fm link because a QML Link component is used instead
         'tags': artist_info['tags']['tag'],
         'image_url': ''

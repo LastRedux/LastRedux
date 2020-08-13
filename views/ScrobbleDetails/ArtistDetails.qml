@@ -62,7 +62,7 @@ Item {
       }
 
       Statistic {
-        title: 'Plays in Library'
+        title: plays === '1' ? 'Play in Library' : 'Plays in Library'
         value: plays
       }
     }
