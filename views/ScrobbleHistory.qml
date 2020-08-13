@@ -8,6 +8,7 @@ import '../shared/components'
 Item {
   id: root
 
+  // Store reference to view model counterpart that can be set from main.qml
   property ScrobbleHistoryViewModel viewModel
 
   property bool canDisplayCurrentScrobble: {

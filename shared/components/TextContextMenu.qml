@@ -1,36 +1,23 @@
 import QtQuick 2.14
 import Qt.labs.platform 1.0
 
-Item {
+Menu {
   id: root
 
   property TextEdit text
 
-  MouseArea {
-    acceptedButtons: Qt.RightButton
-    cursorShape: Qt.IBeamCursor
+  MenuItem {
+    text: 'Copy'
 
-    onPressed: {
-      contextMenu.open()
-    }
-
-    anchors.fill: parent
-  }
-
-  Menu {
-    id: contextMenu
-
-    MenuItem {
-      text: 'Copy'
-
-      onTriggered: {
-        if (root.text.selectionStart === root.text.selectionEnd) {
-          root.text.selectAll()
-          root.text.copy()
-          root.text.deselect()
-        } else {
-          root.text.copy()
-        }
+    onTriggered: {
+      // Check if no text is selected
+      if (root.text.selectionStart === root.text.selectionEnd) {
+        // If no text is selected, everything must be temporarily selected in order to copy it
+        root.text.selectAll()
+        root.text.copy()
+        root.text.deselect()
+      } else {
+        root.text.copy()
       }
     }
   }

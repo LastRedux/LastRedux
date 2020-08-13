@@ -9,7 +9,7 @@ Row {
   height: logo.height
 
   Item {
-    width: 40
+    width: 43
     height: 5
 
     y: logo.height / 2 - (height / 2)

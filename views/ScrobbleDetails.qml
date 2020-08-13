@@ -6,6 +6,7 @@ import 'ScrobbleDetails'
 import '../shared/components'
 
 Item {
+  // Store reference to view model counterpart that can be set from main.qml
   property ScrobbleDetailsViewModel viewModel
 
   property bool canDisplayScrobble: {
@@ -17,9 +18,10 @@ Item {
     return false
   }
 
+  // Check if all remote scrobble data from Last.fm has loaded
   property bool canDisplayEntireScrobble: canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded
 
-  // No song playing page
+  // No scrobble selected page
   Item {
     visible: !canDisplayScrobble
 
@@ -35,19 +37,21 @@ Item {
     }
   }
 
-  // Song info page
+  // Song info page (always keep in memory - just hide when no scrobble is selected)
   Item {
     visible: canDisplayScrobble
 
     anchors.fill: parent
     
+    // Allow content to overflow and be scrolled
     Flickable {
       id: scrollArea
       
-      contentHeight: column.height
+      contentHeight: column.height // Define scrollable area as tall as the content within
 
       anchors.fill: parent
 
+      // Automatically position each component below the previous one
       Column {
         id: column
 
@@ -75,154 +79,28 @@ Item {
           width: column.width
         }
 
-        // Artist details
-        Item {
-          id: artistDetails
+        ArtistDetails {
+          name: canDisplayScrobble && viewModel.scrobbleData.artist.name
+          lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
+          bio: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : ''
+          globalListeners: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
+          globalPlays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
+          plays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''
+
+          imageUrl: {
+            if (canDisplayEntireScrobble) {
+              return viewModel.scrobbleData.album.image_url
+            }
+            
+            return ''
+          }
 
           width: column.width
-          height: artistDetailsContent.y + artistDetailsContent.height + 30
-
-          Picture {
-            id: artistAvatar
-
-            type: kArtist
-
-            source: {
-              if (canDisplayEntireScrobble) {
-                return viewModel.scrobbleData.artist.image_url
-              }
-
-              return ''
-            }
-
-            width: 106
-            height: width
-
-            anchors {
-              top: parent.top
-              left: parent.left
-
-              margins: 30
-            }
-          }
-
-          Column {
-            id: artistDetailsContent
-
-            spacing: 15
-
-            anchors {
-              top: artistAvatar.top
-              right: parent.right
-              left: artistAvatar.right
-
-              topMargin: 10
-              rightMargin: 30
-              leftMargin: 20
-            }
-
-            Link {
-              elide: Text.ElideRight
-              style: kTitlePrimary
-              text: canDisplayScrobble && viewModel.scrobbleData.artist.name
-              address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-
-              width: parent.width
-            }
-
-            Row {
-              id: row
-
-              property int columnSpacing: 3
-
-              spacing: 20
-              visible: canDisplayEntireScrobble
-
-              Column {
-                spacing: row.columnSpacing
-
-                Label {
-                  style: kNumber
-                  text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
-                }
-
-                Label {
-                  style: kTitleTertiary
-                  text: 'Listeners'
-                }
-              }
-
-              Column {
-                spacing: row.columnSpacing
-                
-                Label {
-                  style: kNumber
-                  text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
-                }
-
-                Label {
-                  style: kTitleTertiary
-                  text: 'Plays'
-                }
-              }
-
-              Column {
-                spacing: row.columnSpacing
-                
-                Label {
-                  style: kNumber
-                  text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''
-                }
-
-                Label {
-                  style: kTitleTertiary
-                  text: 'Plays in Library'
-                }
-              }
-            }
-
-            Column {
-              spacing: 5
-
-              width: parent.width
-              
-              // TODO: Move styles for selectable text to component
-              TextEdit {
-                id: textEdit
-
-                color: '#FFF'
-                readOnly: true
-                renderType: Text.NativeRendering
-                selectByMouse: true
-                selectionColor: Qt.rgba(255, 255, 255, 0.15)
-                text: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : ''
-                wrapMode: Text.Wrap
-
-                font {
-                  letterSpacing: 0.25
-                  weight: Font.Medium
-                }
-
-                width: parent.width
-
-                TextContextMenu {
-                  text: textEdit
-
-                  anchors.fill: parent
-                }
-              }
-
-              Link {
-                text: 'Read more on Last.fm'
-                address: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-                visible: canDisplayEntireScrobble && viewModel.scrobbleData.artist.bio
-              }
-            }
-          }
         }
       }
     }
 
+    // Add native scrolling physics to scroll area
     WheelScrollArea {
       flickable: scrollArea
 
