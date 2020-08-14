@@ -1,4 +1,5 @@
 import QtQuick 2.14
+import Qt.labs.platform 1.0
 
 import '../../shared/components'
 
@@ -133,6 +134,39 @@ PictureBackground {
       left: trackNameView.left
 
       topMargin: 10
+    }
+
+    PointHandler {
+      id: pointHandler
+
+      acceptedButtons: Qt.RightButton
+      
+      onActiveChanged: {
+        if (active) {
+          playsContextMenu.open()
+        }
+      }
+    }
+
+    // Invisible text input to interface with system clipboard
+    TextInput {
+      id: playsTextInput
+
+      visible: false
+    }
+
+    Menu {
+      id: playsContextMenu
+
+      MenuItem {
+        text: 'Copy'
+
+        onTriggered: {
+          playsTextInput.text = trackPlays
+          playsTextInput.selectAll()
+          playsTextInput.copy()
+        }
+      }
     }
   }
 }

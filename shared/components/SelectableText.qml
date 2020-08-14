@@ -1,4 +1,4 @@
-import QtQuick 2.14
+import QtQuick 2.15
 
 TextEdit {
   id: root
@@ -16,15 +16,22 @@ TextEdit {
     weight: Font.Medium
   }
 
-  MouseArea {
-    acceptedButtons: Qt.RightButton
+  HoverHandler {
+    id: hoverHandler
+    
     cursorShape: Qt.IBeamCursor // Show correct cursor when hovering over text
+  }
 
-    onPressed: {
-      contextMenu.open()
+  PointHandler {
+    id: pointHandler
+
+    acceptedButtons: Qt.RightButton
+    
+    onActiveChanged: {
+      if (active) {
+        contextMenu.open()
+      }
     }
-
-    anchors.fill: parent
   }
 
   // Add context menu to copy the content
