@@ -2,18 +2,16 @@ import os
 import re
 from threading import Thread
 
-import requests
 from PySide2 import QtCore, QtSql
-from unidecode import unidecode
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
-from LastFmApiWrapper import LastFmApiWrapper
+from util.LastFmApiWrapper import LastFmApiWrapper
+from util.iTunesApiHelper import get_itunes_store_images_by_track
+from util.DatabaseHelper import DatabaseHelper
 from models import Scrobble
 
-class MediaPlayerThreadWorker(QtCore.QObject):
-  # TODO: Use Python threads instead of QThreads
-  
+class MediaPlayerThreadWorker(QtCore.QObject):  
   finished_getting_media_player_data = QtCore.Signal()
 
   def __init__(self):
@@ -83,18 +81,17 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     self.thread_worker.finished_getting_media_player_data.connect(self.process_new_media_player_data)
     
     # Initialize media player plugin
-    self.media_player = MockPlayerPlugin()
+    self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
 
     # Initialize Last.fm API wrapper
     self.lastfm = LastFmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
     
-    # Connect to SQLite
-    self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-    self.db.setDatabaseName('db.sqlite')
+    # Create database helper to connect to SQLite
+    self.db = DatabaseHelper('db.sqlite')
 
     # Set Last.fm wrapper session key and username from database
-    login_info = self.fetch_login_info()
-    self.lastfm.set_login_info(login_info['session_key'], login_info['username'])
+    username, session_key = self.db.get_lastfm_session_details()
+    self.lastfm.set_login_info(username, session_key)
     
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
@@ -202,9 +199,9 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
 
   # --- Mock Slots ---
 
-  @QtCore.Slot(int)
-  def MOCK_playSong(self, song_num):
-    self.media_player.current_track = self.media_player.SONGS[song_num]
+  @QtCore.Slot()
+  def MOCK_playNextSong(self):
+    self.media_player.current_track = self.media_player.get_next_track()
     self.media_player.has_track_loaded_variable = True
     self.media_player.player_position = 0
 
@@ -304,37 +301,6 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
             self.selected_scrobble_index_changed.emit()
             self.selected_scrobble_changed.emit()
 
-  def fetch_login_info(self):
-    '''Fetch the user's Last.fm session key and username from the settidatabase'''
-
-    if self.db.open():
-      print('sqlite connection succeeded')
-    else:
-      print('sqlite connection failed')
-    
-    # Execute SQL to find the row that matches our criteria
-    query = QtSql.QSqlQuery('SELECT value FROM settings WHERE key in ("session_key", "username")')
-
-    # Get column id for value in settings
-    idValue = query.record().indexOf("value")
-
-    # Iterate through the list of results to get the first item, session_key
-    query.next()
-
-    # Get the value of the column of the row that we found
-    session_key = query.value(idValue)
-
-    # Iterate through the list of results to get the second item, username
-    query.next()
-
-    # Get the value of the column of the row that we found
-    username = query.value(idValue)
-    
-    return {
-      'session_key': session_key,
-      'username': username
-    }
-
   def __replace_current_track(self, current_track):
     '''Set the private __current_scrobble variable to a new Scrobble object based on the new currently playing track, update the playback data for track start and finish, and update the UI'''
 
@@ -376,6 +342,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     self.__playback_data['track_artist'] = current_track['artist']
     self.__playback_data['track_album'] = current_track['album']
 
+    # Get additional info about track from Last.fm
     Thread(target=self.set_additional_scrobble_data, args=(self.__current_scrobble,)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
 
   def set_additional_scrobble_data(self, scrobble):
@@ -427,31 +394,31 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       }
     }
 
-    self.refresh_data_for_scrobble(scrobble)
+    # Refresh details view with Last.fm details
+    self.emit_scrobble_ui_update_signals(scrobble)
 
-    # Fetch and set artist image from Apple Music
-    raw_artist_name = artist_info['name'].split(', ')[0].split(' & ')[0] # Get first artist for collab
-    artist_name = unidecode(raw_artist_name) # Remove accents and convert non-English characters to phonetics
-    search_url = f'https://itunes.apple.com/search?entity=allArtist&attribute=allArtistTerm&term={artist_name}'
-    search_result = requests.get(search_url).json() # Search iTunes Store for artist
-    artist_id = search_result['results'][0]['artistId'] # Get iTunes ID of artist
-    artist_info = requests.get(f'https://itunes.apple.com/lookup?id={artist_id}').json()
-    artist_url = artist_info['results'][0]['artistLinkUrl'] # Get artist's Apple Music URL
-    html = requests.get(artist_url).text
-    image_url = html.split('srcset')[1].split('>')[0].split(', ')[1].split('"')[0].split(' ')[0] # Scrape HTML for artist image
-    adjusted_image_url = re.sub(r'\d+x\d+', '256x256', image_url) # Force 256x256 artist image
-    scrobble.track['artist']['image_url'] = adjusted_image_url
+    # Get track info from cached media player data
+    track_name = self.__playback_data['track_name']
+    artist_name = self.__playback_data['track_artist']
+    album_name = self.__playback_data['track_album']
+    
+    # Get artist image and album art from iTunes
+    artist_image, album_art, album_art_small = get_itunes_store_images_by_track(track_name, artist_name, album_name)
 
-    # Replace album art with artist image if album art doesn't exist
+    # Set scrobble artist image
+    scrobble.track['artist']['image_url'] = artist_image
+
+    # Use iTunes album art if Last.fm didn't provide it
     if not scrobble.track['album']['image_url']:
-      scrobble.track['album']['image_url'] = adjusted_image_url
-      scrobble.track['album']['image_url_small'] = re.sub(r'\d+x\d+', '64x64', image_url)
+      scrobble.track['album']['image_url'] = album_art
+      scrobble.track['album']['image_url_small'] = album_art_small
 
+    # Refresh details view with iTunes details
     # TODO: Only update artist/album image URL instead of entire scrobble data
-    self.refresh_data_for_scrobble(scrobble)
+    self.emit_scrobble_ui_update_signals(scrobble)
   
-  def refresh_data_for_scrobble(self, scrobble):
-    # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
+  def emit_scrobble_ui_update_signals(self, scrobble):
+    #Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
     if self.selected_scrobble == scrobble:
       self.selected_scrobble_changed.emit()
     

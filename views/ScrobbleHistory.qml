@@ -38,27 +38,9 @@ Item {
       visible: viewModel && viewModel.isUsingMockPlayerPlugin
       
       Button {
-        text: 'Play 1st song'
+        text: 'Play next song'
 
-        onClicked: viewModel.MOCK_playSong(0)
-      }
-
-      Button {
-        text: 'Play 2nd song'
-
-        onClicked: viewModel.MOCK_playSong(1)
-      }
-
-      Button {
-        text: 'Play 3rd song'
-
-        onClicked: viewModel.MOCK_playSong(2)
-      }
-
-      Button {
-        text: 'Stop song'
-
-        onClicked: viewModel.MOCK_stopSong()
+        onClicked: viewModel.MOCK_playNextSong()
       }
 
       Button {

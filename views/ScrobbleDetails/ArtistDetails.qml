@@ -74,7 +74,7 @@ Item {
       width: parent.width
 
       SelectableText {
-        text: bio
+        text: bio || 'No Bio Available'
 
         width: parent.width
       }

@@ -82,7 +82,7 @@ Item {
         ArtistDetails {
           name: canDisplayScrobble && viewModel.scrobbleData.artist.name
           lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-          bio: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : ''
+          bio: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : 'Loading Bio...'
           globalListeners: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
           globalPlays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
           plays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''

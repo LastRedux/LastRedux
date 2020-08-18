@@ -10,7 +10,9 @@ Label {
 
   // color: mouseArea.containsMouse ? '#00A0FF' : '#FFF'
   style: kTitleSecondary
-  font.underline: address ? hoverHandler.hovered : false
+
+  // Don't show underline for links that don't have an address loaded
+  font.underline: address ? hoverHandler.hovered : false 
 
   HoverHandler {
     id: hoverHandler
