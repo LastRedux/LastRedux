@@ -14,30 +14,36 @@ Label {
   // Don't show underline for links that don't have an address loaded
   font.underline: address ? hoverHandler.hovered : false 
 
-  HoverHandler {
-    id: hoverHandler
-    
-    cursorShape: Qt.PointingHandCursor
-  }
+  // Limit area of pointer handlers to visible text
+  Item {
+    width: root.contentWidth
+    height: root.contentHeight
 
-  TapHandler {
-    acceptedButtons: Qt.LeftButton
-
-    onTapped: {
-      root.onClicked()
-      Qt.openUrlExternally(root.address)
+    HoverHandler {
+      id: hoverHandler
+      
+      cursorShape: Qt.PointingHandCursor
     }
-  }
 
-  PointHandler {
-    id: pointHandler
+    TapHandler {
+      acceptedButtons: Qt.LeftButton
 
-    acceptedButtons: Qt.RightButton
-    enabled: address
-    
-    onActiveChanged: {
-      if (active) {
-        contextMenu.open()
+      onTapped: {
+        root.onClicked()
+        Qt.openUrlExternally(root.address)
+      }
+    }
+
+    PointHandler {
+      id: pointHandler
+
+      acceptedButtons: Qt.RightButton
+      enabled: address
+      
+      onActiveChanged: {
+        if (active) {
+          contextMenu.open()
+        }
       }
     }
   }
