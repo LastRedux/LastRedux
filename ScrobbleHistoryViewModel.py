@@ -258,17 +258,17 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     # Only run if thread actually finished and data was recieved
     if response['has_thread_succeded']:
       if response['has_track_loaded'] and response['current_track']:
-        current_track = response['current_track']
+        new_track = response['current_track']
 
         current_track_changed = (
           self.__current_scrobble is None
-          or not current_track['name'] == self.__playback_data['track_name']
-          or not current_track['artist'] == self.__playback_data['track_artist']
-          or not current_track['album'] == self.__playback_data['track_album']
+          or not new_track['name'] == self.__playback_data['track_name']
+          or not new_track['artist'] == self.__playback_data['track_artist']
+          or not new_track['album'] == self.__playback_data['track_album']
         )
 
         if current_track_changed:
-          self.__replace_current_track(current_track)
+          self.__replace_current_track(new_track)
         
         # Refresh cached media player data for currently playing track
         player_position = response['player_position']
@@ -297,12 +297,12 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
             self.selected_scrobble_index_changed.emit()
             self.selected_scrobble_changed.emit()
 
-  def __replace_current_track(self, current_track):
+  def __replace_current_track(self, new_track):
     '''Set the private __current_scrobble variable to a new Scrobble object based on the new currently playing track, update the playback data for track start and finish, and update the UI'''
 
     # Initialize a new Scrobble object with the currently playing track data
     # This will set the Scrobble's timestamp to the current date
-    self.__current_scrobble = Scrobble(current_track['name'], current_track['artist'], current_track['album'])
+    self.__current_scrobble = Scrobble(new_track['name'], new_track['artist'], new_track['album'])
 
     # Reset flag so new scrobble can later be submitted
     self.__is_current_scrobble_submitted = False
@@ -330,13 +330,13 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       self.selected_scrobble_changed.emit()
 
     # Update cached media player track playback data
-    self.__playback_data['track_start'] = current_track['start']
-    self.__playback_data['track_finish'] = current_track['finish']
+    self.__playback_data['track_start'] = new_track['start']
+    self.__playback_data['track_finish'] = new_track['finish']
 
     # Store media player track metadata as sometimes it will differ slightly from Last.fm; otherwise the track will be percieved as different every polling cycle
-    self.__playback_data['track_name'] = current_track['name']
-    self.__playback_data['track_artist'] = current_track['artist']
-    self.__playback_data['track_album'] = current_track['album']
+    self.__playback_data['track_name'] = new_track['name']
+    self.__playback_data['track_artist'] = new_track['artist']
+    self.__playback_data['track_album'] = new_track['album']
 
     # Get additional info about track from Last.fm
     Thread(target=self.set_additional_scrobble_data, args=(self.__current_scrobble,)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
