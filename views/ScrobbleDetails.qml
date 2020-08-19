@@ -10,8 +10,8 @@ Item {
   property ScrobbleDetailsViewModel viewModel
 
   property bool canDisplayScrobble: {
-    // Don't do just viewModel && viewModel.scrobbleData because we need to return a bool value instead of an undefined viewModel.scrobbleData
-    if (viewModel && viewModel.scrobbleData) {
+    // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
+    if (viewModel && viewModel.scrobbleTrackData) {
       return true
     }
 
@@ -19,7 +19,7 @@ Item {
   }
 
   // Check if all remote scrobble data from Last.fm has loaded
-  property bool canDisplayEntireScrobble: canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded
+  property bool canDisplayEntireScrobble: canDisplayScrobble && viewModel.scrobbleTrackData.has_lastfm_data
 
   // --- No Scrobble Selected Page ---
 
@@ -60,19 +60,19 @@ Item {
         width: scrollArea.width
 
         TrackDetails {
-          trackName: canDisplayScrobble && viewModel.scrobbleData.name
-          trackLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.lastfm_url
-          trackPlays: canDisplayEntireScrobble ? viewModel.scrobbleData.plays : undefined
+          trackName: canDisplayScrobble && viewModel.scrobbleTrackData.title
+          trackLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.lastfm_url
+          trackPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
 
-          artistName: canDisplayScrobble && viewModel.scrobbleData.artist.name
-          artistLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
+          artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
+          artistLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
 
-          albumName: canDisplayScrobble && viewModel.scrobbleData.album.name
-          albumLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.album.lastfm_url
+          albumName: canDisplayScrobble && viewModel.scrobbleTrackData.album.title
+          albumLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.album.lastfm_url
 
           albumImageUrl: {
             if (canDisplayEntireScrobble) {
-              return viewModel.scrobbleData.album.image_url
+              return viewModel.scrobbleTrackData.album.image_url
             }
             
             return ''
@@ -82,17 +82,21 @@ Item {
         }
 
         ArtistDetails {
-          name: canDisplayScrobble && viewModel.scrobbleData.artist.name
-          lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
-          bio: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : 'Loading Bio...'
-          isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleData.artist.bio
-          globalListeners: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
-          globalPlays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
-          plays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''
+          name: {
+            console.log(viewModel.scrobbleTrackData.artist)
+            
+            return canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
+          }
+          lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
+          bio: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.bio : 'Loading Bio...'
+          isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.bio
+          globalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_listeners : undefined
+          globalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_plays : undefined
+          plays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
 
           imageUrl: {
             if (canDisplayEntireScrobble) {
-              return viewModel.scrobbleData.artist.image_url
+              return viewModel.scrobbleTrackData.artist.image_url
             }
             
             return ''

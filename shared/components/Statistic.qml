@@ -3,7 +3,7 @@ import Qt.labs.platform 1.0
 
 Item {
   property string title
-  property int value
+  property var value
   
   width: column.width
   height: column.height
@@ -15,7 +15,7 @@ Item {
 
     Label {
       style: kNumber
-      text: value.toLocaleString() // Add commas
+      text: value ? value.toLocaleString() : '' // Add commas
     }
 
     Label {

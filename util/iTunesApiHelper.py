@@ -12,14 +12,11 @@ def __format_image_url_to_size(image_url, width, height):
 
   return re.sub(r'\d+x\d+', f'{width}x{height}', image_url)
 
-def get_itunes_store_images_by_track(track_name, artist_name, album_name):
+def get_images(track_name, artist_name, album_name):
   '''Get an artist image and album art for a track from the iTunes Search API'''
 
   # Do a generic search for music with the track, artist, and album name
-  track_results = requests.get(f'https://itunes.apple.com/search?media=music&term={artist_name} {track_name} {album_name}').json()['results']
-
-# &limit=1
-
+  track_results = requests.get(f'https://itunes.apple.com/search?media=music&limit=1&term={artist_name} {track_name} {album_name}').json()['results']
 
   # Return an empty object if there are no results for the track (local file)
   if not track_results:
@@ -38,7 +35,7 @@ def get_itunes_store_images_by_track(track_name, artist_name, album_name):
 
   return artist_image, album_art, album_art_small
 
-def get_itunes_store_artist_image_by_name(artist_name):
+def get_artist_image(artist_name):
   '''Get an artist image by name from the iTunes Search API'''
 
   # Do a generic search for music with the track, artist, and album name

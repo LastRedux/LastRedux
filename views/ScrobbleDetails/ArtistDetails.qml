@@ -11,10 +11,10 @@ Item {
   property string bio
   property bool isReadMoreLinkVisible
 
-  // Strings because view model should provide formatted numbers with commas
-  property string globalListeners
-  property string globalPlays
-  property string plays
+  // Use var instead of int to support undefined
+  property var globalListeners
+  property var globalPlays
+  property var plays
 
   height: column.y + column.height + 30
 
@@ -48,7 +48,7 @@ Item {
       id: statistics
       
       spacing: 20
-      visible: globalListeners
+      visible: !!globalListeners
 
       width: parent.width
       

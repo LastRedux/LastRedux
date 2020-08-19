@@ -3,7 +3,7 @@ from PySide2 import QtCore
 from ScrobbleHistoryViewModel import *
 
 class ScrobbleDetailsViewModel(QtCore.QObject):
-  scrobble_data_changed = QtCore.Signal()
+  scrobble_track_data_changed = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
@@ -22,14 +22,14 @@ class ScrobbleDetailsViewModel(QtCore.QObject):
       self.__scrobble_history_reference = new_reference
 
       # Connect to scrobble selection change on view model, so when a new scrobble is selected, details will update
-      self.__scrobble_history_reference.selected_scrobble_changed.connect(lambda: self.scrobble_data_changed.emit())
+      self.__scrobble_history_reference.selected_scrobble_changed.connect(lambda: self.scrobble_track_data_changed.emit())
 
       # Update scrobble data because the scrobble data changed signal won't be triggered upon connection
-      self.scrobble_data_changed.emit()
+      self.scrobble_track_data_changed.emit()
 
-  def get_scrobble_data(self):
+  def get_scrobble_track_data(self):
     if self.__scrobble_history_reference and self.__scrobble_history_reference.selected_scrobble:
-        return self.__scrobble_history_reference.selected_scrobble.track
+      return self.__scrobble_history_reference.selected_scrobble.track.__dict__
     
     return None
 
@@ -39,4 +39,4 @@ class ScrobbleDetailsViewModel(QtCore.QObject):
   scrobbleHistoryReference = QtCore.Property(ScrobbleHistoryViewModel, get_scrobble_history_reference, set_scrobble_history_reference)
 
   # Make the __scrobble_history_reference available to the view
-  scrobbleData = QtCore.Property('QVariant', get_scrobble_data, notify=scrobble_data_changed)
+  scrobbleTrackData = QtCore.Property('QVariant', get_scrobble_track_data, notify=scrobble_track_data_changed)

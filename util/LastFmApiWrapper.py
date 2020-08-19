@@ -1,7 +1,9 @@
+import os
 import time
 import json
 import hashlib
 import webbrowser
+
 import requests
 
 class LastFmApiWrapper:
@@ -52,12 +54,21 @@ class LastFmApiWrapper:
     # Generate method signature after all other keys are added to the payload
     payload['api_sig'] = self.__generate_method_signature(payload)
 
+    resp = None
+
     if http_method == 'GET':
-      return requests.get('http://ws.audioscrobbler.com/2.0/', headers=headers, params=payload).json()
+      resp = requests.get('http://ws.audioscrobbler.com/2.0/', headers=headers, params=payload).json()
     elif http_method == 'POST':
-      return requests.post('http://ws.audioscrobbler.com/2.0/', headers=headers, data=payload).json()
+      resp = requests.post('http://ws.audioscrobbler.com/2.0/', headers=headers, data=payload).json()
     else:
       raise Exception('Invalid HTTP method') 
+
+    # TODO: Handle rate limit condition
+    if 'error' in resp:
+      raise Exception(f'Last.fm error: {resp["message"]}')
+      return
+
+    return resp
 
   def __is_logged_in(self):
     if not self.__session_key or not self.__username:
@@ -72,9 +83,9 @@ class LastFmApiWrapper:
       'method': 'auth.getToken'
     })['token']
 
-  def set_login_info(self, session_key, username):
-    self.__session_key = session_key
+  def set_login_info(self, username, session_key):
     self.__username = username
+    self.__session_key = session_key
 
   def open_authorization_url(self, auth_token):
     '''Launch default browser to allow user to authorize our app'''
@@ -90,12 +101,11 @@ class LastFmApiWrapper:
     })
 
     try:
-      session_data = response_json['session']
+      session_key = response_json['session']['key']
+      username = response_json['session']['name']
 
-      return {
-        'session_key': session_data['key'],
-        'username': session_data['name']
-      }
+      return username, session_key
+
     except KeyError:
       print(response_json)
 
@@ -103,14 +113,13 @@ class LastFmApiWrapper:
     '''Get track info about a Scrobble object from a user's Last.fm library'''
     
     if not self.__is_logged_in():
-      return 
+      return
 
     return self.__lastfm_request({
       'method': 'track.getInfo',
-      'track': scrobble.track['name'],
-      'artist': scrobble.track['artist']['name'],
-      'username': self.__username,
-      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+      'track': scrobble.track.title,
+      'artist': scrobble.track.artist.name,
+      'username': self.__username
     })
 
   def get_album_info(self, scrobble):
@@ -121,23 +130,33 @@ class LastFmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'album.getInfo',
-      'artist': scrobble.track['artist']['name'],
-      'album': scrobble.track['album']['name'],
+      'artist': scrobble.track.artist.name,
+      'album': scrobble.track.album.title,
       'username': self.__username,
-      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
     })
 
   def get_artist_info(self, scrobble):
     '''Get artist info about a Scrobble object from a user's Last.fm library'''
 
     if not self.__is_logged_in():
-      return 
+      return
 
     return self.__lastfm_request({
       'method': 'artist.getInfo',
-      'artist': scrobble.track['artist']['name'],
+      'artist': scrobble.track.artist.name,
       'username': self.__username,
-      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+    })
+
+  def get_similar_artists(self, scrobble):
+    '''Get similar artists for a given artist from Last.fm'''
+
+    if not self.__is_logged_in():
+      return
+
+    return self.__lastfm_request({
+      'method': 'artist.getSimilar',
+      'artist': scrobble.artist.name,
+      'limit': 9
     })
 
   def submit_scrobble(self, scrobble):
@@ -153,3 +172,14 @@ class LastFmApiWrapper:
       'album': scrobble.track['album']['name'],
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
     }, http_method='POST')
+
+# Initialize api wrapper instance with login info once to use in multiple files
+__lastfm = None
+
+def get_static_instance():
+  global __lastfm
+  
+  if not __lastfm:
+    __lastfm = LastFmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
+
+  return __lastfm
