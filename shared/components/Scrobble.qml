@@ -1,7 +1,7 @@
 import QtQuick 2.14
 
 Item {
-  property alias selected: background.visible
+  property alias isSelected: background.visible
   property string name: '???'
   property string artist: '???'
   property string timestamp

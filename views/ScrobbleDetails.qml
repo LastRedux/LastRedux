@@ -21,7 +21,8 @@ Item {
   // Check if all remote scrobble data from Last.fm has loaded
   property bool canDisplayEntireScrobble: canDisplayScrobble && viewModel.scrobbleData.is_additional_data_downloaded
 
-  // No scrobble selected page
+  // --- No Scrobble Selected Page ---
+
   Item {
     visible: !canDisplayScrobble
 
@@ -37,7 +38,8 @@ Item {
     }
   }
 
-  // Song info page (always keep in memory - just hide when no scrobble is selected)
+  // --- Song Info Page (always keep in memory - just hide when no scrobble is selected) ---
+
   Item {
     visible: canDisplayScrobble
 
@@ -83,6 +85,7 @@ Item {
           name: canDisplayScrobble && viewModel.scrobbleData.artist.name
           lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleData.artist.lastfm_url
           bio: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.bio : 'Loading Bio...'
+          isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleData.artist.bio
           globalListeners: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_listeners : ''
           globalPlays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.global_plays : ''
           plays: canDisplayEntireScrobble ? viewModel.scrobbleData.artist.plays : ''

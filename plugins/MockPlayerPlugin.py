@@ -1,10 +1,10 @@
 class MockPlayerPlugin():
   MOCK_TRACKS = [{
-    'name': 'The Way (feat. T.C.)',
-    'artist': 'Hum4n01d',
-    'album': 'The Way (feat. T.C.) - Single',
+    'name': 'Flames',
+    'artist': 'R3HAB, ZAYN & Jungleboi',
+    'album': 'Flames (The EP)',
     'start': 0,
-    'finish': 177
+    'finish': 221
   }, {
     'name': 'On & On (feat. Daniel Levi)',
     'artist': 'Cartoon',
@@ -12,11 +12,11 @@ class MockPlayerPlugin():
     'start': 0,
     'finish': 240
   }, {
-    'name': 'Flames',
-    'artist': 'R3HAB, ZAYN & Jungleboi',
-    'album': 'Flames (The EP)',
+    'name': 'The Way (feat. T.C.)',
+    'artist': 'Hum4n01d',
+    'album': 'The Way (feat. T.C.) - Single',
     'start': 0,
-    'finish': 221
+    'finish': 177
   }, {
     'name': 'Grapevine',
     'artist': 'Tiësto',

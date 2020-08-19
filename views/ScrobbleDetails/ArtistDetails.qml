@@ -9,6 +9,7 @@ Item {
   property string name
   property string lastFmUrl
   property string bio
+  property bool isReadMoreLinkVisible
 
   // Strings because view model should provide formatted numbers with commas
   property string globalListeners
@@ -83,7 +84,7 @@ Item {
         elide: Text.ElideRight
         text: 'Read more on Last.fm'
         address: lastFmUrl
-        visible: bio // Only show if bio exists
+        visible: isReadMoreLinkVisible // Only show if bio exists
 
         width: parent.width
       }

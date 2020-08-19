@@ -3,6 +3,7 @@ import QtQuick.Controls 2.14
 
 import Kale 1.0
 
+import 'ScrobbleHistory'
 import '../shared/components'
 
 Item {
@@ -20,11 +21,13 @@ Item {
     return false
   }
 
-  // Now scrobbling section
+  // --- Mock Player Plugin Controls ---
+
   Column {
-    id: nowScrobbling
+    id: mockPlayerPluginControls
 
     spacing: 8
+    visible: viewModel && viewModel.isUsingMockPlayerPlugin
 
     anchors {
       top: parent.top
@@ -32,205 +35,81 @@ Item {
       left: parent.left
 
       topMargin: 10
+      leftMargin: 15
     }
 
-    Column {
-      visible: viewModel && viewModel.isUsingMockPlayerPlugin
-      
-      Button {
-        text: 'Play next song'
+    Label {
+      style: kTitleTertiary
+      text: 'Mock Player Plugin'
+    }
+    
+    Button {
+      text: 'Play next song'
 
-        onClicked: viewModel.MOCK_playNextSong()
-      }
-
-      Button {
-        text: 'Move song to 75%'
-
-        onClicked: viewModel.MOCK_moveTo75Percent()
-      }
+      onClicked: viewModel.MOCK_playNextSong()
     }
 
-    Column {
-      visible: canDisplayCurrentScrobble
-      spacing: 8
-      
-      width: parent.width
+    Button {
+      text: 'Move song to 75%'
 
-      Item {
-        width: parent.width
-        height: nowScrobblingTitle.height
-
-        Label {
-          id: nowScrobblingTitle
-
-          style: kTitleTertiary
-          text: 'Now Scrobbling'
-
-          x: 15
-        }
-
-        ScrobbleMeter {
-          percentage: viewModel ? viewModel.currentScrobblePercentage : 0
-
-          anchors {
-            right: parent.right
-
-            rightMargin: 15
-
-            verticalCenter: parent.verticalCenter
-          }
-        }
-      }
-
-      Scrobble {
-        selected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
-        name: canDisplayCurrentScrobble && viewModel.currentScrobbleData.name
-        artist: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artist
-
-        imageSource: {
-          if (canDisplayCurrentScrobble && viewModel.currentScrobbleData.isAdditionalDataDownloaded) {
-            return viewModel.currentScrobbleData.albumImageUrl
-          }
-          
-          return ''
-        }
-
-        // TODO: Add loved attribute
-
-        // Set the selected scrobble index in the view model to -1, which represents the currently selected item in the scrobble history
-        onSelect: viewModel.selectedScrobbleIndex = -1
-        
-        width: parent.width
-      }
+      onClicked: viewModel.MOCK_moveTo75Percent()
     }
   }
 
-  // History section
-  Item {
+  // --- Current Scrobble ---
+
+  CurrentScrobble {
+    id: currentScrobble
+
+    percentage: viewModel && viewModel.currentScrobblePercentage
+    isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
+    name: canDisplayCurrentScrobble && viewModel.currentScrobbleData.name
+    artist: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artist
+    visible: canDisplayCurrentScrobble
+
+    imageSource: {
+      if (canDisplayCurrentScrobble && viewModel.currentScrobbleData.isAdditionalDataDownloaded) {
+        return viewModel.currentScrobbleData.albumImageUrl
+      }
+      
+      return ''
+    }
+
+    // Set the selected scrobble index in the view model to -1, which represents the currently selected item in the scrobble history
+    onSelect: viewModel.selectedScrobbleIndex = -1
+    
     anchors {
-      top: nowScrobbling.bottom
+      top: mockPlayerPluginControls.visible ? mockPlayerPluginControls.bottom : parent.top
+      right: parent.right
+      left: parent.left
+
+      topMargin: mockPlayerPluginControls.visible ? 15 : 10
+    }
+  }
+
+  // --- Scrobble History List ---
+
+  ScrobbleHistoryListModel {
+    id: listModel
+
+    scrobbleHistoryReference: viewModel
+  }
+
+  ScrobbleHistoryList {
+    model: listModel
+    selectedScrobbleIndex: viewModel && viewModel.selectedScrobbleIndex
+
+    // index is an argument passed through when the signal is triggered
+    onSelect: viewModel.selectedScrobbleIndex = index
+
+    anchors {
+      top: currentScrobble.visible ? currentScrobble.bottom : currentScrobble.top
       right: parent.right
       bottom: parent.bottom
       left: parent.left
 
-      topMargin: 15
-    }
-
-    Label {
-      id: historyTitle
-
-      style: kTitleTertiary
-      text: 'History'
-
-      x: 15
-    }
-
-    ScrobbleHistoryListModel {
-      id: listModel
-
-      scrobbleHistoryReference: viewModel
-    }
-
-    ListView {
-      id: listView
-
-      bottomMargin: 10
-      clip: true
-      model: listModel
-
-      add: Transition {
-        ParallelAnimation {
-          NumberAnimation {
-            duration: 450
-            property: "x"
-            from: listView.width * -1
-            easing.type: Easing.OutQuint
-          }
-
-          NumberAnimation {
-            duration: 450
-            property: "opacity"
-            to: 1
-            easing.type: Easing.OutQuint
-          }
-        }
-      }
-
-      addDisplaced: Transition {
-        NumberAnimation {
-          duration: 450
-          properties: "x, y"
-          easing.type: Easing.OutQuint
-        }
-      }
-
-      anchors {
-        top: historyTitle.bottom
-        right: parent.right
-        bottom: parent.bottom
-        left: parent.left
-
-        topMargin: 8
-      }
-
-      delegate: Scrobble {
-        selected: {
-          // -2 represents no selection because Qt doesn't understand Python's None value
-          if (viewModel && viewModel.selectedScrobbleIndex !== -2) {
-            return viewModel.selectedScrobbleIndex === model.index
-          }
-          
-          return false
-        }
-
-        name: model.name
-        artist: model.artist
-        timestamp: model.timestamp
-        imageSource: model.isAdditionalDataDownloaded ? model.albumImageUrl : ''
-
-        onSelect: viewModel.selectedScrobbleIndex = model.index
-
-        width: listView.width
-      }
-    }
-
-    WheelScrollArea {
-      flickable: listView
-
-      anchors.fill: listView
-    }
-
-    Item {
-      opacity: listView.contentY - listView.originY > 0
-
-      anchors {
-        top: listView.top
-        right: parent.right
-        left: parent.left
-      }
-
-      Behavior on opacity {
-        NumberAnimation {
-          duration: 450
-
-          easing.type: Easing.OutQuint
-        }
-      }
-
-      Image {
-        fillMode: Image.TileHorizontally
-        source: '../shared/resources/effects/tabBarShadow.png'
-
-        width: parent.width
-        height: 32
-      }
-
-      Rectangle {
-        color: '#141414'
-
-        width: parent.width
-        height: 1
-      }
+      // When current scrobble is collapsed, remove margin so spacing isn't duplicated
+      topMargin: currentScrobble.visible ? 15 : 0
     }
   }
 }
