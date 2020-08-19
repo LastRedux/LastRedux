@@ -15,18 +15,22 @@ class DatabaseHelper:
     '''Fetch the user's Last.fm session key and username from the settings table'''
     
     # Execute SQL to find the row that matches our criteria
-    query = QtSql.QSqlQuery('SELECT value FROM settings WHERE key in ("username", "session_key")')
+    username_query = QtSql.QSqlQuery('SELECT stored_value FROM settings WHERE setting="username"')
+
+    # Move to next row and 
+    username_query.next()
 
     # Get column id for value in settings
-    idValue = query.record().indexOf('value')
+    username = username_query.value(username_query.record().indexOf('stored_value'))
+    
+    # Execute SQL to find the row that matches our criteria
+    session_key_query = QtSql.QSqlQuery('SELECT stored_value FROM settings WHERE setting="session_key"')
 
-    # Iterate through the list of results to get the first item, session_key
-    query.next()
+    # Move to next row and 
+    session_key_query.next()
 
-    username = query.value(idValue)
-
-    # Iterate through the list of results to get the second item, username
-    query.next()
-    session_key = query.value(idValue)
+    session_key = session_key_query.value(session_key_query.record().indexOf('stored_value'))
     
     return username, session_key
+
+db = DatabaseHelper('db.sqlite')

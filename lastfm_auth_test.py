@@ -2,12 +2,8 @@ import os
 
 from PySide2 import QtCore, QtSql
 
-from models import Scrobble
-from LastFmApiWrapper import LastFmApiWrapper
-
-# Constants
-API_KEY = os.environ['LASTREDUX_LASTFM_API_KEY']
-CLIENT_SECRET = os.environ['LASTREDUX_LASTFM_CLIENT_SECRET']
+# from models import Scrobble
+from util.LastFmApiWrapper import lastfm
 
 # Db setup
 db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
@@ -18,53 +14,30 @@ if db.open():
 else:
   print('sqlite connection failed')
 
-# Last.fm setup
-lastfm = LastFmApiWrapper(API_KEY, CLIENT_SECRET)
+# Last.fm auth
+auth_token = lastfm.get_auth_token()
 
-# Execute SQL to find the row that matches our criteria
-query = QtSql.QSqlQuery('SELECT value FROM settings WHERE key in ("session_key", "username")')
+lastfm.open_authorization_url(auth_token)
 
-# Get column id for value in settings
-idValue = query.record().indexOf("value")
+# Wait for input
+input('Hit enter after authorizing access to Last.fm in your web browser ')
 
-# Get the value of the column of the row that we found
-query.next()
-session_key = query.value(idValue)
+# Get session key from lastfm
+username, session_key = lastfm.get_new_session(auth_token)
 
-# Get next value from query
-query.next()
-username = query.value(idValue)
+username_query = QtSql.QSqlQuery()
+session_key_query = QtSql.QSqlQuery()
 
-if session_key:
-  print(f'Welcome back {username}')
-else:
-  # Last.fm auth
-  auth_token = lastfm.get_auth_token()
+# Set up the queries but don't run them
+username_query.prepare('UPDATE settings SET stored_value = :username WHERE (setting = "username")')
+session_key_query.prepare('UPDATE settings SET stored_value = :session_key WHERE (setting = "session_key")')
 
-  lastfm.open_authorization_url(auth_token)
+# Automatically escapes the string
+username_query.bindValue(':username', username)
+session_key_query.bindValue(':session_key', session_key)
 
-  # Wait for input
-  input('Hit enter after authorizing access to Last.fm in your web browser ')
+# Run the queries
+username_query.exec_()
+session_key_query.exec_()
 
-  # Get session key from lastfm
-  session = lastfm.get_new_session(auth_token)
-  
-  session_key = session['session_key']
-  username = session['username']
-
-  session_key_query = QtSql.QSqlQuery()
-  username_query = QtSql.QSqlQuery()
-
-  # Set up the queries but don't run it
-  session_key_query.prepare('UPDATE settings SET value = :session_key WHERE (key = "session_key")')
-  username_query.prepare('UPDATE settings SET value = :username WHERE (key = "username")')
-  
-  # Automatically escapes the string
-  session_key_query.bindValue(':session_key', session_key)
-  username_query.bindValue(':username', username)
-
-  # Run the queries
-  session_key_query.exec_()
-  username_query.exec_()
-
-  print(f'Welcome {username} ({session_key})')
+print(f'Welcome {username} ({session_key})')
