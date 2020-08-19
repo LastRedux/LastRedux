@@ -244,12 +244,8 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
     if scrobble.track['is_additional_data_downloaded']:
-      scrobble.track['raw-plays'] += 1
-      scrobble.track['artist']['raw-plays'] += 1
-
-      # Update formatted playcounts to match
-      scrobble.track['plays'] = '{:,}'.format(scrobble.track['raw-plays'])
-      scrobble.track['artist']['plays'] = '{:,}'.format(scrobble.track['artist']['raw-plays'])
+      scrobble.track['plays'] += 1
+      scrobble.track['artist']['plays'] += 1
 
       # Refresh scrobble details pane if the submitted scrobble is selected
       if self.selected_scrobble == scrobble:
@@ -368,15 +364,13 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       'name': scrobble.track['name'],
       'lastfm_url': track_info['url'],
       'is_loved': bool(track_info['userloved']), # Convert 1/0 to True/False
-      'plays': '{:,}'.format(int(track_info['userplaycount'])),
-      'raw-plays': int(track_info['userplaycount']),
+      'plays': int(track_info['userplaycount']),
       'tags': track_info['toptags']['tag'],
 
       'album': {
         'name': album_info['name'], #scrobble.track['album']['name']
         'lastfm_url': album_info['url'],
-        'plays': '{:,}'.format(int(album_info['userplaycount'])),
-        'raw-plays': int(album_info['userplaycount']),
+        'plays': int(album_info['userplaycount']),
         'image_url': album_info['image'][4]['#text'], # Pick mega size in images array
         'image_url_small': album_info['image'][1]['#text'] # Pick medium size in images array
       },
@@ -384,10 +378,9 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       'artist': {
         'name': artist_info['name'],
         'lastfm_url': artist_info['url'],
-        'global_listeners': '{:,}'.format(int(artist_info['stats']['listeners'])),
-        'global_plays': '{:,}'.format(int(artist_info['stats']['playcount'])),
-        'plays': '{:,}'.format(int(artist_info['stats']['userplaycount'])),
-        'raw-plays': int(artist_info['stats']['userplaycount']),
+        'global_listeners': int(artist_info['stats']['listeners']),
+        'global_plays': int(artist_info['stats']['playcount']),
+        'plays': int(artist_info['stats']['userplaycount']),
         'bio': artist_info['bio']['content'].split(' <')[0].strip(), # Remove read more on Last.fm link because a QML Link component is used instead
         'tags': artist_info['tags']['tag'],
         'image_url': ''
