@@ -9,7 +9,11 @@ PictureBackground {
 
   property string title
   property string lastfmUrl
-  property var lastfmPlays // var to support undefined
+  
+  // var to support undefined
+  property var lastfmGlobalListeners 
+  property var lastfmGlobalPlays 
+  property var lastfmPlays
 
   property string artistName
   property string artistLastfmUrl
@@ -112,22 +116,12 @@ PictureBackground {
   }
 
   // --- Plays ---
-
-  Label {
-    style: kTitleTertiary
+  
+  Flow {
+    id: statistics
+    
+    spacing: 20
     visible: !!lastfmPlays
-
-    text: {
-      if (lastfmPlays) {
-        if (lastfmPlays === 1) { // track plays is string, not int
-          return '1 play'
-        } else {
-          return `${Helpers.numberWithCommas(lastfmPlays)} plays`
-        }
-      }
-
-      return ''
-    }
 
     anchors {
       top: albumNameView.bottom
@@ -136,38 +130,21 @@ PictureBackground {
 
       topMargin: 10
     }
-
-    PointHandler {
-      id: pointHandler
-
-      acceptedButtons: Qt.RightButton
-      
-      onActiveChanged: {
-        if (active) {
-          playsContextMenu.open()
-        }
-      }
+    
+    Statistic {
+      title: 'Listeners'
+      value: lastfmGlobalListeners
     }
 
-    // Invisible text input to interface with system clipboard
-    TextInput {
-      id: playsTextInput
-
-      visible: false
+    Statistic {
+      title: 'Plays'
+      value: lastfmGlobalPlays
     }
 
-    Menu {
-      id: playsContextMenu
-
-      MenuItem {
-        text: 'Copy'
-
-        onTriggered: {
-          playsTextInput.text = trackPlays
-          playsTextInput.selectAll()
-          playsTextInput.copy()
-        }
-      }
+    Statistic {
+      title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
+      value: lastfmPlays
+      shouldAbbreviate: false
     }
   }
 }

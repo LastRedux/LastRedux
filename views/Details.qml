@@ -62,6 +62,8 @@ Item {
         TrackDetails {
           title: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
           lastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.lastfm_url
+          lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_listeners : undefined
+          lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_plays : undefined
           lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
 
           artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name

@@ -4,6 +4,7 @@ import Qt.labs.platform 1.0
 import '../../util/helpers.js' as Helpers
 
 Item {
+  property bool shouldAbbreviate: true
   property string title
   property var value
   
@@ -17,7 +18,17 @@ Item {
 
     Label {
       style: kNumber
-      text: value ? Helpers.numberWithCommas(value) : '' // Add commas
+      text: {
+        if (value === undefined) {
+          return ''
+        }
+
+        if (shouldAbbreviate) {
+          return Helpers.abbreviateNumber(value)
+        }
+
+        return Helpers.numberWithCommas(value)
+      }
     }
 
     Label {

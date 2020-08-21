@@ -28,6 +28,8 @@ class Scrobble:
 
     lastfm_track = Scrobble.lastfm.get_track_info(self)['track']
     self.track.lastfm_url = lastfm_track['url']
+    self.track.lastfm_global_listeners = int(lastfm_track['listeners'])
+    self.track.lastfm_global_plays = int(lastfm_track['playcount'])
     self.track.lastfm_plays = int(lastfm_track['userplaycount'])
     self.track.lastfm_is_loved = bool(lastfm_track['userloved']) # Convert 0/1 to bool
     # self.track.lastfm_tags = lastfm_track['toptags']['tag']

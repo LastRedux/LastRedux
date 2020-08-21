@@ -65,6 +65,7 @@ Item {
       Statistic {
         title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
         value: lastfmPlays
+        shouldAbbreviate: false
       }
     }
 
