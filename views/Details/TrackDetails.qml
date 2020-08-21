@@ -119,7 +119,7 @@ PictureBackground {
 
     text: {
       if (lastfmPlays) {
-        if (lastfmPlays === '1') { // track plays is string, not int
+        if (lastfmPlays === 1) { // track plays is string, not int
           return '1 play'
         } else {
           return `${Helpers.numberWithCommas(lastfmPlays)} plays`
