@@ -19,20 +19,20 @@ Window {
   width: 900
   height: 589
 
-  // --- Scrobble Details ---
+  // --- Details ---
   
   // View model
-  ScrobbleDetailsViewModel {
-    id: scrobbleDetailsViewModel
+  DetailsViewModel {
+    id: detailsViewModel
 
-    scrobbleHistoryReference: scrobbleHistoryViewModel
+    historyReference: historyViewModel
   }
 
   // View
-  ScrobbleDetails {
-    id: scrobbleDetails
+  Details {
+    id: details
 
-    viewModel: scrobbleDetailsViewModel
+    viewModel: detailsViewModel
 
     anchors {
       top: parent.top
@@ -42,21 +42,21 @@ Window {
     }
   }
 
-  // --- Scrobble History ---
+  // --- History ---
   
   // View model
-  ScrobbleHistoryViewModel {
-    id: scrobbleHistoryViewModel
+  HistoryViewModel {
+    id: historyViewModel
   }
 
   // View (will be loaded into sidebar)
   Component {
-    id: scrobbleHistoryPage
+    id: historyPage
 
-    ScrobbleHistory {
-      id: scrobbleHistory
+    History {
+      id: history
 
-      viewModel: scrobbleHistoryViewModel
+      viewModel: historyViewModel
     }
   }
 
@@ -74,7 +74,7 @@ Window {
     StackView {
       id: stackView
 
-      initialItem: scrobbleHistoryPage
+      initialItem: historyPage
 
       anchors {
         top: tabBar.bottom

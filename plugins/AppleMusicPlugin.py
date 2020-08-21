@@ -7,7 +7,7 @@ class AppleMusicPlugin():
   PLAYING_STATE = 1800426320
   
   def __init__(self):
-    self.apple_music = SBApplication.applicationWithBundleIdentifier_("com.apple.Music")
+    self.apple_music = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
 
   def has_track_loaded(self):
     '''Return whether there is a track loaded in the controls of the Music window'''

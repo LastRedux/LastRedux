@@ -3,14 +3,14 @@ import QtQuick.Controls 2.14
 
 import Kale 1.0
 
-import 'ScrobbleHistory'
+import 'History'
 import '../shared/components'
 
 Item {
   id: root
 
   // Store reference to view model counterpart that can be set from main.qml
-  property ScrobbleHistoryViewModel viewModel
+  property HistoryViewModel viewModel
 
   property bool canDisplayCurrentScrobble: {
     // Don't do just viewModel && viewModel.scrobbleData because we need to return a bool value instead of an undefined viewModel.scrobbleData
@@ -87,15 +87,15 @@ Item {
     }
   }
 
-  // --- Scrobble History List ---
+  // --- History List ---
 
-  ScrobbleHistoryListModel {
+  HistoryListModel {
     id: listModel
 
-    scrobbleHistoryReference: viewModel
+    historyReference: viewModel
   }
 
-  ScrobbleHistoryList {
+  HistoryList {
     model: listModel
     selectedScrobbleIndex: viewModel && viewModel.selectedScrobbleIndex
 

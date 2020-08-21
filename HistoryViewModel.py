@@ -6,17 +6,17 @@ from PySide2 import QtCore, QtSql
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
-from util.LastFmApiWrapper import LastFmApiWrapper
-from util.iTunesApiHelper import get_itunes_store_images_by_track
-from util.DatabaseHelper import DatabaseHelper
-from models import Scrobble
+import util.iTunesApiHelper as itunes_store
+import util.LastFmApiWrapper as lastfm
+import util.db_helper as db_helper
+from models.Scrobble import Scrobble
 
 class MediaPlayerThreadWorker(QtCore.QObject):  
   finished_getting_media_player_data = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
-    self.scrobble_history_reference = None
+    self.history_reference = None
     self.response = None
 
   @QtCore.Slot()
@@ -31,12 +31,12 @@ class MediaPlayerThreadWorker(QtCore.QObject):
       'has_thread_succeded': False,
     }
 
-    if self.scrobble_history_reference:
-      self.response['has_track_loaded'] = self.scrobble_history_reference.media_player.has_track_loaded()
+    if self.history_reference:
+      self.response['has_track_loaded'] = self.history_reference.media_player.has_track_loaded()
 
       if self.response['has_track_loaded']:
-        self.response['current_track'] = self.scrobble_history_reference.media_player.get_current_track()
-        self.response['player_position'] = self.scrobble_history_reference.media_player.get_player_position()
+        self.response['current_track'] = self.history_reference.media_player.get_current_track()
+        self.response['player_position'] = self.history_reference.media_player.get_player_position()
 
     # Let caller know that entire function has ran and thread hasn't been stopped midway by Qt
     self.response['has_thread_succeded'] = True
@@ -44,7 +44,7 @@ class MediaPlayerThreadWorker(QtCore.QObject):
     # Emit signal to call processing function in view model
     self.finished_getting_media_player_data.emit()
 
-class ScrobbleHistoryViewModel(QtCore.QObject):
+class HistoryViewModel(QtCore.QObject):
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
   post_append_scrobble = QtCore.Signal()
@@ -71,7 +71,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
 
     # Initialize a thread worker and move it to the background thread
     self.thread_worker = MediaPlayerThreadWorker()
-    self.thread_worker.scrobble_history_reference = self
+    self.thread_worker.history_reference = self
     self.thread_worker.moveToThread(self.media_player_thread)
     
     # Create passthrough signal to call get_new_media_player_data function
@@ -82,15 +82,15 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     
     # Initialize media player plugin
     self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
-
-    # Initialize Last.fm API wrapper
-    self.lastfm = LastFmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
     
-    # Create database helper to connect to SQLite
-    self.db = DatabaseHelper('db.sqlite')
+    # Connect to SQLite
+    db_helper.connect()
+
+    # Get instance of lastfm api wrapper
+    self.lastfm = lastfm.get_static_instance()
 
     # Set Last.fm wrapper session key and username from database
-    username, session_key = self.db.get_lastfm_session_details()
+    username, session_key = db_helper.get_lastfm_session_details()
     self.lastfm.set_login_info(username, session_key)
     
     # Store Scrobble objects that have been submitted
@@ -133,11 +133,11 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
     
     if self.__current_scrobble:
       return {
-        'isAdditionalDataDownloaded': self.__current_scrobble.track['is_additional_data_downloaded'],
-        'name': self.__current_scrobble.track['name'],
-        'artist': self.__current_scrobble.track['artist']['name'],
-        'loved': False, # TODO: Request loved bool from Last.fm
-        'albumImageUrl': self.__current_scrobble.track['album']['image_url_small'] # The scrobble history album arts are small so we don't want to render the full size art
+        'isAdditionalDataDownloaded': self.__current_scrobble.track.has_lastfm_data,
+        'name': self.__current_scrobble.track.title,
+        'artist': self.__current_scrobble.track.artist.name,
+        'loved': self.__current_scrobble.track.lastfm_is_loved,
+        'albumImageUrl': self.__current_scrobble.track.album.image_url_small # The scrobble history album arts are small so we don't want to render the full size art
       }
     
     # Return None if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
@@ -240,12 +240,12 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
       self.selected_scrobble_index_changed.emit()
 
     # Submit scrobble to Last.fm
-    ####### Thread(target=self.lastfm.submit_scrobble, args=(self.__current_scrobble,), daemon=True).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+    ####### Thread(target=lastfm.submit_scrobble, args=(self.__current_scrobble,), daemon=True).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
-    if scrobble.track['is_additional_data_downloaded']:
-      scrobble.track['plays'] += 1
-      scrobble.track['artist']['plays'] += 1
+    if scrobble.track.has_lastfm_data:
+      scrobble.track.lastfm_plays += 1
+      scrobble.track.artist.lastfm_plays += 1
 
       # Refresh scrobble details pane if the submitted scrobble is selected
       if self.selected_scrobble == scrobble:
@@ -344,67 +344,22 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
   def set_additional_scrobble_data(self, scrobble):
     '''Fetch and attach information from Last.fm to the __current_scrobble Scrobble object'''
 
-    # Synchronously get data for scrobble from lastfm (in the separate thread this function runs in)
-    track_response = self.lastfm.get_track_info(scrobble)
-
-    # Don't try and load data for a track that doesn't exist on Last.fm yet
-    # TODO: Handle rate limit condition
-    if 'error' in track_response:
-      return
-
-    track_info = track_response['track'] # Response won't have a track key if it's an error
-
-    # Get album and artist info once we know the track is in Last.fm's database
-    album_info = self.lastfm.get_album_info(scrobble)['album']
-    artist_info = self.lastfm.get_artist_info(scrobble)['artist']
-
-    # Replace scrobble track property with new data
-    scrobble.track = {
-      'is_additional_data_downloaded': True,
-      'name': scrobble.track['name'],
-      'lastfm_url': track_info['url'],
-      'is_loved': bool(track_info['userloved']), # Convert 1/0 to True/False
-      'plays': int(track_info['userplaycount']),
-      'tags': track_info['toptags']['tag'],
-
-      'album': {
-        'name': album_info['name'], #scrobble.track['album']['name']
-        'lastfm_url': album_info['url'],
-        'plays': int(album_info['userplaycount']),
-        'image_url': album_info['image'][4]['#text'], # Pick mega size in images array
-        'image_url_small': album_info['image'][1]['#text'] # Pick medium size in images array
-      },
-
-      'artist': {
-        'name': artist_info['name'],
-        'lastfm_url': artist_info['url'],
-        'global_listeners': int(artist_info['stats']['listeners']),
-        'global_plays': int(artist_info['stats']['playcount']),
-        'plays': int(artist_info['stats']['userplaycount']),
-        'bio': artist_info['bio']['content'].split(' <')[0].strip(), # Remove read more on Last.fm link because a QML Link component is used instead
-        'tags': artist_info['tags']['tag'],
-        'image_url': ''
-      }
-    }
+    # Tell the scrobble object to request and load lastfm data
+    self.__current_scrobble.load_lastfm_data()
 
     # Refresh details view with Last.fm details
     self.emit_scrobble_ui_update_signals(scrobble)
-
-    # Get track info from cached media player data
-    track_name = self.__playback_data['track_name']
-    artist_name = self.__playback_data['track_artist']
-    album_name = self.__playback_data['track_album']
     
     # Get artist image and album art from iTunes
-    artist_image, album_art, album_art_small = get_itunes_store_images_by_track(track_name, artist_name, album_name)
+    artist_image, image_url, image_url_small = itunes_store.get_images(self.__playback_data['track_name'], self.__playback_data['track_artist'], self.__playback_data['track_album'])
 
     # Set scrobble artist image
-    scrobble.track['artist']['image_url'] = artist_image
+    scrobble.track.artist.image_url = artist_image
 
     # Use iTunes album art if Last.fm didn't provide it
-    if not scrobble.track['album']['image_url']:
-      scrobble.track['album']['image_url'] = album_art
-      scrobble.track['album']['image_url_small'] = album_art_small
+    if not scrobble.track.album.image_url:
+      scrobble.track.album.image_url = image_url
+      scrobble.track.album.image_url_small = image_url_small
 
     # Refresh details view with iTunes details
     # TODO: Only update artist/album image URL instead of entire scrobble data

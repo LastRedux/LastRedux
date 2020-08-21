@@ -5,9 +5,9 @@ import sys
 from PySide2 import QtCore, QtGui, QtQml
 
 from PlatformIntegrations import PlatformIntegrations
-from ScrobbleHistoryViewModel import ScrobbleHistoryViewModel
-from ScrobbleDetailsViewModel import ScrobbleDetailsViewModel
-from ScrobbleHistoryListModel import ScrobbleHistoryListModel
+from HistoryViewModel import HistoryViewModel
+from DetailsViewModel import DetailsViewModel
+from HistoryListModel import HistoryListModel
 
 # Get the built application path
 if getattr(sys, 'frozen', False):
@@ -27,9 +27,9 @@ MINOR_VERSION = 0
 if __name__ == '__main__':
   # Create QML components from Python classes
   # major_version and minor_version represent major and minor version numbers for when we import it in QML
-  QtQml.qmlRegisterType(ScrobbleHistoryViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ScrobbleHistoryViewModel')
-  QtQml.qmlRegisterType(ScrobbleDetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ScrobbleDetailsViewModel')
-  QtQml.qmlRegisterType(ScrobbleHistoryListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ScrobbleHistoryListModel')
+  QtQml.qmlRegisterType(HistoryViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryViewModel')
+  QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
+  QtQml.qmlRegisterType(HistoryListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryListModel')
 
   # Enable retina support
   QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
   engine = QtQml.QQmlApplicationEngine(parent=app)
 
   # Get the main QML file path and load it  
-  file = os.path.join(application_path, "main.qml")
+  file = os.path.join(application_path, 'main.qml')
   engine.load(QtCore.QUrl.fromLocalFile(file))
 
   # Apply macOS-specific code which changes the main window to a seamless appearance

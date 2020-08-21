@@ -1,6 +1,6 @@
 import QtQuick 2.14
 
-import "../../shared/components"
+import '../../shared/components'
 
 Item {
   id: root
@@ -38,7 +38,7 @@ Item {
         // Slide in from offscreen
         NumberAnimation {
           duration: transitionDuration
-          property: "x"
+          property: 'x'
           from: list.width * -1 // Set starting position
           easing.type: transitionEasing
         }
@@ -46,7 +46,7 @@ Item {
         // Fade in
         NumberAnimation {
           duration: transitionDuration
-          property: "opacity"
+          property: 'opacity'
           to: 1
           easing.type: transitionEasing
         }
@@ -58,7 +58,7 @@ Item {
       // Animate y to new position
       NumberAnimation {
         duration: transitionDuration
-        property: "y"
+        property: 'y'
         easing.type: transitionEasing
       }
     }
