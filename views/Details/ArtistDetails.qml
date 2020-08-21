@@ -15,6 +15,7 @@ Item {
   property var lastfmGlobalListeners
   property var lastfmGlobalPlays
   property var lastfmPlays
+  property var lastfmTags
 
   height: column.y + column.height + 30
 
@@ -34,6 +35,7 @@ Item {
     }
 
     // --- Name ---
+
     Link {
       style: kTitlePrimary
       text: name
@@ -44,11 +46,12 @@ Item {
     }
 
     // --- Statistics ---
+    
     Flow {
       id: statistics
       
       spacing: 20
-      visible: !!lastfmGlobalListeners
+      visible: lastfmPlays !== undefined
 
       width: parent.width
       
@@ -69,7 +72,25 @@ Item {
       }
     }
 
+    // --- Tags ---
+
+    Flow {
+      spacing: 8
+      
+      width: parent.width
+      
+      Repeater {
+        model: lastfmTags
+
+        delegate: Tag {
+          name: modelData.name
+          address: modelData.url
+        }
+      }
+    }
+
     // --- Bio ---
+
     Column {
       spacing: 5
 

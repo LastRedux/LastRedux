@@ -4,7 +4,7 @@ import Qt.labs.platform 1.0
 Rectangle {
   id: root
   
-  property alias title: titleLabel.text
+  property alias name: titleLabel.text
   property var address
 
   color: hoverHandler.hovered ? Qt.rgba(1, 1, 1, 0.375) : Qt.rgba(255, 255, 255, 0.25)

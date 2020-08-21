@@ -147,18 +147,6 @@ class LastfmApiWrapper:
       'username': self.__username,
     })
 
-  def get_similar_artists(self, scrobble):
-    '''Get similar artists for a given artist from Last.fm'''
-
-    if not self.__is_logged_in():
-      return
-
-    return self.__lastfm_request({
-      'method': 'artist.getSimilar',
-      'artist': scrobble.artist.name,
-      'limit': 9
-    })
-
   def submit_scrobble(self, scrobble):
     '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
 

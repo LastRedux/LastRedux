@@ -3,6 +3,8 @@ from datetime import datetime
 from datatypes.Track import Track
 from datatypes.Artist import Artist
 from datatypes.Album import Album
+from datatypes.Tag import Tag
+from datatypes.SimilarArtist import SimilarArtist
 import util.LastfmApiWrapper as lastfm
 
 class Scrobble:
@@ -32,7 +34,7 @@ class Scrobble:
     self.track.lastfm_global_plays = int(lastfm_track['playcount'])
     self.track.lastfm_plays = int(lastfm_track['userplaycount'])
     self.track.lastfm_is_loved = bool(lastfm_track['userloved']) # Convert 0/1 to bool
-    # self.track.lastfm_tags = lastfm_track['toptags']['tag']
+    self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
 
     lastfm_artist = Scrobble.lastfm.get_artist_info(self)['artist']
     self.track.artist.name = lastfm_artist['name']
@@ -41,7 +43,8 @@ class Scrobble:
     self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
     self.track.artist.lastfm_plays = int(lastfm_artist['stats']['userplaycount'])
     self.track.artist.bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
-    # self.track.artist.lastfm_tags = lastfm_artist['tags']['tag']
+    self.track.artist.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
+    self.track.artist.similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
     self.track.album.title = lastfm_album['name']

@@ -18,6 +18,7 @@ Item {
 
     Label {
       style: kNumber
+      
       text: {
         if (value === undefined) {
           return ''

@@ -65,6 +65,7 @@ Item {
           lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_listeners : undefined
           lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_plays : undefined
           lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
+          lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_tags : []
 
           artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
           artistLastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
@@ -91,6 +92,7 @@ Item {
           lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_listeners : undefined
           lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_plays : undefined
           lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
+          lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
 
           imageUrl: {
             if (canDisplayEntireScrobble) {

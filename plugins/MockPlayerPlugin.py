@@ -1,5 +1,17 @@
 class MockPlayerPlugin():
   MOCK_TRACKS = [{
+    'title': 'ON',
+    'artist_name': 'BTS',
+    'album_name': 'MAP OF THE SOUL : 7',
+    'start': 0,
+    'finish': 221
+  }, {
+    'title': 'Flames',
+    'artist_name': 'R3HAB, ZAYN & Jungleboi',
+    'album_name': 'Flames (The EP)',
+    'start': 0,
+    'finish': 221
+  }, {
     'title': 'Flames',
     'artist_name': 'R3HAB, ZAYN & Jungleboi',
     'album_name': 'Flames (The EP)',

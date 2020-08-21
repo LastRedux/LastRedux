@@ -14,6 +14,7 @@ PictureBackground {
   property var lastfmGlobalListeners 
   property var lastfmGlobalPlays 
   property var lastfmPlays
+  property var lastfmTags
 
   property string artistName
   property string artistLastfmUrl
@@ -24,7 +25,7 @@ PictureBackground {
 
   source: albumImageUrl
 
-  height: albumImageView.height + 30 * 2
+  height: Math.max(albumImageView.y + albumImageView.height, tags.y + tags.height) + 30
 
   // --- Album Image ---
 
@@ -121,7 +122,7 @@ PictureBackground {
     id: statistics
     
     spacing: 20
-    visible: !!lastfmPlays
+    visible: lastfmPlays !== undefined
 
     anchors {
       top: albumNameView.bottom
@@ -145,6 +146,31 @@ PictureBackground {
       title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
       value: lastfmPlays
       shouldAbbreviate: false
+    }
+  }
+
+  // --- Tags ---
+  
+  Flow {
+    id: tags
+
+    spacing: 8
+    
+    anchors {
+      top: statistics.bottom
+      right: trackNameView.right
+      left: trackNameView.left
+
+      topMargin: 15
+    }
+    
+    Repeater {
+      model: lastfmTags
+
+      delegate: Tag {
+        name: modelData.name
+        address: modelData.url
+      }
     }
   }
 }
