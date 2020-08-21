@@ -30,7 +30,10 @@ Label {
 
       onTapped: {
         root.onClicked()
-        Qt.openUrlExternally(root.address)
+
+        if (root.address) {
+          Qt.openUrlExternally(root.address)
+        }
       }
     }
 

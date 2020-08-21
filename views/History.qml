@@ -61,7 +61,7 @@ Item {
   CurrentScrobble {
     id: currentScrobble
 
-    percentage: viewModel && viewModel.currentScrobblePercentage
+    percentage: viewModel ? viewModel.currentScrobblePercentage : 0
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
     name: canDisplayCurrentScrobble && viewModel.currentScrobbleData.name
     artist: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artist
@@ -97,7 +97,7 @@ Item {
 
   HistoryList {
     model: listModel
-    selectedScrobbleIndex: viewModel && viewModel.selectedScrobbleIndex
+    selectedScrobbleIndex: viewModel ? viewModel.selectedScrobbleIndex : -2
 
     // index is an argument passed through when the signal is triggered
     onSelect: viewModel.selectedScrobbleIndex = index
