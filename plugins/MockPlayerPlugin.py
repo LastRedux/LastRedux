@@ -56,7 +56,7 @@ class MockPlayerPlugin():
     return self.current_track
 
   def get_next_track(self):
-    track = self.MOCK_TRACKS[self.next_track_index]
+    track = self.MOCK_TRACKS[self.next_track_index % len(self.MOCK_TRACKS)]
     self.next_track_index += 1
 
     return track
