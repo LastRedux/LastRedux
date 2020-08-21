@@ -65,7 +65,7 @@ class LastfmApiWrapper:
 
     # TODO: Handle rate limit condition
     if 'error' in resp:
-      raise Exception(f'Last.fm error: {resp["message"]}')
+      raise Exception(f'Last.fm error: {resp["message"]} with payload: {payload}')
       return
 
     return resp
