@@ -2,7 +2,7 @@ import os
 
 from PySide2 import QtCore, QtSql
 
-import util.LastFmApiWrapper as lastfm
+import util.LastfmApiWrapper as lastfm
 
 lastfm_instance = lastfm.get_static_instance()
 

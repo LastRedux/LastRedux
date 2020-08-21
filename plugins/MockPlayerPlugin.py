@@ -1,44 +1,44 @@
 class MockPlayerPlugin():
   MOCK_TRACKS = [{
-    'name': 'Flames',
-    'artist': 'R3HAB, ZAYN & Jungleboi',
-    'album': 'Flames (The EP)',
+    'title': 'Flames',
+    'artist_name': 'R3HAB, ZAYN & Jungleboi',
+    'album_name': 'Flames (The EP)',
     'start': 0,
     'finish': 221
   }, {
-    'name': 'On & On (feat. Daniel Levi)',
-    'artist': 'Cartoon',
-    'album': 'On & On (feat. Daniel Levi) - Single',
+    'title': 'On & On (feat. Daniel Levi)',
+    'artist_name': 'Cartoon',
+    'album_name': 'On & On (feat. Daniel Levi) - Single',
     'start': 0,
     'finish': 240
   }, {
-    'name': 'The Way (feat. T.C.)',
-    'artist': 'Hum4n01d',
-    'album': 'The Way (feat. T.C.) - Single',
+    'title': 'The Way (feat. T.C.)',
+    'artist_name': 'Hum4n01d',
+    'album_name': 'The Way (feat. T.C.) - Single',
     'start': 0,
     'finish': 177
   }, {
-    'name': 'Grapevine',
-    'artist': 'Tiësto',
-    'album': 'Grapevine - Single',
+    'title': 'Grapevine',
+    'artist_name': 'Tiësto',
+    'album_name': 'Grapevine - Single',
     'start': 0,
     'finish': 221
   }, {
-    'name': 'Afterlife',
-    'artist': 'NCT',
-    'album': 'Afterlife - Single',
+    'title': 'Afterlife',
+    'artist_name': 'NCT',
+    'album_name': 'Afterlife - Single',
     'start': 0,
     'finish': 221
   }, {
-    'name': 'C**o',
-    'artist': 'Jason Derulo, Puri & Jhorrmountain',
-    'album': 'C**o - Single',
+    'title': 'C**o',
+    'artist_name': 'Jason Derulo, Puri & Jhorrmountain',
+    'album_name': 'C**o - Single',
     'start': 0,
     'finish': 221
   }, {
-    'name': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack]',
-    'artist': 'Diplo, French Montana & Lil Pump',
-    'album': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack] - Single',
+    'title': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack]',
+    'artist_name': 'Diplo, French Montana & Lil Pump',
+    'album_name': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack] - Single',
     'start': 0,
     'finish': 221
   }]

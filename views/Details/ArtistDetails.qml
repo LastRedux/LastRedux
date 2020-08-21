@@ -7,14 +7,14 @@ Item {
 
   property url imageUrl
   property string name
-  property string lastFmUrl
+  property string lastfmUrl
   property string bio
   property bool isReadMoreLinkVisible
 
   // Use var instead of int to support undefined
-  property var globalListeners
-  property var globalPlays
-  property var plays
+  property var lastfmGlobalListeners
+  property var lastfmGlobalPlays
+  property var lastfmPlays
 
   height: column.y + column.height + 30
 
@@ -37,7 +37,7 @@ Item {
     Link {
       style: kTitlePrimary
       text: name
-      address: lastFmUrl
+      address: lastfmUrl
       wrapMode: Text.Wrap
 
       width: parent.width
@@ -48,23 +48,23 @@ Item {
       id: statistics
       
       spacing: 20
-      visible: !!globalListeners
+      visible: !!lastfmGlobalListeners
 
       width: parent.width
       
       Statistic {
         title: 'Listeners'
-        value: globalListeners
+        value: lastfmGlobalListeners
       }
 
       Statistic {
         title: 'Plays'
-        value: globalPlays
+        value: lastfmGlobalPlays
       }
 
       Statistic {
-        title: plays === '1' ? 'Play in Library' : 'Plays in Library'
-        value: plays
+        title: lastfmPlays === '1' ? 'Play in Library' : 'Plays in Library'
+        value: lastfmPlays
       }
     }
 
@@ -83,7 +83,7 @@ Item {
       Link {
         elide: Text.ElideRight
         text: 'Read more on Last.fm'
-        address: lastFmUrl
+        address: lastfmUrl
         visible: isReadMoreLinkVisible // Only show if bio exists
 
         width: parent.width

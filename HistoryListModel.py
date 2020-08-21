@@ -4,14 +4,14 @@ from HistoryViewModel import HistoryViewModel
 
 class HistoryListModel(QtCore.QAbstractListModel):
   # Store role constants that are used as object keys in JS
-  __NAME_ROLE = QtCore.Qt.UserRole # UserRole means custom role
-  __ARTIST_ROLE = QtCore.Qt.UserRole + 1
+  __TRACK_TITLE_ROLE = QtCore.Qt.UserRole # UserRole means custom role
+  __ARTIST_NAME_ROLE = QtCore.Qt.UserRole + 1
   __TIMESTAMP_ROLE = QtCore.Qt.UserRole + 2
   __IS_LOVED_ROLE = QtCore.Qt.UserRole + 3
   __ALBUM_IMAGE_URL_ROLE = QtCore.Qt.UserRole + 4
-  __IS_ADDITIONAL_DATA_DOWNLOADED_ROLE = QtCore.Qt.UserRole + 5
+  __HAS_LASTFM_DATA = QtCore.Qt.UserRole + 5
 
-  def __init__(self, parent=None):
+  def __init__(self, parent=None): # parent=None because it isn't within another list
     QtCore.QAbstractListModel.__init__(self, parent)
 
     # Store reference to application view model
@@ -22,7 +22,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
     index = self.createIndex(row, 0)
 
     # Use list model dataChanged signal to indicate that UI needs to be updated at index
-    self.dataChanged.emit(index, index, [self.__ALBUM_IMAGE_URL_ROLE, self.__IS_ADDITIONAL_DATA_DOWNLOADED_ROLE]) # index twice because start and end range
+    self.dataChanged.emit(index, index, [self.__ALBUM_IMAGE_URL_ROLE, self.__HAS_LASTFM_DATA]) # index twice because start and end range
 
   # --- Qt Property Getters and Setters ---
 
@@ -51,15 +51,15 @@ class HistoryListModel(QtCore.QAbstractListModel):
   def roleNames(self):
     '''Create a mapping of our enum ints to their JS object key names'''
     
-    # Only the name, artist, and timestamp attributes of a scrobble will be displayed in scrobble history item views 
+    # Only the track title, artist name, and timestamp attributes of a scrobble will be displayed in scrobble history item views 
     # Use binary strings because C++ requires it
     return {
-      self.__NAME_ROLE: b'name',
-      self.__ARTIST_ROLE: b'artist',
+      self.__TRACK_TITLE_ROLE: b'trackTitle',
+      self.__ARTIST_NAME_ROLE: b'artistName',
       self.__ALBUM_IMAGE_URL_ROLE: b'albumImageUrl',
       self.__IS_LOVED_ROLE: b'isLoved',
       self.__TIMESTAMP_ROLE: b'timestamp',
-      self.__IS_ADDITIONAL_DATA_DOWNLOADED_ROLE: b'isAdditionalDataDownloaded'
+      self.__HAS_LASTFM_DATA: b'hasLastfmData'
     }
 
   def rowCount(self, parent=QtCore.QModelIndex()):
@@ -79,9 +79,9 @@ class HistoryListModel(QtCore.QAbstractListModel):
       if index.isValid():
         scrobble = self.__history_reference.scrobble_history[index.row()]
 
-        if role == self.__NAME_ROLE:
+        if role == self.__TRACK_TITLE_ROLE:
           return scrobble.track.title
-        elif role == self.__ARTIST_ROLE:
+        elif role == self.__ARTIST_NAME_ROLE:
           return scrobble.track.artist.name
         elif role == self.__ALBUM_IMAGE_URL_ROLE:
           return scrobble.track.album.image_url_small
@@ -89,7 +89,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
           return scrobble.track.lastfm_is_loved
         elif role == self.__TIMESTAMP_ROLE:
           return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
-        elif role == self.__IS_ADDITIONAL_DATA_DOWNLOADED_ROLE:
+        elif role == self.__HAS_LASTFM_DATA:
           return scrobble.track.has_lastfm_data
 
     # Return no data if we don't have a reference to the scrobble history view model

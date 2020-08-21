@@ -60,15 +60,15 @@ Item {
         width: scrollArea.width
 
         TrackDetails {
-          trackName: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
-          trackLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.lastfm_url
-          trackPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
+          title: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
+          lastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.lastfm_url
+          lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
 
           artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          artistLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
+          artistLastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
 
           albumName: canDisplayScrobble && viewModel.scrobbleTrackData.album.title
-          albumLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.album.lastfm_url
+          albumLastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.album.lastfm_url
 
           albumImageUrl: {
             if (canDisplayEntireScrobble) {
@@ -83,12 +83,12 @@ Item {
 
         ArtistDetails {
           name: canDisplayScrobble ? viewModel.scrobbleTrackData.artist.name : ''
-          lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
+          lastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
           bio: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.bio : 'Loading Bio...'
           isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.bio
-          globalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_listeners : undefined
-          globalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_plays : undefined
-          plays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
+          lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_listeners : undefined
+          lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_plays : undefined
+          lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
 
           imageUrl: {
             if (canDisplayEntireScrobble) {

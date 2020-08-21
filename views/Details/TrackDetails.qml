@@ -7,15 +7,15 @@ import '../../util/helpers.js' as Helpers
 PictureBackground {
   id: root
 
-  property string trackName
-  property string trackLastFmUrl
-  property var trackPlays // var to support undefined
+  property string title
+  property string lastfmUrl
+  property var lastfmPlays // var to support undefined
 
   property string artistName
-  property string artistLastFmUrl
+  property string artistLastfmUrl
 
   property string albumName
-  property string albumLastFmUrl
+  property string albumLastfmUrl
   property url albumImageUrl
 
   source: albumImageUrl
@@ -46,8 +46,8 @@ PictureBackground {
     
     elide: Text.ElideRight
     style: kTitlePrimary
-    text: trackName
-    address: trackLastFmUrl
+    text: title
+    address: lastfmUrl
 
     anchors {
       top: albumImageView.top
@@ -67,7 +67,7 @@ PictureBackground {
 
     elide: Text.ElideRight
     text: artistName
-    address: artistLastFmUrl
+    address: artistLastfmUrl
 
     anchors {
       top: trackNameView.bottom
@@ -99,7 +99,7 @@ PictureBackground {
 
     elide: Text.ElideRight
     text: albumName
-    address: albumLastFmUrl
+    address: albumLastfmUrl
 
     // Position to the right of leading text
     anchors {
@@ -115,14 +115,14 @@ PictureBackground {
 
   Label {
     style: kTitleTertiary
-    visible: !!trackPlays
+    visible: !!lastfmPlays
 
     text: {
-      if (trackPlays) {
-        if (trackPlays === '1') { // track plays is string, not int
+      if (lastfmPlays) {
+        if (lastfmPlays === '1') { // track plays is string, not int
           return '1 play'
         } else {
-          return `${Helpers.numberWithCommas(trackPlays)} plays`
+          return `${Helpers.numberWithCommas(lastfmPlays)} plays`
         }
       }
 

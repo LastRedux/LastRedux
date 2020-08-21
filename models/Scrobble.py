@@ -3,7 +3,7 @@ from datetime import datetime
 from datatypes.Track import Track
 from datatypes.Artist import Artist
 from datatypes.Album import Album
-import util.LastFmApiWrapper as lastfm
+import util.LastfmApiWrapper as lastfm
 
 class Scrobble:
   lastfm = None

@@ -2,8 +2,8 @@ import QtQuick 2.14
 
 Item {
   property alias isSelected: background.visible
-  property string name: '???'
-  property string artist: '???'
+  property string trackTitle: '???'
+  property string artistName: '???'
   property string timestamp
   property alias imageSource: coverArt.source
 
@@ -52,7 +52,7 @@ Item {
       elide: Text.ElideRight
       maximumLineCount: 2
       style: kTitleSecondary
-      text: name
+      text: trackTitle
       wrapMode: Text.Wrap
 
       width: parent.width
@@ -62,7 +62,7 @@ Item {
       elide: Text.ElideRight
       maximumLineCount: 2
       style: kBodyPrimary
-      text: artist
+      text: artistName
       wrapMode: Text.Wrap
 
       width: parent.width

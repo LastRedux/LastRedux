@@ -84,10 +84,10 @@ Item {
         return false
       }
 
-      name: model.name
-      artist: model.artist
+      trackTitle: model.trackTitle
+      artistName: model.artistName
       timestamp: model.timestamp
-      imageSource: model.isAdditionalDataDownloaded ? model.albumImageUrl : ''
+      imageSource: model.hasLastfmData ? model.albumImageUrl : ''
 
       onSelect: root.select(model.index)
 

@@ -6,7 +6,7 @@ import webbrowser
 
 import requests
 
-class LastFmApiWrapper:
+class LastfmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
 
   def __init__(self, api_key, client_secret):
@@ -180,6 +180,6 @@ def get_static_instance():
   global __lastfm
   
   if not __lastfm:
-    __lastfm = LastFmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
+    __lastfm = LastfmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
 
   return __lastfm

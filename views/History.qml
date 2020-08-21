@@ -63,12 +63,12 @@ Item {
 
     percentage: viewModel ? viewModel.currentScrobblePercentage : 0
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
-    name: canDisplayCurrentScrobble && viewModel.currentScrobbleData.name
-    artist: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artist
+    trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobbleData.trackTitle
+    artistName: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artistName
     visible: canDisplayCurrentScrobble
 
     imageSource: {
-      if (canDisplayCurrentScrobble && viewModel.currentScrobbleData.isAdditionalDataDownloaded) {
+      if (canDisplayCurrentScrobble && viewModel.currentScrobbleData.hasLastfmData) {
         return viewModel.currentScrobbleData.albumImageUrl
       }
       

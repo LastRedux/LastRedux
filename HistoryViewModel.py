@@ -6,16 +6,17 @@ from PySide2 import QtCore, QtSql
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
-import util.iTunesApiHelper as itunes_store
-import util.LastFmApiWrapper as lastfm
-import util.db_helper as db_helper
 from models.Scrobble import Scrobble
+import util.iTunesApiHelper as itunes_store
+import util.LastfmApiWrapper as lastfm
+import util.db_helper as db_helper
 
 class MediaPlayerThreadWorker(QtCore.QObject):  
   finished_getting_media_player_data = QtCore.Signal()
 
-  def __init__(self):
+  def track_title(self):
     QtCore.QObject.__init__(self)
+
     self.history_reference = None
     self.response = None
 
@@ -87,11 +88,11 @@ class HistoryViewModel(QtCore.QObject):
     db_helper.connect()
 
     # Get instance of lastfm api wrapper
-    self.lastfm = lastfm.get_static_instance()
+    self.lastfm_instance = lastfm.get_static_instance()
 
     # Set Last.fm wrapper session key and username from database
     username, session_key = db_helper.get_lastfm_session_details()
-    self.lastfm.set_login_info(username, session_key)
+    self.lastfm_instance.set_login_info(username, session_key)
     
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
@@ -110,13 +111,13 @@ class HistoryViewModel(QtCore.QObject):
     self.selected_scrobble = None
 
     # Cached data from the media player for the currently playing track
-    self.__playback_data = {
+    self.__cached_media_player_data = {
       'furthest_player_position_reached': None,
+      'track_title': None,
       'track_start': None,
       'track_finish': None,
-      'track_name': None,
-      'track_artist': None,
-      'track_album': None
+      'artist_name': None,
+      'album_name': None
     }
 
     # Start polling interval to check for new media player data
@@ -133,9 +134,9 @@ class HistoryViewModel(QtCore.QObject):
     
     if self.__current_scrobble:
       return {
-        'isAdditionalDataDownloaded': self.__current_scrobble.track.has_lastfm_data,
-        'name': self.__current_scrobble.track.title,
-        'artist': self.__current_scrobble.track.artist.name,
+        'hasLastfmData': self.__current_scrobble.track.has_lastfm_data,
+        'trackTitle': self.__current_scrobble.track.title,
+        'artistName': self.__current_scrobble.track.artist.name,
         'loved': self.__current_scrobble.track.lastfm_is_loved,
         'albumImageUrl': self.__current_scrobble.track.album.image_url_small # The scrobble history album arts are small so we don't want to render the full size art
       }
@@ -151,8 +152,8 @@ class HistoryViewModel(QtCore.QObject):
 
     # Compensate for custom track start and end times
     # TODO: Only do this if the media player is Apple Music/iTunes
-    relative_position = self.__playback_data['furthest_player_position_reached'] - self.__playback_data['track_start']
-    relative_track_length = self.__playback_data['track_finish'] - self.__playback_data['track_start']
+    relative_position = self.__cached_media_player_data['furthest_player_position_reached'] - self.__cached_media_player_data['track_start']
+    relative_track_length = self.__cached_media_player_data['track_finish'] - self.__cached_media_player_data['track_start']
     min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database
     
     # Prevent scenarios where the relative position is negative
@@ -212,7 +213,7 @@ class HistoryViewModel(QtCore.QObject):
 
   @QtCore.Slot()
   def MOCK_moveTo75Percent(self):
-    self.media_player.player_position = self.__playback_data['track_finish'] * 0.75
+    self.media_player.player_position = self.__cached_media_player_data['track_finish'] * 0.75
       
   # --- Private Functions ---
 
@@ -258,17 +259,17 @@ class HistoryViewModel(QtCore.QObject):
     # Only run if thread actually finished and data was recieved
     if response['has_thread_succeded']:
       if response['has_track_loaded'] and response['current_track']:
-        new_track = response['current_track']
+        new_track_data = response['current_track']
 
         current_track_changed = (
           self.__current_scrobble is None
-          or not new_track['name'] == self.__playback_data['track_name']
-          or not new_track['artist'] == self.__playback_data['track_artist']
-          or not new_track['album'] == self.__playback_data['track_album']
+          or not new_track_data['title'] == self.__cached_media_player_data['track_title']
+          or not new_track_data['artist_name'] == self.__cached_media_player_data['artist_name']
+          or not new_track_data['album_name'] == self.__cached_media_player_data['album_name']
         )
 
         if current_track_changed:
-          self.__replace_current_track(new_track)
+          self.__replace_current_track(new_track_data)
         
         # Refresh cached media player data for currently playing track
         player_position = response['player_position']
@@ -276,8 +277,8 @@ class HistoryViewModel(QtCore.QObject):
         # Only update the furthest reached position in the track if it's further than the last recorded furthest position
         # This is because if the user scrubs backward in the track, the scrobble progress bar will stop moving until they reach the previous furthest point reached in the track
         # TODO: Add support for different scrobble submission styles such as counting seconds of playback
-        if player_position >= self.__playback_data['furthest_player_position_reached']:
-          self.__playback_data['furthest_player_position_reached'] = player_position
+        if player_position >= self.__cached_media_player_data['furthest_player_position_reached']:
+          self.__cached_media_player_data['furthest_player_position_reached'] = player_position
         
         # Update scrobble progress bar UI
         self.current_scrobble_percentage_changed.emit()
@@ -297,12 +298,12 @@ class HistoryViewModel(QtCore.QObject):
             self.selected_scrobble_index_changed.emit()
             self.selected_scrobble_changed.emit()
 
-  def __replace_current_track(self, new_track):
-    '''Set the private __current_scrobble variable to a new Scrobble object based on the new currently playing track, update the playback data for track start and finish, and update the UI'''
+  def __replace_current_track(self, new_track_data):
+    '''Set __current_scrobble to a new Scrobble object created from the currently playing track, update the playback data for track start/finish, and update the UI'''
 
     # Initialize a new Scrobble object with the currently playing track data
     # This will set the Scrobble's timestamp to the current date
-    self.__current_scrobble = Scrobble(new_track['name'], new_track['artist'], new_track['album'])
+    self.__current_scrobble = Scrobble(new_track_data['title'], new_track_data['artist_name'], new_track_data['album_name'])
 
     # Reset flag so new scrobble can later be submitted
     self.__is_current_scrobble_submitted = False
@@ -311,7 +312,7 @@ class HistoryViewModel(QtCore.QObject):
     self.current_scrobble_data_changed.emit()
 
     # Reset player position to temporary value until a new value can be recieved from the media player
-    self.__playback_data['furthest_player_position_reached'] = 0
+    self.__cached_media_player_data['furthest_player_position_reached'] = 0
 
     # Refresh selected_scrobble with new __current_scrobble object if the current scrobble is selected, because otherwise the selected scrobble will reflect old data
     if self.__selected_scrobble_index == -1:
@@ -330,13 +331,13 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble_changed.emit()
 
     # Update cached media player track playback data
-    self.__playback_data['track_start'] = new_track['start']
-    self.__playback_data['track_finish'] = new_track['finish']
+    self.__cached_media_player_data['track_start'] = new_track_data['start']
+    self.__cached_media_player_data['track_finish'] = new_track_data['finish']
 
     # Store media player track metadata as sometimes it will differ slightly from Last.fm; otherwise the track will be percieved as different every polling cycle
-    self.__playback_data['track_name'] = new_track['name']
-    self.__playback_data['track_artist'] = new_track['artist']
-    self.__playback_data['track_album'] = new_track['album']
+    self.__cached_media_player_data['track_title'] = new_track_data['title']
+    self.__cached_media_player_data['artist_name'] = new_track_data['artist_name']
+    self.__cached_media_player_data['album_name'] = new_track_data['album_name']
 
     # Get additional info about track from Last.fm
     Thread(target=self.set_additional_scrobble_data, args=(self.__current_scrobble,)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
@@ -351,7 +352,7 @@ class HistoryViewModel(QtCore.QObject):
     self.emit_scrobble_ui_update_signals(scrobble)
     
     # Get artist image and album art from iTunes
-    artist_image, image_url, image_url_small = itunes_store.get_images(self.__playback_data['track_name'], self.__playback_data['track_artist'], self.__playback_data['track_album'])
+    artist_image, image_url, image_url_small = itunes_store.get_images(self.__cached_media_player_data['track_title'], self.__cached_media_player_data['artist_name'], self.__cached_media_player_data['album_name'])
 
     # Set scrobble artist image
     scrobble.track.artist.image_url = artist_image

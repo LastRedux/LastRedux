@@ -18,9 +18,9 @@ class AppleMusicPlugin():
     track = self.apple_music.currentTrack()
     
     return {
-      'name': track.name(),
-      'artist': track.artist(),
-      'album': track.album(),
+      'title': track.name(),
+      'artist_name': track.artist(),
+      'album_name': track.album(),
 
       # Compensate for cropped tracks
       'start': track.start(),
