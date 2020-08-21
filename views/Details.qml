@@ -2,12 +2,12 @@ import QtQuick 2.14
 
 import Kale 1.0
 
-import 'ScrobbleDetails'
+import 'Details'
 import '../shared/components'
 
 Item {
   // Store reference to view model counterpart that can be set from main.qml
-  property ScrobbleDetailsViewModel viewModel
+  property DetailsViewModel viewModel
 
   property bool canDisplayScrobble: {
     // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
@@ -60,7 +60,7 @@ Item {
         width: scrollArea.width
 
         TrackDetails {
-          trackName: canDisplayScrobble && viewModel.scrobbleTrackData.title
+          trackName: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
           trackLastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.lastfm_url
           trackPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
 
@@ -82,11 +82,7 @@ Item {
         }
 
         ArtistDetails {
-          name: {
-            console.log(viewModel.scrobbleTrackData.artist)
-            
-            return canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          }
+          name: canDisplayScrobble ? viewModel.scrobbleTrackData.artist.name : ''
           lastFmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
           bio: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.bio : 'Loading Bio...'
           isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.bio

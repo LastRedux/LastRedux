@@ -9,14 +9,14 @@ from plugins.AppleMusicPlugin import AppleMusicPlugin
 import util.iTunesApiHelper as itunes_store
 import util.LastFmApiWrapper as lastfm
 import util.db_helper as db_helper
-from models import Scrobble
+from models.Scrobble import Scrobble
 
 class MediaPlayerThreadWorker(QtCore.QObject):  
   finished_getting_media_player_data = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
-    self.scrobble_history_reference = None
+    self.history_reference = None
     self.response = None
 
   @QtCore.Slot()
@@ -31,12 +31,12 @@ class MediaPlayerThreadWorker(QtCore.QObject):
       'has_thread_succeded': False,
     }
 
-    if self.scrobble_history_reference:
-      self.response['has_track_loaded'] = self.scrobble_history_reference.media_player.has_track_loaded()
+    if self.history_reference:
+      self.response['has_track_loaded'] = self.history_reference.media_player.has_track_loaded()
 
       if self.response['has_track_loaded']:
-        self.response['current_track'] = self.scrobble_history_reference.media_player.get_current_track()
-        self.response['player_position'] = self.scrobble_history_reference.media_player.get_player_position()
+        self.response['current_track'] = self.history_reference.media_player.get_current_track()
+        self.response['player_position'] = self.history_reference.media_player.get_player_position()
 
     # Let caller know that entire function has ran and thread hasn't been stopped midway by Qt
     self.response['has_thread_succeded'] = True
@@ -44,7 +44,7 @@ class MediaPlayerThreadWorker(QtCore.QObject):
     # Emit signal to call processing function in view model
     self.finished_getting_media_player_data.emit()
 
-class ScrobbleHistoryViewModel(QtCore.QObject):
+class HistoryViewModel(QtCore.QObject):
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
   post_append_scrobble = QtCore.Signal()
@@ -71,7 +71,7 @@ class ScrobbleHistoryViewModel(QtCore.QObject):
 
     # Initialize a thread worker and move it to the background thread
     self.thread_worker = MediaPlayerThreadWorker()
-    self.thread_worker.scrobble_history_reference = self
+    self.thread_worker.history_reference = self
     self.thread_worker.moveToThread(self.media_player_thread)
     
     # Create passthrough signal to call get_new_media_player_data function

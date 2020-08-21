@@ -2,7 +2,6 @@ import os
 
 from PySide2 import QtCore, QtSql
 
-# from models import Scrobble
 from util.LastFmApiWrapper import lastfm
 
 # Db setup

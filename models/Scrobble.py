@@ -37,8 +37,8 @@ class Scrobble:
     self.track.artist.lastfm_url = lastfm_artist['url']
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
     self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
-    self.track.artist.plays = int(lastfm_artist['stats']['userplaycount'])
-    self.track.artist.bio = lastfm_artist['bio']['content'].split(' <')[0].strip(), # Remove read more on Last.fm link because a QML Link component is used instead
+    self.track.artist.lastfm_plays = int(lastfm_artist['stats']['userplaycount'])
+    self.track.artist.bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
     # self.track.artist.lastfm_tags = lastfm_artist['tags']['tag']
     
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
@@ -47,3 +47,5 @@ class Scrobble:
     self.track.album.lastfm_plays = int(lastfm_album['userplaycount'])
     self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
     self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
+
+    self.track.has_lastfm_data = True

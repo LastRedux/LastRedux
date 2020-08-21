@@ -1,6 +1,8 @@
 import QtQuick 2.14
 import Qt.labs.platform 1.0
 
+import '../../util/helpers.js' as Helpers
+
 Item {
   property string title
   property var value
@@ -15,7 +17,7 @@ Item {
 
     Label {
       style: kNumber
-      text: value ? value.toLocaleString() : '' // Add commas
+      text: value ? Helpers.numberWithCommas(value) : '' // Add commas
     }
 
     Label {

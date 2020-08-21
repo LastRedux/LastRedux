@@ -2,6 +2,7 @@ import QtQuick 2.14
 import Qt.labs.platform 1.0
 
 import '../../shared/components'
+import '../../util/helpers.js' as Helpers
 
 PictureBackground {
   id: root
@@ -121,7 +122,7 @@ PictureBackground {
         if (trackPlays === '1') { // track plays is string, not int
           return '1 play'
         } else {
-          return `${trackPlays.toLocaleString()} plays`
+          return `${Helpers.numberWithCommas(trackPlays)} plays`
         }
       }
 
