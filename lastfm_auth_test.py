@@ -2,7 +2,9 @@ import os
 
 from PySide2 import QtCore, QtSql
 
-from util.LastFmApiWrapper import lastfm
+import util.LastFmApiWrapper as lastfm
+
+lastfm_instance = lastfm.get_static_instance()
 
 # Db setup
 db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
@@ -14,15 +16,15 @@ else:
   print('sqlite connection failed')
 
 # Last.fm auth
-auth_token = lastfm.get_auth_token()
+auth_token = lastfm_instance.get_auth_token()
 
-lastfm.open_authorization_url(auth_token)
+lastfm_instance.open_authorization_url(auth_token)
 
 # Wait for input
 input('Hit enter after authorizing access to Last.fm in your web browser ')
 
 # Get session key from lastfm
-username, session_key = lastfm.get_new_session(auth_token)
+username, session_key = lastfm_instance.get_new_session(auth_token)
 
 username_query = QtSql.QSqlQuery()
 session_key_query = QtSql.QSqlQuery()
