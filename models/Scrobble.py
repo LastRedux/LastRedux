@@ -8,7 +8,7 @@ import util.LastfmApiWrapper as lastfm
 class Scrobble:
   lastfm = None
 
-  def __init__(self, track_title, artist_name, album_name, timestamp=datetime.now()):
+  def __init__(self, track_title, artist_name, album_name, timestamp=None):
     '''Entry in scrobble history with track information and a timestamp'''
 
     # Create Track instance with associated Artist and Album instances
@@ -17,7 +17,7 @@ class Scrobble:
     self.track = Track(track_title, artist, album)
     
     # Automatically generated
-    self.timestamp = timestamp
+    self.timestamp = datetime.now()
 
     # All scrobbles should store a reference to the same lastfm api wrapper instance
     if not Scrobble.lastfm:
