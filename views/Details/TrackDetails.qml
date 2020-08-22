@@ -50,6 +50,7 @@ PictureBackground {
     id: trackNameView
     
     elide: Text.ElideRight
+    isShadowEnabled: false
     style: kTitlePrimary
     text: title
     address: lastfmUrl
@@ -71,6 +72,7 @@ PictureBackground {
     id: artistNameView
 
     elide: Text.ElideRight
+    isShadowEnabled: false
     text: artistName
     address: artistLastfmUrl
 
@@ -89,6 +91,7 @@ PictureBackground {
     id: albumNameLeadingText
 
     style: kBodyPrimary
+    isShadowEnabled: false
     text: 'from'
 
     anchors {
@@ -103,6 +106,7 @@ PictureBackground {
     id: albumNameView
 
     elide: Text.ElideRight
+    isShadowEnabled: false
     text: albumName
     address: albumLastfmUrl
 
@@ -133,16 +137,19 @@ PictureBackground {
     }
     
     Statistic {
+      isShadowEnabled: false
       title: 'Listeners'
       value: lastfmGlobalListeners
     }
 
     Statistic {
+      isShadowEnabled: false
       title: 'Plays'
       value: lastfmGlobalPlays
     }
 
     Statistic {
+      isShadowEnabled: false
       title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
       value: lastfmPlays
       shouldAbbreviate: false
@@ -168,6 +175,7 @@ PictureBackground {
       model: lastfmTags
 
       delegate: Tag {
+        isShadowEnabled: false
         name: modelData.name
         address: modelData.url
       }

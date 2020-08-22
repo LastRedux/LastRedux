@@ -4,6 +4,9 @@ import Qt.labs.platform 1.0
 import '../../util/helpers.js' as Helpers
 
 Item {
+  id: root
+  
+  property bool isShadowEnabled: true
   property bool shouldAbbreviate: true
   property string title
   property var value
@@ -17,6 +20,7 @@ Item {
     spacing: 3
 
     Label {
+      isShadowEnabled: root.isShadowEnabled
       style: kNumber
       
       text: {
@@ -33,6 +37,9 @@ Item {
     }
 
     Label {
+      id: titleLabel
+
+      isShadowEnabled: root.isShadowEnabled
       style: kTitleTertiary
       text: title
     }

@@ -9,6 +9,7 @@ Text {
   readonly property int kBodySecondary: 4
   readonly property int kNumber: 5
 
+  property bool isShadowEnabled: true
   property int style: kBodyPrimary
   
   color: '#FFF'
@@ -57,7 +58,7 @@ Text {
   }
 
   layer {
-    enabled: true
+    enabled: isShadowEnabled
 
     effect: DropShadow {
       color: '#131313'
