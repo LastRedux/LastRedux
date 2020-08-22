@@ -57,9 +57,9 @@ class LastfmApiWrapper:
     resp = None
 
     if http_method == 'GET':
-      resp = requests.get('http://ws.audioscrobbler.com/2.0/', headers=headers, params=payload).json()
+      resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload).json()
     elif http_method == 'POST':
-      resp = requests.post('http://ws.audioscrobbler.com/2.0/', headers=headers, data=payload).json()
+      resp = requests.post('https://ws.audioscrobbler.com/2.0/', headers=headers, data=payload).json()
     else:
       raise Exception('Invalid HTTP method') 
 
@@ -90,7 +90,7 @@ class LastfmApiWrapper:
   def open_authorization_url(self, auth_token):
     '''Launch default browser to allow user to authorize our app'''
     
-    webbrowser.open(f'http://www.last.fm/api/auth/?api_key={self.__api_key}&token={auth_token}')
+    webbrowser.open(f'https://www.last.fm/api/auth/?api_key={self.__api_key}&token={auth_token}')
 
   def get_new_session(self, auth_token):
     '''Use an auth token to get a session key to access the user's account (does not expire)'''
