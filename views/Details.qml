@@ -107,12 +107,26 @@ Item {
 
         // --- Similar Artists ---
 
-        Rectangle {
-          color: '#222'
+        Item {
           visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.similar_artists.length
 
           width: column.width
           height: similarArtists.y + similarArtists.height + 30
+
+          // Background inside container because excess background height shouldn't count towards section height in column
+          Rectangle {
+            color: '#222'
+
+            width: parent.width
+            
+            height: {
+              if (scrollArea.contentHeight < scrollArea.height) {
+                return 0 - parent.y + scrollArea.height
+              }
+
+              return parent.height
+            }
+          }
 
           Label {
             id: similarArtistsTitle
