@@ -109,6 +109,7 @@ Item {
 
         Rectangle {
           color: '#222'
+          visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.similar_artists.length
 
           width: column.width
           height: similarArtists.y + similarArtists.height + 30
@@ -134,7 +135,6 @@ Item {
             id: similarArtists
 
             spacing: 20
-            visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.similar_artists.length
 
             anchors {
               top: similarArtistsTitle.bottom
