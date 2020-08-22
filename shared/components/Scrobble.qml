@@ -36,7 +36,7 @@ Item {
   Column {
     id: details
 
-    spacing: 1
+    spacing: 3
 
     anchors {
       top: parent.top
