@@ -104,6 +104,61 @@ Item {
 
           width: column.width
         }
+
+        // --- Similar Artists ---
+
+        Rectangle {
+          color: '#222'
+
+          width: column.width
+          height: similarArtists.y + similarArtists.height + 30
+
+          Label {
+            id: similarArtistsTitle
+
+            style: kTitleTertiary
+            text: 'Similar Artists'
+
+            anchors {
+              top: parent.top
+              right: parent.right
+              left: parent.left
+
+              topMargin: 20
+              rightMargin: 30
+              leftMargin: 30
+            }
+          }
+
+          Flow {
+            id: similarArtists
+
+            spacing: 20
+            visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.similar_artists.length
+
+            anchors {
+              top: similarArtistsTitle.bottom
+              right: parent.right
+              left: parent.left
+
+              topMargin: 15
+              rightMargin: 30
+              leftMargin: 30
+            }
+
+            Repeater {
+              model: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.similar_artists : []
+
+              delegate: SimilarArtist {
+                name: modelData.name
+                imageSource: modelData.image_url
+                lastfmUrl: modelData.lastfm_url
+
+                width: ((similarArtists.width + 20) / Math.floor(similarArtists.width / 170)) - 20
+              }
+            }
+          }
+        }
       }
     }
 

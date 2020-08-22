@@ -9,7 +9,7 @@ Image {
 
   property int type: kTrack
 
-  width: 33
+  width: 34
   height: width
 
   layer {

@@ -49,8 +49,10 @@ Item {
     }
 
     Label {
+      // Wrap to 2 lines and then truncate
       elide: Text.ElideRight
       maximumLineCount: 2
+      
       style: kTitleSecondary
       text: trackTitle
       wrapMode: Text.Wrap
@@ -59,8 +61,10 @@ Item {
     }
 
     Label {
+      // Wrap to 2 lines and then truncate
       elide: Text.ElideRight
       maximumLineCount: 2
+
       style: kBodyPrimary
       text: artistName
       wrapMode: Text.Wrap
