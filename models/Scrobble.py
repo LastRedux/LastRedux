@@ -6,6 +6,7 @@ from datatypes.Album import Album
 from datatypes.Tag import Tag
 from datatypes.SimilarArtist import SimilarArtist
 import util.LastfmApiWrapper as lastfm
+import util.iTunesApiHelper as itunes_store
 
 class Scrobble:
   lastfm = None
@@ -18,7 +19,7 @@ class Scrobble:
     album = Album(album_name)
     self.track = Track(track_title, artist, album)
     
-    # Automatically generated
+    # Automatically generated timestamp
     self.timestamp = datetime.now()
 
     # All scrobbles should store a reference to the same lastfm api wrapper instance
@@ -28,6 +29,7 @@ class Scrobble:
   def load_lastfm_data(self):
     '''Request info from Last.fm about the track, album, and artist'''
 
+    # Get track info from Last.fm
     lastfm_track = Scrobble.lastfm.get_track_info(self)['track']
     self.track.lastfm_url = lastfm_track['url']
     self.track.lastfm_global_listeners = int(lastfm_track['listeners'])
@@ -36,6 +38,7 @@ class Scrobble:
     self.track.lastfm_is_loved = bool(lastfm_track['userloved']) # Convert 0/1 to bool
     self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
 
+    # Get artist info from Last.fm
     lastfm_artist = Scrobble.lastfm.get_artist_info(self)['artist']
     self.track.artist.name = lastfm_artist['name']
     self.track.artist.lastfm_url = lastfm_artist['url']
@@ -46,6 +49,7 @@ class Scrobble:
     self.track.artist.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
     self.track.artist.similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
+    # Get album info from Last.fm
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
     self.track.album.title = lastfm_album['name']
     self.track.album.lastfm_url = lastfm_album['url']
@@ -54,3 +58,17 @@ class Scrobble:
     self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
 
     self.track.has_lastfm_data = True
+  
+  def load_itunes_store_data(self):
+    artist_image, album_image_url, album_image_url_small = itunes_store.get_images(self.track.title, self.track.artist.name, self.track.album.title)
+
+    self.track.artist.image_url = artist_image
+
+    # Use iTunes album art if Last.fm didn't provide it
+    if not self.track.album.image_url:
+      self.track.album.image_url = album_image_url
+      self.track.album.image_url_small = album_image_url_small
+
+  def load_similar_artist_images(self):
+    for similar_artist in self.track.artist.similar_artists:
+      similar_artist.image_url = itunes_store.get_artist_image(similar_artist.name)

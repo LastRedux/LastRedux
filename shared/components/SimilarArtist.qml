@@ -9,6 +9,8 @@ Item {
 
   Picture {
     id: picture
+    
+    type: kArtist
   }
 
   Link {

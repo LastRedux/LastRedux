@@ -7,7 +7,6 @@ from PySide2 import QtCore, QtSql
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
 from models.Scrobble import Scrobble
-import util.iTunesApiHelper as itunes_store
 import util.LastfmApiWrapper as lastfm
 import util.db_helper as db_helper
 
@@ -93,7 +92,7 @@ class HistoryViewModel(QtCore.QObject):
     # Set Last.fm wrapper session key and username from database
     username, session_key = db_helper.get_lastfm_session_details()
     self.lastfm_instance.set_login_info(username, session_key)
-    
+
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
 
@@ -345,25 +344,18 @@ class HistoryViewModel(QtCore.QObject):
   def set_additional_scrobble_data(self, scrobble):
     '''Fetch and attach information from Last.fm to the __current_scrobble Scrobble object'''
 
-    # Tell the scrobble object to request and load lastfm data
-    self.__current_scrobble.load_lastfm_data()
-
     # Refresh details view with Last.fm details
+    self.__current_scrobble.load_lastfm_data()
     self.emit_scrobble_ui_update_signals(scrobble)
     
     # Get artist image and album art from iTunes
-    artist_image, image_url, image_url_small = itunes_store.get_images(self.__cached_media_player_data['track_title'], self.__cached_media_player_data['artist_name'], self.__cached_media_player_data['album_name'])
-
-    # Set scrobble artist image
-    scrobble.track.artist.image_url = artist_image
-
-    # Use iTunes album art if Last.fm didn't provide it
-    if not scrobble.track.album.image_url:
-      scrobble.track.album.image_url = image_url
-      scrobble.track.album.image_url_small = image_url_small
-
+    self.__current_scrobble.load_itunes_store_data()
     # Refresh details view with iTunes details
     # TODO: Only update artist/album image URL instead of entire scrobble data
+    self.emit_scrobble_ui_update_signals(scrobble)
+
+    # Refresh details view with similar artist images from iTunes
+    self.__current_scrobble.load_similar_artist_images()
     self.emit_scrobble_ui_update_signals(scrobble)
   
   def emit_scrobble_ui_update_signals(self, scrobble):
