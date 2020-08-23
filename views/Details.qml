@@ -108,7 +108,7 @@ Item {
         // --- Similar Artists ---
 
         Item {
-          visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.similar_artists.length
+          visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_similar_artists.length
 
           width: column.width
           height: similarArtists.y + similarArtists.height + 30
@@ -161,7 +161,7 @@ Item {
             }
 
             Repeater {
-              model: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.similar_artists : []
+              model: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_similar_artists : []
 
               delegate: SimilarArtist {
                 name: modelData.name

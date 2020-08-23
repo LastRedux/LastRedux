@@ -47,7 +47,7 @@ class Scrobble:
     self.track.artist.lastfm_plays = int(lastfm_artist['stats']['userplaycount'])
     self.track.artist.bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
     self.track.artist.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
-    self.track.artist.similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
+    self.track.artist.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
     # Get album info from Last.fm
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
@@ -70,5 +70,5 @@ class Scrobble:
       self.track.album.image_url_small = album_image_url_small
 
   def load_similar_artist_images(self):
-    for similar_artist in self.track.artist.similar_artists:
+    for similar_artist in self.track.artist.lastfm_similar_artists:
       similar_artist.image_url = itunes_store.get_artist_image(similar_artist.name)
