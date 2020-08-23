@@ -31,6 +31,7 @@ class Scrobble:
 
     # Get track info from Last.fm
     lastfm_track = Scrobble.lastfm.get_track_info(self)['track']
+    # self.track.title = lastfm_track['name']
     self.track.lastfm_url = lastfm_track['url']
     self.track.lastfm_global_listeners = int(lastfm_track['listeners'])
     self.track.lastfm_global_plays = int(lastfm_track['playcount'])
@@ -40,7 +41,7 @@ class Scrobble:
 
     # Get artist info from Last.fm
     lastfm_artist = Scrobble.lastfm.get_artist_info(self)['artist']
-    self.track.artist.name = lastfm_artist['name']
+    # self.track.artist.name = lastfm_artist['name']
     self.track.artist.lastfm_url = lastfm_artist['url']
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
     self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
@@ -51,7 +52,7 @@ class Scrobble:
     
     # Get album info from Last.fm
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
-    self.track.album.title = lastfm_album['name']
+    # self.track.album.title = lastfm_album['name']
     self.track.album.lastfm_url = lastfm_album['url']
     self.track.album.lastfm_plays = int(lastfm_album['userplaycount'])
     self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
