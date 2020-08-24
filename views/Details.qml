@@ -165,7 +165,7 @@ Item {
 
               delegate: SimilarArtist {
                 name: modelData.name
-                imageSource: modelData.image_url
+                imageSource: modelData.image_url || ''
                 lastfmUrl: modelData.lastfm_url
 
                 width: ((similarArtists.width + 20) / Math.floor(similarArtists.width / 170)) - 20
