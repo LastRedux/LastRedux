@@ -155,9 +155,9 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'track.scrobble',
-      'track': scrobble.track['name'],
-      'artist': scrobble.track['artist']['name'],
-      'album': scrobble.track['album']['name'],
+      'track': scrobble.track.title,
+      'artist': scrobble.track.artist.name,
+      'album': scrobble.track.album.title,
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
     }, http_method='POST')
 
