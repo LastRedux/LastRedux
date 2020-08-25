@@ -1,5 +1,17 @@
 class MockPlayerPlugin():
   MOCK_TRACKS = [{
+    'title': 'Play',
+    'artist_name': 'Years & Years & Jax Jones',
+    'album_name': 'Palo Santo (Deluxe)',
+    'start': 0,
+    'finish': 221
+  }, {
+    'title': 'SouthSide',
+    'artist_name': 'DJ Snake & Eptic',
+    'album_name': 'SouthSide - Single',
+    'start': 0,
+    'finish': 221
+  }, {
     'title': 'ON',
     'artist_name': 'BTS',
     'album_name': 'MAP OF THE SOUL : 7',
