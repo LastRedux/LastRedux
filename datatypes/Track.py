@@ -10,7 +10,8 @@ class Track:
   title: str
   artist: Artist
   album: Album
-  has_lastfm_data: bool = False
+  has_lastfm_data: bool = False # TODO: Move has_lastfm_data and has_itunes_store_data to Scrobble
+  has_itunes_store_data: bool = False
   lastfm_url: str = ''
   lastfm_is_loved: bool = False
   lastfm_plays: int = 0

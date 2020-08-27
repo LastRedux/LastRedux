@@ -169,7 +169,6 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'user.getRecentTracks',
-      'limit': 3, # TODO: Remove and use default of 50 when app can handle it
       'user': self.__username,
       'extended': 1 # Include artist data in response
     })

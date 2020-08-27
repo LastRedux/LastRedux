@@ -148,7 +148,7 @@ Item {
           Flow {
             id: similarArtists
 
-            spacing: 20
+            spacing: 8
 
             anchors {
               top: similarArtistsTitle.bottom
@@ -163,12 +163,9 @@ Item {
             Repeater {
               model: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_similar_artists : []
 
-              delegate: SimilarArtist {
+              delegate: Tag {
                 name: modelData.name
-                imageSource: modelData.image_url
-                lastfmUrl: modelData.lastfm_url
-
-                width: ((similarArtists.width + 20) / Math.floor(similarArtists.width / 170)) - 20
+                address: modelData.lastfm_url
               }
             }
           }

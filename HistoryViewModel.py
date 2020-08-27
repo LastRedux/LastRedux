@@ -102,8 +102,8 @@ class HistoryViewModel(QtCore.QObject):
     for lastfm_scrobble in recent_lastfm_scrobbles:
       scrobble = Scrobble(lastfm_scrobble['name'], lastfm_scrobble['artist']['name'], lastfm_scrobble['album']['#text'])
       self.scrobble_history.append(scrobble)
-      scrobble.load_lastfm_data()
-      scrobble.load_itunes_store_data()
+
+      Thread(target=self.load_additional_scrobble_data, args=(scrobble,), daemon=True).start()
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
@@ -131,7 +131,7 @@ class HistoryViewModel(QtCore.QObject):
     # Start polling interval to check for new media player data
     timer = QtCore.QTimer(self)
     timer.timeout.connect(lambda: self.get_new_media_player_data.emit())
-    timer.start(100)
+    timer.start(1000)
 
     self.get_new_media_player_data.emit()
 
@@ -202,6 +202,7 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble = self.__current_scrobble
     else:
       self.selected_scrobble = self.scrobble_history[new_index]
+      Thread(target=self.load_additional_scrobble_data, args=(self.selected_scrobble, True)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
     
     # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
     self.selected_scrobble_changed.emit()
@@ -348,27 +349,29 @@ class HistoryViewModel(QtCore.QObject):
     self.__cached_media_player_data['album_name'] = new_track_data['album_name']
 
     # Get additional info about track from Last.fm
-    Thread(target=self.set_additional_scrobble_data, args=(self.__current_scrobble,)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+    Thread(target=self.load_additional_scrobble_data, args=(self.__current_scrobble, True)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
 
-  def set_additional_scrobble_data(self, scrobble):
-    '''Fetch and attach information from Last.fm to the __current_scrobble Scrobble object'''
+  def load_additional_scrobble_data(self, scrobble, load_itunes_store_data=False):
+    '''Fetch and attach information from Last.fm/iTunes Store to the passed Scrobble object'''
 
-    # Refresh details view with Last.fm details
-    self.__current_scrobble.load_lastfm_data()
-    self.emit_scrobble_ui_update_signals(scrobble)
+    # Request additional track data from Last.fm and attach it to the Scrobble instance
+    scrobble.load_lastfm_data()
+
+    # If the app hasn't opened yet, don't load anything else or update the views
+    if not self.selected_scrobble:
+      return
     
-    # Get artist image and album art from iTunes
-    self.__current_scrobble.load_itunes_store_data()
-    # Refresh details view with iTunes details
     # TODO: Only update artist/album image URL instead of entire scrobble data
     self.emit_scrobble_ui_update_signals(scrobble)
-
-    # Refresh details view with similar artist images from iTunes
-    self.__current_scrobble.load_similar_artist_images()
-    self.emit_scrobble_ui_update_signals(scrobble)
+    
+    # Get artist image and album art from iTunes only if it's for the details view
+    if load_itunes_store_data and not scrobble.track.has_itunes_store_data:
+      # Refresh details view with iTunes details
+      scrobble.load_itunes_store_data()
+      self.emit_scrobble_ui_update_signals(scrobble)
   
   def emit_scrobble_ui_update_signals(self, scrobble):
-    #Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
+    # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
     if self.selected_scrobble == scrobble:
       self.selected_scrobble_changed.emit()
     

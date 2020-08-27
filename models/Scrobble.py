@@ -30,18 +30,21 @@ class Scrobble:
     '''Request info from Last.fm about the track, album, and artist'''
 
     # Get track info from Last.fm
-    lastfm_track = Scrobble.lastfm.get_track_info(self)['track']
-    # self.track.title = lastfm_track['name']
+    track_response = Scrobble.lastfm.get_track_info(self)
+
+    if not track_response:
+      return
+
+    lastfm_track = track_response['track']
     self.track.lastfm_url = lastfm_track['url']
     self.track.lastfm_global_listeners = int(lastfm_track['listeners'])
     self.track.lastfm_global_plays = int(lastfm_track['playcount'])
     self.track.lastfm_plays = int(lastfm_track['userplaycount'])
-    self.track.lastfm_is_loved = bool(lastfm_track['userloved']) # Convert 0/1 to bool
+    self.track.lastfm_is_loved = bool(int(lastfm_track['userloved'])) # Convert 0/1 to bool
     self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
 
     # Get artist info from Last.fm
     lastfm_artist = Scrobble.lastfm.get_artist_info(self)['artist']
-    # self.track.artist.name = lastfm_artist['name']
     self.track.artist.lastfm_url = lastfm_artist['url']
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
     self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
@@ -52,7 +55,6 @@ class Scrobble:
     
     # Get album info from Last.fm
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
-    # self.track.album.title = lastfm_album['name']
     self.track.album.lastfm_url = lastfm_album['url']
     self.track.album.lastfm_plays = int(lastfm_album['userplaycount'])
     self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
@@ -70,6 +72,4 @@ class Scrobble:
       self.track.album.image_url = album_image_url
       self.track.album.image_url_small = album_image_url_small
 
-  def load_similar_artist_images(self):
-    for similar_artist in self.track.artist.lastfm_similar_artists:
-      similar_artist.image_url = itunes_store.get_artist_image(similar_artist.name)
+    self.track.has_itunes_store_data = True
