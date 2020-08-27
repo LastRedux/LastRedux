@@ -92,9 +92,18 @@ class HistoryViewModel(QtCore.QObject):
     # Set Last.fm wrapper session key and username from database
     username, session_key = db_helper.get_lastfm_session_details()
     self.lastfm_instance.set_login_info(username, session_key)
-
+    
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
+    
+    # Load in recent scrobbles from Last.fm and add them to scrobble history
+    recent_lastfm_scrobbles = self.lastfm_instance.get_recent_scrobbles()['recenttracks']['track']
+
+    for lastfm_scrobble in recent_lastfm_scrobbles:
+      scrobble = Scrobble(lastfm_scrobble['name'], lastfm_scrobble['artist']['name'], lastfm_scrobble['album']['#text'])
+      self.scrobble_history.append(scrobble)
+      scrobble.load_lastfm_data()
+      scrobble.load_itunes_store_data()
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None

@@ -161,6 +161,19 @@ class LastfmApiWrapper:
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
     }, http_method='POST')
 
+  def get_recent_scrobbles(self):
+    '''Get the user's 50 most recent scrobbles'''
+
+    if not self.__is_logged_in():
+      return
+
+    return self.__lastfm_request({
+      'method': 'user.getRecentTracks',
+      'limit': 3, # TODO: Remove and use default of 50 when app can handle it
+      'user': self.__username,
+      'extended': 1 # Include artist data in response
+    })
+
 # Initialize api wrapper instance with login info once to use in multiple files
 __lastfm = None
 
