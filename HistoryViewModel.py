@@ -1,6 +1,7 @@
 import os
 import re
 from threading import Thread
+from datetime import datetime
 
 from PySide2 import QtCore, QtSql
 
@@ -100,9 +101,17 @@ class HistoryViewModel(QtCore.QObject):
     recent_lastfm_scrobbles = self.lastfm_instance.get_recent_scrobbles()['recenttracks']['track']
 
     for lastfm_scrobble in recent_lastfm_scrobbles:
-      scrobble = Scrobble(lastfm_scrobble['name'], lastfm_scrobble['artist']['name'], lastfm_scrobble['album']['#text'])
-      self.scrobble_history.append(scrobble)
+      # Don't include currently playing track to scrobble history
+      if lastfm_scrobble.get('@attr') and lastfm_scrobble.get('@attr').get('nowplaying'):
+        continue
 
+      scrobble = Scrobble(
+        lastfm_scrobble['name'], 
+        lastfm_scrobble['artist']['name'], 
+        lastfm_scrobble['album']['#text'], 
+        timestamp=datetime.fromtimestamp(int(lastfm_scrobble['date']['uts']))
+      )
+      self.scrobble_history.append(scrobble)
       Thread(target=self.load_additional_scrobble_data, args=(scrobble,), daemon=True).start()
 
     # Hold a Scrobble object for currently playing track (will later be submitted)

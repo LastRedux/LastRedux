@@ -19,8 +19,8 @@ class Scrobble:
     album = Album(album_name)
     self.track = Track(track_title, artist, album)
     
-    # Automatically generated timestamp
-    self.timestamp = datetime.now()
+    # Automatically generate timestamp if one isn't passed
+    self.timestamp = timestamp or datetime.now()
 
     # All scrobbles should store a reference to the same lastfm api wrapper instance
     if not Scrobble.lastfm:
