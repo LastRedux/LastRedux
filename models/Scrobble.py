@@ -56,7 +56,6 @@ class Scrobble:
     # Get album info from Last.fm
     lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
     self.track.album.lastfm_url = lastfm_album['url']
-    self.track.album.lastfm_plays = int(lastfm_album['userplaycount'])
     self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
     self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
 
