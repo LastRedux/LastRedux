@@ -11,11 +11,13 @@ Column {
 
   // Passthrough properties to scrobble view
   property alias isSelected: scrobbleView.isSelected
+  property alias lastfmIsLoved: scrobbleView.lastfmIsLoved
   property alias trackTitle: scrobbleView.trackTitle
   property alias artistName: scrobbleView.artistName
   property alias imageSource: scrobbleView.imageSource
 
   signal select
+  signal toggleLastfmIsLoved
 
   // --- Header ---
 
@@ -56,6 +58,7 @@ Column {
     // TODO: Add loved attribute
     
     onSelect: root.select()
+    onToggleLastfmIsLoved: root.toggleLastfmIsLoved()
     
     width: parent.width
   }

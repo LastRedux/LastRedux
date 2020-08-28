@@ -44,7 +44,8 @@ class Scrobble:
     self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
 
     # Get artist info from Last.fm
-    lastfm_artist = Scrobble.lastfm.get_artist_info(self)['artist']
+    artist_response = Scrobble.lastfm.get_track_info(self)
+    lastfm_artist = artist_response['artist']
     self.track.artist.lastfm_url = lastfm_artist['url']
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
     self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
@@ -54,7 +55,8 @@ class Scrobble:
     self.track.artist.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
     # Get album info from Last.fm
-    lastfm_album = Scrobble.lastfm.get_album_info(self)['album']
+    album_response = Scrobble.lastfm.get_album_info(self)
+    lastfm_album = album_response['album']
     self.track.album.lastfm_url = lastfm_album['url']
     self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
     self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
@@ -72,3 +74,13 @@ class Scrobble:
       self.track.album.image_url_small = album_image_url_small
 
     self.track.has_itunes_store_data = True
+
+  def equals(self, other_scrobble):
+    if self.track.has_lastfm_data and other_scrobble.track.has_lastfm_data:
+      return self.track.lastfm_url == other_scrobble.track.lastfm_url
+    
+    return (
+      self.track.title.lower() == other_scrobble.track.title.lower()
+      and self.track.artist.name.lower() == other_scrobble.track.artist.name.lower()
+      and self.track.album.title.lower() == other_scrobble.track.album.title.lower()
+    )

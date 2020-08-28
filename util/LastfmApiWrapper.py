@@ -57,18 +57,23 @@ class LastfmApiWrapper:
     resp = None
 
     if http_method == 'GET':
-      resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload).json()
+      resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
     elif http_method == 'POST':
-      resp = requests.post('https://ws.audioscrobbler.com/2.0/', headers=headers, data=payload).json()
+      resp = requests.post('https://ws.audioscrobbler.com/2.0/', headers=headers, data=payload)
     else:
       raise Exception('Invalid HTTP method') 
 
+    try:
+      resp_json = resp.json()
+    except json.decoder.JSONDecodeError:
+      print(resp.text)
+
     # TODO: Handle rate limit condition
-    if 'error' in resp:
+    if 'error' in resp_json:
       raise Exception(f'Last.fm error: {resp["message"]} with payload: {payload}')
       return
 
-    return resp
+    return resp_json
 
   def __is_logged_in(self):
     if not self.__session_key or not self.__username:
@@ -159,6 +164,18 @@ class LastfmApiWrapper:
       'artist': scrobble.track.artist.name,
       'album': scrobble.track.album.title,
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+    }, http_method='POST')
+
+  def set_track_is_loved(self, scrobble, is_loved):
+    '''Set loved value on Last.fm for the passed scrobble'''
+
+    if not self.__is_logged_in():
+      return 
+
+    return self.__lastfm_request({
+      'method': 'track.love' if is_loved else 'track.unlove',
+      'track': scrobble.track.title,
+      'artist': scrobble.track.artist.name
     }, http_method='POST')
 
   def get_recent_scrobbles(self):
