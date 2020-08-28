@@ -60,7 +60,7 @@ class MockPlayerPlugin():
   def __init__(self):
     self.has_track_loaded_variable = False
     self.current_track = {}
-    self.__next_track_index = 0
+    self.__next_track_index = -1
     self.player_position = 0
 
   def get_next_track(self):
@@ -68,6 +68,9 @@ class MockPlayerPlugin():
     self.__next_track_index += 1
 
   def get_state(self):
-    track = self.MOCK_TRACKS[self.__next_track_index % len(self.MOCK_TRACKS)]
+    if self.__next_track_index != -1:
+      track = self.MOCK_TRACKS[self.__next_track_index % len(self.MOCK_TRACKS)]
 
-    return MediaPlayerState(True, self.player_position, **track)
+      return MediaPlayerState(True, self.player_position, **track)
+    
+    return MediaPlayerState()

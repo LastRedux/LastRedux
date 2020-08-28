@@ -7,8 +7,9 @@ from PySide2 import QtCore, QtSql
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
 from models.Scrobble import Scrobble
-from workers.MediaPlayerWorker import MediaPlayerWorker
-from workers.ApiRequestWorker import ApiRequestWorker
+from tasks.FetchNewMediaPlayerStateTask import FetchNewMediaPlayerStateTask
+from tasks.SetAdditionalScrobbleDataTask import SetAdditionalScrobbleDataTask
+from tasks.SubmitScrobbleTask import SubmitScrobbleTask
 import util.LastfmApiWrapper as lastfm
 import util.db_helper as db_helper
 
@@ -17,9 +18,6 @@ class HistoryViewModel(QtCore.QObject):
   pre_append_scrobble = QtCore.Signal()
   post_append_scrobble = QtCore.Signal()
   scrobble_album_image_changed = QtCore.Signal(int)
-
-  # Thread worker signals
-  get_new_media_player_data = QtCore.Signal()
 
   # Qt Property changed signals
   current_scrobble_data_changed = QtCore.Signal()
@@ -32,26 +30,6 @@ class HistoryViewModel(QtCore.QObject):
 
   def __init__(self):
     QtCore.QObject.__init__(self)
-    
-    # Create a thread for media player requests
-    self.media_player_thread = QtCore.QThread()
-    self.media_player_thread.start()
-
-    # Store threads and workers together to prevent them from being garbage collected
-    self.workers_threads_map = {}
-
-    # Initialize a thread worker and move it to the background thread
-    self.media_player_thread_worker = MediaPlayerWorker()
-    self.media_player_thread_worker.history_reference = self
-    
-    # Move media player thread worker to separate thread to prevent the requests from blocking the main thread
-    self.media_player_thread_worker.moveToThread(self.media_player_thread)
-    
-    # Create passthrough signal to call get_new_media_player_data function
-    self.get_new_media_player_data.connect(self.media_player_thread_worker.get_new_media_player_data)
-
-    # Connect function to process new media player data to request finished signal
-    self.media_player_thread_worker.finished_getting_media_player_data.connect(self.process_new_media_player_state)
     
     # Initialize media player plugin
     self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
@@ -89,12 +67,12 @@ class HistoryViewModel(QtCore.QObject):
       'track_finish': None
     }
 
-    # Start polling interval to check for new media player data
+    # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
-    timer.timeout.connect(lambda: self.get_new_media_player_data.emit())
+    timer.timeout.connect(self.fetch_new_media_player_state)
     timer.start(100)
 
-    self.get_new_media_player_data.emit()
+    self.fetch_new_media_player_state()
 
   # --- Qt Property Getters and Setters ---
   
@@ -186,6 +164,17 @@ class HistoryViewModel(QtCore.QObject):
       
   # --- Private Functions ---
 
+  @QtCore.Slot()
+  def fetch_new_media_player_state(self):
+    # Create thread task with reference to the view model (self)
+    fetch_new_media_player_state_task = FetchNewMediaPlayerStateTask(self)
+
+    # Process the new media player state after the data is returned
+    fetch_new_media_player_state_task.finished.connect(self.process_new_media_player_state)
+
+    # Add task to global thread pool and run
+    QtCore.QThreadPool.globalInstance().start(fetch_new_media_player_state_task)
+
   def submit_scrobble(self, scrobble):
     '''Add a scrobble object to the history array and submit it to Last.fm'''
     
@@ -209,8 +198,9 @@ class HistoryViewModel(QtCore.QObject):
       # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
       self.selected_scrobble_index_changed.emit()
 
-    # Submit scrobble to Last.fm
-    ####### Thread(target=lastfm.submit_scrobble, args=(self.__current_scrobble,), daemon=True).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+    # Submit scrobble to Last.fm in background thread task
+    ####### submit_scrobble_task = SubmitScrobbleTask(self.lastfm_instance, self.__current_scrobble)
+    ####### QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
     if scrobble.track.has_lastfm_data:
@@ -306,33 +296,14 @@ class HistoryViewModel(QtCore.QObject):
     self.__cached_media_player_data['track_start'] = new_media_player_state.track_start
     self.__cached_media_player_data['track_finish'] = new_media_player_state.track_finish
 
-    # Get additional info about track from Last.fm
-    # Thread(target=self.set_additional_scrobble_data, args=(self.__current_scrobble,)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+    # Create thread task to get additional info about track from Last.fm in the background
+    set_additional_scrobble_data_task = SetAdditionalScrobbleDataTask(self.__current_scrobble)
 
-    # Create thread to make api requests separate from the main thread
-    api_request_thread = QtCore.QThread()
-    api_request_thread.start()
+    # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
+    set_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.emit_scrobble_ui_update_signals)
 
-    # Create worker and move it to the new thread
-    api_request_worker = ApiRequestWorker()
-    api_request_worker.moveToThread(api_request_thread)
-
-    self.workers_threads_map[api_request_worker] = api_request_thread
-    
-    api_request_worker.call_set_additional_scrobble_data.connect(api_request_worker.set_additional_scrobble_data)
-    api_request_worker.call_set_additional_scrobble_data.emit(self.__current_scrobble)
-    
-    # Connect the emit_scrobble_ui_update_signals signal in the api request worker to the local slot with the same name
-    api_request_worker.emit_scrobble_ui_update_signals.connect(self.emit_scrobble_ui_update_signals)
-    api_request_worker.finished.connect(self.api_request_finished)
-  
-  @QtCore.Slot(Scrobble)
-  def api_request_finished(self, scrobble):
-    # Remove the api request worker from the array to allow Python to garbage collect it
-    del self.workers_threads_map[self.sender()]
-
-    # Tell the scrobble object to load similar artist image urls
-    scrobble.load_similar_artist_images()
+    # Add task to global thread pool and run
+    QtCore.QThreadPool.globalInstance().start(set_additional_scrobble_data_task)
 
   @QtCore.Slot(Scrobble)
   def emit_scrobble_ui_update_signals(self, scrobble):
