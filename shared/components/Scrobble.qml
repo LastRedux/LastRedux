@@ -1,13 +1,16 @@
 import QtQuick 2.14
+import QtQuick.Controls 2.14 as Controls
 
 Item {
   property alias isSelected: background.visible
   property string trackTitle: '???'
   property string artistName: '???'
   property string timestamp
+  property bool lastfmIsLoved
   property alias imageSource: coverArt.source
 
   signal select
+  signal toggleLastfmIsLoved
 
   opacity: mouseArea.containsPress ? 0.75 : 1
   
@@ -31,6 +34,16 @@ Item {
       topMargin: 5
       leftMargin: 15
     }
+  }
+
+  MouseArea {
+    id: mouseArea
+
+    hoverEnabled: true
+
+    onClicked: select()
+
+    anchors.fill: parent
   }
 
   Column {
@@ -80,15 +93,11 @@ Item {
 
       width: parent.width
     }
-  }
 
-  MouseArea {
-    id: mouseArea
+    Controls.Button {
+      text: lastfmIsLoved ? '💛' : '💔'
 
-    hoverEnabled: true
-
-    onClicked: select()
-
-    anchors.fill: parent
+      onClicked: toggleLastfmIsLoved()
+    }
   }
 }

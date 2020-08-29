@@ -8,6 +8,24 @@ class MockPlayerPlugin():
     'track_start': 0,
     'track_finish': 221
   }, {
+    'title': 'Play',
+    'artist_name': 'Years & Years & Jax Jones',
+    'album_name': 'Palo Santo (Deluxe)',
+    'start': 0,
+    'finish': 221
+  }, {
+    'title': 'SouthSide',
+    'artist_name': 'DJ Snake & Eptic',
+    'album_name': 'SouthSide - Single',
+    'start': 0,
+    'finish': 221
+  }, {
+    'title': 'ON',
+    'artist_name': 'BTS',
+    'album_name': 'MAP OF THE SOUL : 7',
+    'start': 0,
+    'finish': 221
+  }, {
     'track_title': 'ON',
     'artist_name': 'BTS',
     'album_title': 'MAP OF THE SOUL : 7',

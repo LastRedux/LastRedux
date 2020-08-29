@@ -1,4 +1,5 @@
 import re
+import urllib
 
 import requests
 
@@ -15,12 +16,23 @@ def __format_image_url_to_size(image_url, width, height):
 def get_images(track_title, artist_name, album_name):
   '''Get an artist image and album art for a track from the iTunes Search API'''
 
+  print(f'Requesting images for {artist_name} - {track_title}')
+
+  # Escape special characters in query string
+  escaped_search_term = urllib.parse.quote(f'{artist_name} {track_title} {album_name}')
+
   # Do a generic search for music with the track, artist, and album name
-  track_results = requests.get(f'https://itunes.apple.com/search?media=music&limit=1&term={artist_name} {track_title} {album_name}').json()['results']
+  track_response = requests.get(f'https://itunes.apple.com/search?media=music&limit=1&term={escaped_search_term}')
+
+  if not track_response.ok:
+    raise Exception(f'Error getting iTunes store images: {track_response.text}')
+    return
+
+  track_results = track_response.json()['results']
 
   # Return an empty object if there are no results for the track (local file)
   if not track_results:
-    return None
+    return
 
   # Scrape the Apple Music website HTML for artist image
   artist_image = __get_artist_image_from_artist_url(track_results[0]['artistViewUrl'])
@@ -34,15 +46,3 @@ def get_images(track_title, artist_name, album_name):
   album_art_small = __format_image_url_to_size(album_image_url, 64, 64)
 
   return artist_image, album_image_url, album_art_small
-
-def get_artist_image(artist_name):
-  '''Get an artist image by name from the iTunes Search API'''
-
-  # Do a generic search for music with the track, artist, and album name
-  artist_results = requests.get(f'https://itunes.apple.com/search?media=music&entity=musicArtist&attribute=artistTerm&limit=1&term={artist_name}').json()['results']
-
-  # Return an empty object if there are no results for the track (local file)
-  if not artist_results:
-    return None
-
-  return __get_artist_image_from_artist_url(artist_results[0]['artistLinkUrl'])

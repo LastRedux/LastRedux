@@ -14,8 +14,8 @@ Window {
   title: 'LastRedux'
   visible: true
 
-  minimumWidth: 866
-  minimumHeight: 540
+  minimumWidth: 755 //866
+  minimumHeight: 470 //540
   width: 900
   height: 589
 

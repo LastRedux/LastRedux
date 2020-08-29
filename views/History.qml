@@ -65,6 +65,7 @@ Item {
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
     trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobbleData.trackTitle
     artistName: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artistName
+    lastfmIsLoved: canDisplayCurrentScrobble && viewModel.currentScrobbleData.lastfmIsLoved
     visible: canDisplayCurrentScrobble
 
     imageSource: {
@@ -75,8 +76,9 @@ Item {
       return ''
     }
 
-    // Set the selected scrobble index in the view model to -1, which represents the currently selected item in the scrobble history
+    // -1 represents the currently selected item in the scrobble history
     onSelect: viewModel.selectedScrobbleIndex = -1
+    onToggleLastfmIsLoved: viewModel.toggleLastfmIsLoved(-1)
     
     anchors {
       top: mockPlayerPluginControls.visible ? mockPlayerPluginControls.bottom : parent.top
@@ -101,6 +103,7 @@ Item {
 
     // index is an argument passed through when the signal is triggered
     onSelect: viewModel.selectedScrobbleIndex = index
+    onToggleLastfmIsLoved: viewModel.toggleLastfmIsLoved(index)
 
     anchors {
       top: currentScrobble.visible ? currentScrobble.bottom : currentScrobble.top

@@ -1,6 +1,7 @@
 import os
 import re
 from threading import Thread
+from datetime import datetime
 
 from PySide2 import QtCore, QtSql
 
@@ -18,6 +19,7 @@ class HistoryViewModel(QtCore.QObject):
   pre_append_scrobble = QtCore.Signal()
   post_append_scrobble = QtCore.Signal()
   scrobble_album_image_changed = QtCore.Signal(int)
+  scrobble_lastfm_is_loved_changed = QtCore.Signal(int)
 
   # Qt Property changed signals
   current_scrobble_data_changed = QtCore.Signal()
@@ -43,9 +45,26 @@ class HistoryViewModel(QtCore.QObject):
     # Set Last.fm wrapper session key and username from database
     username, session_key = db_helper.get_lastfm_session_details()
     self.lastfm_instance.set_login_info(username, session_key)
-
+    
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
+    
+    # Load in recent scrobbles from Last.fm and add them to scrobble history
+    recent_lastfm_scrobbles = self.lastfm_instance.get_recent_scrobbles()['recenttracks']['track']
+
+    for lastfm_scrobble in recent_lastfm_scrobbles:
+      # Don't include currently playing track to scrobble history
+      if lastfm_scrobble.get('@attr') and lastfm_scrobble.get('@attr').get('nowplaying'):
+        continue
+
+      scrobble = Scrobble(
+        lastfm_scrobble['name'], 
+        lastfm_scrobble['artist']['name'], 
+        lastfm_scrobble['album']['#text'], 
+        timestamp=datetime.fromtimestamp(int(lastfm_scrobble['date']['uts']))
+      )
+      self.scrobble_history.append(scrobble)
+      Thread(target=self.load_additional_scrobble_data, args=(scrobble,)).start()
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
@@ -69,8 +88,8 @@ class HistoryViewModel(QtCore.QObject):
 
     # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
-    timer.timeout.connect(self.fetch_new_media_player_state)
-    timer.start(100)
+    timer.timeout.connect(lambda: self.get_new_media_player_data.emit())
+    timer.start(1000)
 
     self.fetch_new_media_player_state()
 
@@ -84,7 +103,7 @@ class HistoryViewModel(QtCore.QObject):
         'hasLastfmData': self.__current_scrobble.track.has_lastfm_data,
         'trackTitle': self.__current_scrobble.track.title,
         'artistName': self.__current_scrobble.track.artist.name,
-        'loved': self.__current_scrobble.track.lastfm_is_loved,
+        'lastfmIsLoved': self.__current_scrobble.track.lastfm_is_loved,
         'albumImageUrl': self.__current_scrobble.track.album.image_url_small # The scrobble history album arts are small so we don't want to render the full size art
       }
     
@@ -141,9 +160,41 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble = self.__current_scrobble
     else:
       self.selected_scrobble = self.scrobble_history[new_index]
+
+      Thread(target=self.load_additional_scrobble_data, args=(self.selected_scrobble, True)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
     
     # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
     self.selected_scrobble_changed.emit()
+
+  # --- Slots ---
+  
+  @QtCore.Slot(int)
+  def toggleLastfmIsLoved(self, index):
+    scrobble = None
+
+    # -1 refers to current scrobble
+    if index == -1:
+      scrobble = self.__current_scrobble
+    else:
+      scrobble = self.scrobble_history[index]
+
+    if not scrobble.track.has_lastfm_data:
+      return
+    
+    new_is_loved = not scrobble.track.lastfm_is_loved
+
+    if index == -1:
+      scrobble.track.lastfm_is_loved = new_is_loved
+    
+    # Update any scrobbles in the scrobble history array that match the scrobble that changed
+    for history_item in self.scrobble_history:
+      if scrobble.equals(history_item):
+        history_item.track.lastfm_is_loved = new_is_loved
+
+    self.emit_scrobble_ui_update_signals(scrobble)
+    
+    # Tell Last.fm about our new is_loved value
+    Thread(target=self.lastfm_instance.set_track_is_loved, args=(scrobble, new_is_loved)).start()
 
   # --- Mock Slots ---
 
@@ -305,23 +356,21 @@ class HistoryViewModel(QtCore.QObject):
     # Add task to global thread pool and run
     QtCore.QThreadPool.globalInstance().start(set_additional_scrobble_data_task)
 
-  @QtCore.Slot(Scrobble)
   def emit_scrobble_ui_update_signals(self, scrobble):
-    '''Emit signals to update the UI wherever the passed scrobble is being displayed'''
-
     # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
-    if self.selected_scrobble == scrobble:
+    if scrobble.equals(self.selected_scrobble):
       self.selected_scrobble_changed.emit()
     
     # If scrobble is the current track, update current scrobble sidebar item to reflect actual is_loved status
-    # TODO: Make separate signal that only updates is_loved data because the other data shown doesn't change
-    if self.__current_scrobble == scrobble:
+    if scrobble.equals(self.__current_scrobble):
       self.current_scrobble_data_changed.emit()
     
     # Also update image of history item if scrobble is already in history (check every item for find index)
     for i, history_item in enumerate(self.scrobble_history):
-      if history_item == scrobble:
+      # TODO: Make separate signal that only updates is_loved data because the other data shown doesn't change
+      if scrobble.equals(history_item):
         self.scrobble_album_image_changed.emit(i)
+        self.scrobble_lastfm_is_loved_changed.emit(i)
         # No break just in case track is somehow scrobbled twice before image loads
 
   # --- Qt Properties ---

@@ -12,6 +12,7 @@ Item {
   property int selectedScrobbleIndex
 
   signal select(int index)
+  signal toggleLastfmIsLoved(int index)
 
   // --- Header ---
 
@@ -88,8 +89,10 @@ Item {
       artistName: model.artistName
       timestamp: model.timestamp
       imageSource: model.hasLastfmData ? model.albumImageUrl : ''
+      lastfmIsLoved: model.hasLastfmData ? model.lastfmIsLoved : false
 
       onSelect: root.select(model.index)
+      onToggleLastfmIsLoved: root.toggleLastfmIsLoved(model.index)
 
       width: list.width
     }

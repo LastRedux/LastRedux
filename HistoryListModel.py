@@ -7,7 +7,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
   __TRACK_TITLE_ROLE = QtCore.Qt.UserRole # UserRole means custom role
   __ARTIST_NAME_ROLE = QtCore.Qt.UserRole + 1
   __TIMESTAMP_ROLE = QtCore.Qt.UserRole + 2
-  __IS_LOVED_ROLE = QtCore.Qt.UserRole + 3
+  __LASTFM_IS_LOVED_ROLE = QtCore.Qt.UserRole + 3
   __ALBUM_IMAGE_URL_ROLE = QtCore.Qt.UserRole + 4
   __HAS_LASTFM_DATA = QtCore.Qt.UserRole + 5
 
@@ -18,11 +18,19 @@ class HistoryListModel(QtCore.QAbstractListModel):
     self.__history_reference = None
   
   def __scrobble_album_image_changed(self, row):
+    '''Tell Qt that the scrobble album image has changed'''
+
     # Create a QModelIndex from the row index
     index = self.createIndex(row, 0)
 
     # Use list model dataChanged signal to indicate that UI needs to be updated at index
     self.dataChanged.emit(index, index, [self.__ALBUM_IMAGE_URL_ROLE, self.__HAS_LASTFM_DATA]) # index twice because start and end range
+
+  def __scrobble_lastfm_is_loved_changed(self, row):
+    '''Tell the Qt that the track loved status has changed'''
+
+    index = self.createIndex(row, 0)
+    self.dataChanged.emit(index, index, [self.__LASTFM_IS_LOVED_ROLE])
 
   # --- Qt Property Getters and Setters ---
 
@@ -43,8 +51,9 @@ class HistoryListModel(QtCore.QAbstractListModel):
       # Tell Qt that a row has been added
       self.__history_reference.post_append_scrobble.connect(lambda: self.endInsertRows())
 
-      # Tell Qt that the scrobble image has changed
+      # Connect row data changed signals
       self.__history_reference.scrobble_album_image_changed.connect(self.__scrobble_album_image_changed)
+      self.__history_reference.scrobble_lastfm_is_loved_changed.connect(self.__scrobble_lastfm_is_loved_changed)
 
   # --- QAbstractListModel Implementation ---
 
@@ -57,7 +66,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
       self.__TRACK_TITLE_ROLE: b'trackTitle',
       self.__ARTIST_NAME_ROLE: b'artistName',
       self.__ALBUM_IMAGE_URL_ROLE: b'albumImageUrl',
-      self.__IS_LOVED_ROLE: b'isLoved',
+      self.__LASTFM_IS_LOVED_ROLE: b'lastfmIsLoved',
       self.__TIMESTAMP_ROLE: b'timestamp',
       self.__HAS_LASTFM_DATA: b'hasLastfmData'
     }
@@ -85,7 +94,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
           return scrobble.track.artist.name
         elif role == self.__ALBUM_IMAGE_URL_ROLE:
           return scrobble.track.album.image_url_small
-        elif role == self.__IS_LOVED_ROLE:
+        elif role == self.__LASTFM_IS_LOVED_ROLE:
           return scrobble.track.lastfm_is_loved
         elif role == self.__TIMESTAMP_ROLE:
           return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
