@@ -10,6 +10,7 @@ from plugins.AppleMusicPlugin import AppleMusicPlugin
 from models.Scrobble import Scrobble
 from tasks.FetchNewMediaPlayerStateTask import FetchNewMediaPlayerStateTask
 from tasks.LoadAdditionalScrobbleDataTask import LoadAdditionalScrobbleDataTask
+from tasks.SubmitTrackIsLovedChanged import SubmitTrackIsLovedChanged
 from tasks.SubmitScrobbleTask import SubmitScrobbleTask
 import util.LastfmApiWrapper as lastfm
 import util.db_helper as db_helper
@@ -65,7 +66,7 @@ class HistoryViewModel(QtCore.QObject):
       )
       
       self.scrobble_history.append(scrobble)
-      self.load_additional_scrobble_data(scrobble)
+      self.load_additional_scrobble_data(scrobble, should_load_itunes_store_data=False)
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
@@ -197,7 +198,8 @@ class HistoryViewModel(QtCore.QObject):
     self.emit_scrobble_ui_update_signals(scrobble)
     
     # Tell Last.fm about our new is_loved value
-    Thread(target=self.lastfm_instance.set_track_is_loved, args=(scrobble, new_is_loved)).start()
+    submit_track_is_loved_task = SubmitTrackIsLovedChanged(self.lastfm_instance, scrobble, new_is_loved)
+    QtCore.QThreadPool.globalInstance().start(submit_track_is_loved_task)
 
   # --- Mock Slots ---
 
@@ -222,8 +224,8 @@ class HistoryViewModel(QtCore.QObject):
   def load_new_media_player_state(self):
     '''Fetch information about current track from media player in a background thread and load it into the app'''
 
-    # Create thread task with reference to the view model (self)
-    load_new_media_player_state_task = FetchNewMediaPlayerStateTask(self)
+    # Create thread task with reference to the media player
+    load_new_media_player_state_task = FetchNewMediaPlayerStateTask(self.media_player)
 
     # Process the new media player state after the data is returned
     load_new_media_player_state_task.finished.connect(self.process_new_media_player_state)
@@ -354,10 +356,10 @@ class HistoryViewModel(QtCore.QObject):
 
     self.load_additional_scrobble_data(self.__current_scrobble)
 
-  def load_additional_scrobble_data(self, scrobble):
+  def load_additional_scrobble_data(self, scrobble, should_load_itunes_store_data=True):
     '''Create thread task to get additional info about track from Last.fm in the background'''
 
-    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble)
+    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble, should_load_itunes_store_data)
 
     # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
     load_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.emit_scrobble_ui_update_signals)
