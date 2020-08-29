@@ -51,6 +51,10 @@ class HistoryListModel(QtCore.QAbstractListModel):
       # Tell Qt that a row has been added
       self.__history_reference.post_append_scrobble.connect(lambda: self.endInsertRows())
 
+      # Tell Qt that we are beginning and ending a full refresh of the model
+      self.__history_reference.begin_refresh_history.connect(lambda: self.beginResetModel())
+      self.__history_reference.end_refresh_history.connect(lambda: self.endResetModel())
+
       # Connect row data changed signals
       self.__history_reference.scrobble_album_image_changed.connect(self.__scrobble_album_image_changed)
       self.__history_reference.scrobble_lastfm_is_loved_changed.connect(self.__scrobble_lastfm_is_loved_changed)
