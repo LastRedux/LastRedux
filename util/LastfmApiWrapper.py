@@ -187,6 +187,7 @@ class LastfmApiWrapper:
     return self.__lastfm_request({
       'method': 'user.getRecentTracks',
       'user': self.__username,
+      'limit': 5,
       'extended': 1 # Include artist data in response
     })
 

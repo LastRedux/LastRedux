@@ -9,7 +9,7 @@ from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
 from models.Scrobble import Scrobble
 from tasks.FetchNewMediaPlayerStateTask import FetchNewMediaPlayerStateTask
-from tasks.SetAdditionalScrobbleDataTask import SetAdditionalScrobbleDataTask
+from tasks.LoadAdditionalScrobbleDataTask import LoadAdditionalScrobbleDataTask
 from tasks.SubmitScrobbleTask import SubmitScrobbleTask
 import util.LastfmApiWrapper as lastfm
 import util.db_helper as db_helper
@@ -63,8 +63,9 @@ class HistoryViewModel(QtCore.QObject):
         lastfm_scrobble['album']['#text'], 
         timestamp=datetime.fromtimestamp(int(lastfm_scrobble['date']['uts']))
       )
+      
       self.scrobble_history.append(scrobble)
-      Thread(target=self.load_additional_scrobble_data, args=(scrobble,)).start()
+      self.load_additional_scrobble_data(scrobble)
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
@@ -88,10 +89,10 @@ class HistoryViewModel(QtCore.QObject):
 
     # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
-    timer.timeout.connect(lambda: self.get_new_media_player_data.emit())
+    timer.timeout.connect(self.load_new_media_player_state)
     timer.start(1000)
 
-    self.fetch_new_media_player_state()
+    self.load_new_media_player_state()
 
   # --- Qt Property Getters and Setters ---
   
@@ -161,7 +162,9 @@ class HistoryViewModel(QtCore.QObject):
     else:
       self.selected_scrobble = self.scrobble_history[new_index]
 
-      Thread(target=self.load_additional_scrobble_data, args=(self.selected_scrobble, True)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+      # Load additional scrobble data if it isn't already present
+      if not self.selected_scrobble.track.has_lastfm_data or not self.selected_scrobble.track.has_itunes_store_data:
+        self.load_additional_scrobble_data(self.selected_scrobble)
     
     # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
     self.selected_scrobble_changed.emit()
@@ -216,15 +219,17 @@ class HistoryViewModel(QtCore.QObject):
   # --- Private Functions ---
 
   @QtCore.Slot()
-  def fetch_new_media_player_state(self):
+  def load_new_media_player_state(self):
+    '''Fetch information about current track from media player in a background thread and load it into the app'''
+
     # Create thread task with reference to the view model (self)
-    fetch_new_media_player_state_task = FetchNewMediaPlayerStateTask(self)
+    load_new_media_player_state_task = FetchNewMediaPlayerStateTask(self)
 
     # Process the new media player state after the data is returned
-    fetch_new_media_player_state_task.finished.connect(self.process_new_media_player_state)
+    load_new_media_player_state_task.finished.connect(self.process_new_media_player_state)
 
     # Add task to global thread pool and run
-    QtCore.QThreadPool.globalInstance().start(fetch_new_media_player_state_task)
+    QtCore.QThreadPool.globalInstance().start(load_new_media_player_state_task)
 
   def submit_scrobble(self, scrobble):
     '''Add a scrobble object to the history array and submit it to Last.fm'''
@@ -347,14 +352,18 @@ class HistoryViewModel(QtCore.QObject):
     self.__cached_media_player_data['track_start'] = new_media_player_state.track_start
     self.__cached_media_player_data['track_finish'] = new_media_player_state.track_finish
 
-    # Create thread task to get additional info about track from Last.fm in the background
-    set_additional_scrobble_data_task = SetAdditionalScrobbleDataTask(self.__current_scrobble)
+    self.load_additional_scrobble_data(self.__current_scrobble)
+
+  def load_additional_scrobble_data(self, scrobble):
+    '''Create thread task to get additional info about track from Last.fm in the background'''
+
+    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble)
 
     # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
-    set_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.emit_scrobble_ui_update_signals)
+    load_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.emit_scrobble_ui_update_signals)
 
     # Add task to global thread pool and run
-    QtCore.QThreadPool.globalInstance().start(set_additional_scrobble_data_task)
+    QtCore.QThreadPool.globalInstance().start(load_additional_scrobble_data_task)
 
   def emit_scrobble_ui_update_signals(self, scrobble):
     # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)

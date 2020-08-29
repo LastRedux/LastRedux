@@ -12,7 +12,7 @@ class FetchNewMediaPlayerStateTask(QtCore.QObject, QtCore.QRunnable):
 
     self.setAutoDelete(True)
 
-  def run(self): # Python-only slots don't need to be camel cased
+  def run(self):
     '''Synchronously run code that makes external requests to the media player'''
 
     media_player_state = None

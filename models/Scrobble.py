@@ -44,7 +44,7 @@ class Scrobble:
     self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
 
     # Get artist info from Last.fm
-    artist_response = Scrobble.lastfm.get_track_info(self)
+    artist_response = Scrobble.lastfm.get_artist_info(self)
     lastfm_artist = artist_response['artist']
     self.track.artist.lastfm_url = lastfm_artist['url']
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
