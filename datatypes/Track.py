@@ -7,12 +7,21 @@ from datatypes.Tag import Tag
 
 @dataclass
 class Track:
+  # Media player data
   title: str
   artist: Artist
   album: Album
-  has_lastfm_data: bool = False # TODO: Move has_lastfm_data and has_itunes_store_data to Scrobble
-  has_itunes_store_data: bool = False
+  
+  # Last.fm data
   lastfm_url: str = ''
-  lastfm_is_loved: bool = False
+  lastfm_global_listeners: int = 0
+  lastfm_global_plays: int = 0
   lastfm_plays: int = 0
+  lastfm_is_loved: bool = False
   lastfm_tags: List[Tag] = field(default_factory=list)
+
+  # Loading state
+  # TODO: Move to Scrobble eventually
+  has_requested_lastfm_data: bool = False 
+  has_lastfm_data: bool = False 
+  has_itunes_store_data: bool = False

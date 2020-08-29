@@ -1,28 +1,36 @@
+import random
+
 from datatypes.MediaPlayerState import MediaPlayerState
 
 class MockPlayerPlugin():
   MOCK_TRACKS = [{
+    'track_title': f'TEST_TRACK_{random.getrandbits(20)}',
+    'artist_name': f'TEST_ARTIST_{random.getrandbits(20)}',
+    'album_title': f'TEST_ALBUM_{random.getrandbits(20)}',
+    'track_start': 0,
+    'track_finish': 221
+  }, {
     'track_title': 'Glitter',
     'artist_name': 'BENEE',
     'album_title': 'Fire on Marzz - EP',
     'track_start': 0,
     'track_finish': 221
   }, {
-    'title': 'Play',
+    'track_title': 'Play',
     'artist_name': 'Years & Years & Jax Jones',
-    'album_name': 'Palo Santo (Deluxe)',
+    'album_title': 'Palo Santo (Deluxe)',
     'start': 0,
     'finish': 221
   }, {
-    'title': 'SouthSide',
+    'track_title': 'SouthSide',
     'artist_name': 'DJ Snake & Eptic',
-    'album_name': 'SouthSide - Single',
+    'album_title': 'SouthSide - Single',
     'start': 0,
     'finish': 221
   }, {
-    'title': 'ON',
+    'track_title': 'ON',
     'artist_name': 'BTS',
-    'album_name': 'MAP OF THE SOUL : 7',
+    'album_title': 'MAP OF THE SOUL : 7',
     'start': 0,
     'finish': 221
   }, {

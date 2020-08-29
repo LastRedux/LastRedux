@@ -71,9 +71,10 @@ class HistoryViewModel(QtCore.QObject):
     }
 
     # Load in recent scrobbles from Last.fm and process them
-    fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance)
-    fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
-    QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
+    if not os.environ.get('NOHISTORY'):
+      fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance)
+      fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
+      QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
 
     # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
@@ -283,15 +284,16 @@ class HistoryViewModel(QtCore.QObject):
   @QtCore.Slot(dict)
   def __process_new_media_player_state(self, new_media_player_state):
     '''Update cached media player state and replace track if the media player track has changed'''
+    
+    # Alert the user of any errors that occured while trying to get media player state
+    if new_media_player_state.error_message:
+      # TODO: Notify user of error message
+      print(new_media_player_state.error_message)
+      return
 
     # Only run if thread actually finished and data was recieved
     # if response['has_thread_succeded']:
     if new_media_player_state.has_track_loaded:
-      # Alert the user of any errors that occured while trying to get media player state
-      if new_media_player_state.error_message:
-        # TODO: Notify user of error message
-        return
-
       current_track_changed = (
         not self.__current_scrobble
         or new_media_player_state.track_title != self.__current_scrobble.track.title

@@ -10,11 +10,14 @@ Item {
   property string lastfmUrl
   property string bio
   property bool isReadMoreLinkVisible
+  property bool isNotInLastfmDatabase
 
-  // Use var instead of int to support undefined
+  // var to support undefined
   property var lastfmGlobalListeners
   property var lastfmGlobalPlays
   property var lastfmPlays
+
+  // var to support lists
   property var lastfmTags
 
   height: column.y + column.height + 30
@@ -91,8 +94,20 @@ Item {
 
     // --- Bio ---
 
+    Rectangle {
+      color: '#ffff00'
+      width: parent.width
+      height: 25
+      visible: isNotInLastfmDatabase
+      
+      Text {
+        text: 'This is the first time anybody has scrobbled this track!'
+      }
+    }
+
     Column {
       spacing: 5
+      visible: !isNotInLastfmDatabase
 
       width: parent.width
 

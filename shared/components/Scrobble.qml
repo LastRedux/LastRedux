@@ -3,8 +3,8 @@ import QtQuick.Controls 2.14 as Controls
 
 Item {
   property alias isSelected: background.visible
-  property string trackTitle: '???'
-  property string artistName: '???'
+  property string trackTitle
+  property string artistName
   property string timestamp
   property bool lastfmIsLoved
   property alias imageSource: coverArt.source

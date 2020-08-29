@@ -61,45 +61,45 @@ Item {
 
         TrackDetails {
           title: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
-          lastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.lastfm_url
+          lastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_url : ''
           lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_listeners : undefined
           lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_plays : undefined
           lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
           lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_tags : []
 
           artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          artistLastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
+          artistLastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_url : ''
 
           albumName: canDisplayScrobble && viewModel.scrobbleTrackData.album.title
-          albumLastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.album.lastfm_url
-
-          albumImageUrl: {
-            if (canDisplayEntireScrobble) {
-              return viewModel.scrobbleTrackData.album.image_url
-            }
-            
-            return ''
-          }
+          albumLastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.album.lastfm_url : ''
+          albumImageUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.album.image_url : ''
 
           width: column.width
         }
 
         ArtistDetails {
           name: canDisplayScrobble ? viewModel.scrobbleTrackData.artist.name : ''
-          lastfmUrl: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_url
-          bio: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.bio : 'Loading Bio...'
-          isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.bio
+          lastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_url : ''
+          bio: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_bio : 'Loading artist bio...'
+          isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_bio
           lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_listeners : undefined
           lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_plays : undefined
           lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
           lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
+          imageUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.image_url : ''
 
-          imageUrl: {
-            if (canDisplayEntireScrobble) {
-              return viewModel.scrobbleTrackData.artist.image_url
+          isNotInLastfmDatabase: {
+            // Assume the track is in the database if a scrobble isn't loaded
+            if (!canDisplayScrobble) {
+              return false
             }
-            
-            return ''
+
+            // Return false in order to show the "Loading bio..." text if the Last.fm data request isn't finished
+            if (!viewModel.scrobbleTrackData.has_requested_lastfm_data) {
+              return false
+            }
+
+            return viewModel.scrobbleTrackData.has_requested_lastfm_data && !viewModel.scrobbleTrackData.has_lastfm_data
           }
 
           width: column.width

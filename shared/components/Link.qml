@@ -22,7 +22,7 @@ Label {
     HoverHandler {
       id: hoverHandler
       
-      cursorShape: Qt.PointingHandCursor
+      cursorShape: address ? Qt.PointingHandCursor : Qt.ArrowCursor
     }
 
     TapHandler {
@@ -41,7 +41,7 @@ Label {
       id: pointHandler
 
       acceptedButtons: Qt.RightButton
-      enabled: address
+      enabled: !!address
       
       onActiveChanged: {
         if (active) {

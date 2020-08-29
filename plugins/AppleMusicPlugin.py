@@ -21,15 +21,22 @@ class AppleMusicPlugin():
     if self.apple_music.playerState() != self.STOPPED_STATE:
       current_track = self.apple_music.currentTrack()
       
-      state.player_position = self.apple_music.playerPosition()
-      state.has_track_loaded = True
       state.track_title = current_track.name()
-      state.album_title = current_track.album()
-      state.artist_name = current_track.artist()
-      state.track_start = current_track.start()
-      state.track_finish = current_track.finish()
-
-      if not state.track_title or not state.album_title or not state.artist_name:
+      
+      if state.track_title:
+        state.artist_name = current_track.artist()
+        
+        if state.artist_name:
+          state.player_position = self.apple_music.playerPosition()
+          state.album_title = current_track.album()
+          state.track_start = current_track.start()
+          state.track_finish = current_track.finish()
+          state.has_track_loaded = True
+        else:
+          # Manually added tracks need an artist to be scrobbled
+          state.error_message = 'The currently playing track needs to be tagged with an artist to scrobble.'
+      else:
+        # Browse/search page error
         state.error_message = 'Due to a bug in Apple Music, Music.app failed to provide track information for the current track. Try switching tracks and then switching back.'
 
     return state

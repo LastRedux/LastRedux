@@ -14,6 +14,8 @@ PictureBackground {
   property var lastfmGlobalListeners 
   property var lastfmGlobalPlays 
   property var lastfmPlays
+
+  // var to support lists
   property var lastfmTags
 
   property string artistName

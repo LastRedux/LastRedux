@@ -31,8 +31,10 @@ class Scrobble:
 
     # Get track info from Last.fm
     track_response = Scrobble.lastfm.get_track_info(self)
+    self.track.has_requested_lastfm_data = True
 
-    if not track_response:
+    # Leave all attributes of the scrobble empty if the track is not in Last.fm's database
+    if 'error' in track_response and track_response['message'] == 'Track not found':
       return
 
     lastfm_track = track_response['track']
@@ -50,7 +52,7 @@ class Scrobble:
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
     self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
     self.track.artist.lastfm_plays = int(lastfm_artist['stats']['userplaycount'])
-    self.track.artist.bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
+    self.track.artist.lastfm_bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
     self.track.artist.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
     self.track.artist.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
@@ -64,14 +66,18 @@ class Scrobble:
     self.track.has_lastfm_data = True
   
   def load_itunes_store_data(self):
-    artist_image, album_image_url, album_image_url_small = itunes_store.get_images(self.track.title, self.track.artist.name, self.track.album.title)
+    itunes_images = itunes_store.get_images(self.track.title, self.track.artist.name, self.track.album.title)
 
-    self.track.artist.image_url = artist_image
+    if itunes_images:
+      # Unpack itunes_images tuple
+      artist_image, album_image_url, album_image_url_small = itunes_images
 
-    # Use iTunes album art if Last.fm didn't provide it
-    if not self.track.album.image_url:
-      self.track.album.image_url = album_image_url
-      self.track.album.image_url_small = album_image_url_small
+      self.track.artist.image_url = artist_image
+
+      # Use iTunes album art if Last.fm didn't provide it
+      if not self.track.album.image_url:
+        self.track.album.image_url = album_image_url
+        self.track.album.image_url_small = album_image_url_small
 
     self.track.has_itunes_store_data = True
 

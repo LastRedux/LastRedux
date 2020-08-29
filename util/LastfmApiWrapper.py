@@ -69,9 +69,8 @@ class LastfmApiWrapper:
       print(resp.text)
 
     # TODO: Handle rate limit condition
-    if 'error' in resp_json:
-      raise Exception(f'Last.fm error: {resp["message"]} with payload: {payload}')
-      return
+    if 'error' in resp_json and resp_json['message'] != 'Track not found':
+      print(f'Last.fm error: {resp_json["message"]} with payload: {payload}')
 
     return resp_json
 
