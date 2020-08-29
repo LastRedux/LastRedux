@@ -8,42 +8,11 @@ from PySide2 import QtCore, QtSql
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
 from models.Scrobble import Scrobble
+from tasks.FetchNewMediaPlayerStateTask import FetchNewMediaPlayerStateTask
+from tasks.SetAdditionalScrobbleDataTask import SetAdditionalScrobbleDataTask
+from tasks.SubmitScrobbleTask import SubmitScrobbleTask
 import util.LastfmApiWrapper as lastfm
 import util.db_helper as db_helper
-
-class MediaPlayerThreadWorker(QtCore.QObject):  
-  finished_getting_media_player_data = QtCore.Signal()
-
-  def track_title(self):
-    QtCore.QObject.__init__(self)
-
-    self.history_reference = None
-    self.response = None
-
-  @QtCore.Slot()
-  def get_new_media_player_data(self): # Python-only slots don't need to be camel cased
-    '''Synchronously run code that makes external requests to the media player in a separate thread'''
-
-    # Using self variable because worker functions can't return
-    self.response = {
-      'has_track_loaded': None,
-      'current_track': None,
-      'player_position': None,
-      'has_thread_succeded': False,
-    }
-
-    if self.history_reference:
-      self.response['has_track_loaded'] = self.history_reference.media_player.has_track_loaded()
-
-      if self.response['has_track_loaded']:
-        self.response['current_track'] = self.history_reference.media_player.get_current_track()
-        self.response['player_position'] = self.history_reference.media_player.get_player_position()
-
-    # Let caller know that entire function has ran and thread hasn't been stopped midway by Qt
-    self.response['has_thread_succeded'] = True
-
-    # Emit signal to call processing function in view model
-    self.finished_getting_media_player_data.emit()
 
 class HistoryViewModel(QtCore.QObject):
   # Scrobble history list model signals
@@ -51,9 +20,6 @@ class HistoryViewModel(QtCore.QObject):
   post_append_scrobble = QtCore.Signal()
   scrobble_album_image_changed = QtCore.Signal(int)
   scrobble_lastfm_is_loved_changed = QtCore.Signal(int)
-
-  # Thread worker signals
-  get_new_media_player_data = QtCore.Signal()
 
   # Qt Property changed signals
   current_scrobble_data_changed = QtCore.Signal()
@@ -66,21 +32,6 @@ class HistoryViewModel(QtCore.QObject):
 
   def __init__(self):
     QtCore.QObject.__init__(self)
-    
-    # Create a background thread for external requests
-    self.media_player_thread = QtCore.QThread()
-    self.media_player_thread.start()
-
-    # Initialize a thread worker and move it to the background thread
-    self.thread_worker = MediaPlayerThreadWorker()
-    self.thread_worker.history_reference = self
-    self.thread_worker.moveToThread(self.media_player_thread)
-    
-    # Create passthrough signal to call get_new_media_player_data function
-    self.get_new_media_player_data.connect(self.thread_worker.get_new_media_player_data)
-
-    # Connect function to process new media player data to request finished signal
-    self.thread_worker.finished_getting_media_player_data.connect(self.process_new_media_player_data)
     
     # Initialize media player plugin
     self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
@@ -131,19 +82,16 @@ class HistoryViewModel(QtCore.QObject):
     # Cached data from the media player for the currently playing track
     self.__cached_media_player_data = {
       'furthest_player_position_reached': None,
-      'track_title': None,
       'track_start': None,
-      'track_finish': None,
-      'artist_name': None,
-      'album_name': None
+      'track_finish': None
     }
 
-    # Start polling interval to check for new media player data
+    # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
     timer.timeout.connect(lambda: self.get_new_media_player_data.emit())
     timer.start(1000)
 
-    self.get_new_media_player_data.emit()
+    self.fetch_new_media_player_state()
 
   # --- Qt Property Getters and Setters ---
   
@@ -267,6 +215,17 @@ class HistoryViewModel(QtCore.QObject):
       
   # --- Private Functions ---
 
+  @QtCore.Slot()
+  def fetch_new_media_player_state(self):
+    # Create thread task with reference to the view model (self)
+    fetch_new_media_player_state_task = FetchNewMediaPlayerStateTask(self)
+
+    # Process the new media player state after the data is returned
+    fetch_new_media_player_state_task.finished.connect(self.process_new_media_player_state)
+
+    # Add task to global thread pool and run
+    QtCore.QThreadPool.globalInstance().start(fetch_new_media_player_state_task)
+
   def submit_scrobble(self, scrobble):
     '''Add a scrobble object to the history array and submit it to Last.fm'''
     
@@ -290,8 +249,9 @@ class HistoryViewModel(QtCore.QObject):
       # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
       self.selected_scrobble_index_changed.emit()
 
-    # Submit scrobble to Last.fm
-    ####### Thread(target=lastfm.submit_scrobble, args=(self.__current_scrobble,)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+    # Submit scrobble to Last.fm in background thread task
+    ####### submit_scrobble_task = SubmitScrobbleTask(self.lastfm_instance, self.__current_scrobble)
+    ####### QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
     if scrobble.track.has_lastfm_data:
@@ -302,58 +262,61 @@ class HistoryViewModel(QtCore.QObject):
       if self.selected_scrobble == scrobble:
         self.selected_scrobble_changed.emit()
 
-  @QtCore.Slot()
-  def process_new_media_player_data(self):
-    response = self.thread_worker.response
+  @QtCore.Slot(dict)
+  def process_new_media_player_state(self, new_media_player_state):
+    '''Update cached media player state and replace track if the media player track has changed'''
 
     # Only run if thread actually finished and data was recieved
-    if response['has_thread_succeded']:
-      if response['has_track_loaded'] and response['current_track']:
-        new_track_data = response['current_track']
+    # if response['has_thread_succeded']:
+    if new_media_player_state.has_track_loaded:
+      # Alert the user of any errors that occured while trying to get media player state
+      if new_media_player_state.error_message:
+        # TODO: Notify user of error message
+        return
 
-        current_track_changed = (
-          self.__current_scrobble is None
-          or not new_track_data['title'] == self.__cached_media_player_data['track_title']
-          or not new_track_data['artist_name'] == self.__cached_media_player_data['artist_name']
-          or not new_track_data['album_name'] == self.__cached_media_player_data['album_name']
-        )
+      current_track_changed = (
+        not self.__current_scrobble
+        or new_media_player_state.track_title != self.__current_scrobble.track.title
+        or new_media_player_state.artist_name != self.__current_scrobble.track.artist.name
+        or new_media_player_state.album_title != self.__current_scrobble.track.album.title
+      )
 
-        if current_track_changed:
-          self.__replace_current_track(new_track_data)
-        
-        # Refresh cached media player data for currently playing track
-        player_position = response['player_position']
+      if current_track_changed:
+        self.__update_scrobble_to_match_new_media_player_data(new_media_player_state)
+      
+      # Refresh cached media player data for currently playing track
+      player_position = new_media_player_state.player_position
 
-        # Only update the furthest reached position in the track if it's further than the last recorded furthest position
-        # This is because if the user scrubs backward in the track, the scrobble progress bar will stop moving until they reach the previous furthest point reached in the track
-        # TODO: Add support for different scrobble submission styles such as counting seconds of playback
-        if player_position >= self.__cached_media_player_data['furthest_player_position_reached']:
-          self.__cached_media_player_data['furthest_player_position_reached'] = player_position
-        
-        # Update scrobble progress bar UI
-        self.current_scrobble_percentage_changed.emit()
-      else: # There is no track loaded (player is stopped)
-        if self.__current_scrobble:
-          self.__current_scrobble = None
+      # Only update the furthest reached position in the track if it's further than the last recorded furthest position
+      # This is because if the user scrubs backward in the track, the scrobble progress bar will stop moving until they reach the previous furthest point reached in the track
+      # TODO: Add support for different scrobble submission styles such as counting seconds of playback
+      if player_position >= self.__cached_media_player_data['furthest_player_position_reached']:
+        self.__cached_media_player_data['furthest_player_position_reached'] = player_position
 
-          # Update the UI in current scrobble sidebar item
-          self.current_scrobble_data_changed.emit()
+      # Update scrobble progress bar UI
+      self.current_scrobble_percentage_changed.emit()
+    else: # There is no track loaded (player is stopped)
+      if self.__current_scrobble:
+        self.__current_scrobble = None
 
-          # If the current scrobble is selected, deselect it
-          if self.__selected_scrobble_index == -1:
-            self.__selected_scrobble_index = None
-            self.selected_scrobble = None
-            
-            # Update the current scrobble highlight and song details pane views
-            self.selected_scrobble_index_changed.emit()
-            self.selected_scrobble_changed.emit()
+        # Update the UI in current scrobble sidebar item
+        self.current_scrobble_data_changed.emit()
 
-  def __replace_current_track(self, new_track_data):
+        # If the current scrobble is selected, deselect it
+        if self.__selected_scrobble_index == -1:
+          self.__selected_scrobble_index = None
+          self.selected_scrobble = None
+          
+          # Update the current scrobble highlight and song details pane views
+          self.selected_scrobble_index_changed.emit()
+          self.selected_scrobble_changed.emit()
+
+  def __update_scrobble_to_match_new_media_player_data(self, new_media_player_state):
     '''Set __current_scrobble to a new Scrobble object created from the currently playing track, update the playback data for track start/finish, and update the UI'''
 
     # Initialize a new Scrobble object with the currently playing track data
     # This will set the Scrobble's timestamp to the current date
-    self.__current_scrobble = Scrobble(new_track_data['title'], new_track_data['artist_name'], new_track_data['album_name'])
+    self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
 
     # Reset flag so new scrobble can later be submitted
     self.__is_current_scrobble_submitted = False
@@ -381,37 +344,18 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble_changed.emit()
 
     # Update cached media player track playback data
-    self.__cached_media_player_data['track_start'] = new_track_data['start']
-    self.__cached_media_player_data['track_finish'] = new_track_data['finish']
+    self.__cached_media_player_data['track_start'] = new_media_player_state.track_start
+    self.__cached_media_player_data['track_finish'] = new_media_player_state.track_finish
 
-    # Store media player track metadata as sometimes it will differ slightly from Last.fm; otherwise the track will be percieved as different every polling cycle
-    self.__cached_media_player_data['track_title'] = new_track_data['title']
-    self.__cached_media_player_data['artist_name'] = new_track_data['artist_name']
-    self.__cached_media_player_data['album_name'] = new_track_data['album_name']
+    # Create thread task to get additional info about track from Last.fm in the background
+    set_additional_scrobble_data_task = SetAdditionalScrobbleDataTask(self.__current_scrobble)
 
-    # Get additional info about track from Last.fm
-    Thread(target=self.load_additional_scrobble_data, args=(self.__current_scrobble, True)).start() # Trailing comma in tuple to tell Python that it's a tuple instead of an expression
+    # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
+    set_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.emit_scrobble_ui_update_signals)
 
-  def load_additional_scrobble_data(self, scrobble, load_itunes_store_data=False):
-    '''Fetch and attach information from Last.fm/iTunes Store to the passed Scrobble object'''
+    # Add task to global thread pool and run
+    QtCore.QThreadPool.globalInstance().start(set_additional_scrobble_data_task)
 
-    # Request additional track data from Last.fm and attach it to the Scrobble instance
-    if not scrobble.track.has_lastfm_data:
-      scrobble.load_lastfm_data()
-
-    # If the app hasn't opened yet, don't load anything else or update the views
-    if not self.selected_scrobble:
-      return
-    
-    # TODO: Only update artist/album image URL instead of entire scrobble data
-    self.emit_scrobble_ui_update_signals(scrobble)
-    
-    # Get artist image and album art from iTunes only if it's for the details view
-    if load_itunes_store_data and not scrobble.track.has_itunes_store_data:
-      # Refresh details view with iTunes details
-      scrobble.load_itunes_store_data()
-      self.emit_scrobble_ui_update_signals(scrobble)
-  
   def emit_scrobble_ui_update_signals(self, scrobble):
     # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
     if scrobble.equals(self.selected_scrobble):
