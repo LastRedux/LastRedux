@@ -12,6 +12,7 @@ Column {
   // Passthrough properties to scrobble view
   property alias isSelected: scrobbleView.isSelected
   property alias lastfmIsLoved: scrobbleView.lastfmIsLoved
+  property alias canLove: scrobbleView.canLove
   property alias trackTitle: scrobbleView.trackTitle
   property alias artistName: scrobbleView.artistName
   property alias imageSource: scrobbleView.imageSource

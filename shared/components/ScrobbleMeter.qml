@@ -74,7 +74,8 @@ Row {
     height: 9
 
     Image {
-      source: `../resources/scrobbleMeterLogo${percentage === 1 ? 'A' : 'Dea'}ctivated.png`
+      source: `../resources/scrobbleMeterLogo-${percentage === 1 ? '' : 'de'}activated.png`
+      
       anchors {
         fill: parent
 

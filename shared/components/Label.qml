@@ -13,7 +13,7 @@ Text {
   property int style: kBodyPrimary
   
   color: '#FFF'
-  opacity: style === kTitleTertiary ? 0.75 : 1
+  opacity: style === kTitleTertiary ? 0.81 : 1
   renderType: Text.NativeRendering
 
   font {

@@ -90,6 +90,7 @@ Item {
       timestamp: model.timestamp
       imageSource: model.hasLastfmData ? model.albumImageUrl : ''
       lastfmIsLoved: model.hasLastfmData ? model.lastfmIsLoved : false
+      canLove: model.hasLastfmData
 
       onSelect: root.select(model.index)
       onToggleLastfmIsLoved: root.toggleLastfmIsLoved(model.index)

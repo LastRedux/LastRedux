@@ -6,6 +6,7 @@ Item {
   property string trackTitle
   property string artistName
   property string timestamp
+  property alias canLove: heart.isEnabled
   property bool lastfmIsLoved
   property alias imageSource: coverArt.source
 
@@ -14,7 +15,17 @@ Item {
 
   opacity: mouseArea.containsPress ? 0.75 : 1
   
-  height: details.height + 10
+  height: column.y + column.height + 5
+
+  MouseArea {
+    id: mouseArea
+
+    hoverEnabled: true
+
+    onClicked: select()
+
+    anchors.fill: parent
+  }
 
   ScrobbleBackground {
     id: background
@@ -23,6 +34,8 @@ Item {
 
     anchors.fill: parent
   }
+
+  // --- Cover Art ---
 
   Picture {
     id: coverArt
@@ -36,44 +49,67 @@ Item {
     }
   }
 
-  MouseArea {
-    id: mouseArea
+  /// --- Track Title ---
 
-    hoverEnabled: true
+  Label {
+    id: trackTitleLabel
 
-    onClicked: select()
+    // Wrap to 2 lines and then truncate
+    elide: Text.ElideRight
+    maximumLineCount: 2
+    
+    style: kTitleSecondary
+    text: trackTitle
+    wrapMode: Text.Wrap
 
-    anchors.fill: parent
+    anchors {
+      top: parent.top
+      right: heart.left
+      left: coverArt.right
+
+      topMargin: 5
+      rightMargin: 5
+      leftMargin: 10
+    }
+  }
+
+  // --- Heart ---
+
+  Heart {
+    id: heart
+
+    isActive: lastfmIsLoved
+
+    onClicked: toggleLastfmIsLoved()
+
+    anchors {
+      verticalCenter: trackTitleLabel.verticalCenter
+
+      right: parent.right
+
+      rightMargin: 15
+    }
   }
 
   Column {
-    id: details
+    id: column
 
     spacing: 3
 
     anchors {
-      top: parent.top
+      top: trackTitleLabel.bottom
       right: parent.right
-      left: coverArt.right
+      left: trackTitleLabel.left
 
-      topMargin: 5
+      topMargin: 3
       rightMargin: 15
-      leftMargin: 10
     }
 
+    // --- Artist Name ---
+
     Label {
-      // Wrap to 2 lines and then truncate
-      elide: Text.ElideRight
-      maximumLineCount: 2
+      id: artistNameLabel
       
-      style: kTitleSecondary
-      text: trackTitle
-      wrapMode: Text.Wrap
-
-      width: parent.width
-    }
-
-    Label {
       // Wrap to 2 lines and then truncate
       elide: Text.ElideRight
       maximumLineCount: 2
@@ -85,19 +121,15 @@ Item {
       width: parent.width
     }
 
+    // --- Timestamp ---
+
     Label {
+      id: timestampLabel
+
       elide: Text.ElideRight
       style: kTitleTertiary
       text: timestamp
       visible: timestamp
-
-      width: parent.width
-    }
-
-    Controls.Button {
-      text: lastfmIsLoved ? '💛' : '💔'
-
-      onClicked: toggleLastfmIsLoved()
     }
   }
 }

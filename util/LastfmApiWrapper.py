@@ -178,7 +178,7 @@ class LastfmApiWrapper:
     }, http_method='POST')
 
   def get_recent_scrobbles(self):
-    '''Get the user's 50 most recent scrobbles'''
+    '''Get the user's 30 most recent scrobbles'''
 
     if not self.__is_logged_in():
       return
@@ -186,7 +186,8 @@ class LastfmApiWrapper:
     return self.__lastfm_request({
       'method': 'user.getRecentTracks',
       'user': self.__username,
-      'extended': 1 # Include artist data in response
+      'extended': 1, # Include artist data in response
+      'limit': 30
     })
 
 # Initialize api wrapper instance with login info once to use in multiple files

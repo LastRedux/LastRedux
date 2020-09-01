@@ -6,7 +6,7 @@ Label {
 
   property string address
   
-  signal onClicked
+  signal clicked
 
   // color: mouseArea.containsMouse ? '#00A0FF' : '#FFF'
   style: kTitleSecondary
@@ -29,7 +29,7 @@ Label {
       acceptedButtons: Qt.LeftButton
 
       onTapped: {
-        root.onClicked()
+        root.clicked()
 
         if (root.address) {
           Qt.openUrlExternally(root.address)

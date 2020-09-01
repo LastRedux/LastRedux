@@ -66,6 +66,7 @@ Item {
     trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobbleData.trackTitle
     artistName: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artistName
     lastfmIsLoved: canDisplayCurrentScrobble && viewModel.currentScrobbleData.lastfmIsLoved
+    canLove: canDisplayCurrentScrobble && viewModel.currentScrobbleData.hasLastfmData
     visible: canDisplayCurrentScrobble
 
     imageSource: {
