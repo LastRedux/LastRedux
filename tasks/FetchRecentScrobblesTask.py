@@ -14,4 +14,3 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
 
     recent_lastfm_scrobbles = self.lastfm_instance.get_recent_scrobbles()['recenttracks']['track']
     self.finished.emit(recent_lastfm_scrobbles)
-    self.finished.emit(recent_lastfm_scrobbles)
