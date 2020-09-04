@@ -5,9 +5,10 @@ Text {
   readonly property int kTitlePrimary: 0
   readonly property int kTitleSecondary: 1
   readonly property int kTitleTertiary: 2
-  readonly property int kBodyPrimary: 3
-  readonly property int kBodySecondary: 4
-  readonly property int kNumber: 5
+  readonly property int kCaption: 3
+  readonly property int kBodyPrimary: 4
+  readonly property int kBodySecondary: 5
+  readonly property int kNumber: 6
 
   property bool isShadowEnabled: true
   property int style: kBodyPrimary
@@ -27,6 +28,7 @@ Text {
       case kTitleTertiary:
         return 0.1
       case kTitleSecondary:
+      case kCaption:
         return 0
       default:
         return 0.2
@@ -49,11 +51,14 @@ Text {
     }
 
     weight: {
-      if (style === kBodyPrimary) {
+      switch (style) {
+      case kCaption:
+        return Font.DemiBold
+      case kBodyPrimary:
         return Font.Medium
+      default:
+        return Font.Bold
       }
-
-      return Font.Bold
     }
   }
 

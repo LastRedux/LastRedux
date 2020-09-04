@@ -9,7 +9,8 @@ import '../shared/components'
 Item {
   id: root
 
-  // Store reference to view model counterpart that can be set from main.qml
+  // Store reference to view model and list model counterparts that can be set from main.qml
+  property HistoryListModel listModel
   property HistoryViewModel viewModel
 
   property bool canDisplayCurrentScrobble: {
@@ -91,12 +92,6 @@ Item {
   }
 
   // --- History List ---
-
-  HistoryListModel {
-    id: listModel
-
-    historyReference: viewModel
-  }
 
   HistoryList {
     model: listModel

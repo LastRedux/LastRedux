@@ -10,6 +10,8 @@ import './views'
 Window {
   id: application
 
+  property bool isOnProfilePage: false
+
   color: '#171717'
   title: 'LastRedux'
   visible: true
@@ -42,9 +44,15 @@ Window {
     }
   }
 
-  // --- History ---
+  // --- History Page ---
   
   // View model
+  HistoryListModel {
+    id: historyListModel
+
+    historyReference: historyViewModel
+  }
+
   HistoryViewModel {
     id: historyViewModel
   }
@@ -56,7 +64,18 @@ Window {
     History {
       id: history
 
+      listModel: historyListModel
       viewModel: historyViewModel
+    }
+  }
+
+  // --- Profile Page ---
+
+  Component {
+    id: profilePage
+
+    Profile {
+      id: profile
     }
   }
 
@@ -74,6 +93,7 @@ Window {
     StackView {
       id: stackView
 
+      clip: true
       initialItem: historyPage
 
       anchors {
@@ -91,6 +111,23 @@ Window {
         top: parent.top
         right: parent.right
         left: parent.left
+      }
+
+      Button {
+        text: 'Switch Tab'
+
+        onClicked: {
+          if (isOnProfilePage) {
+            stackView.replace(historyPage)
+            isOnProfilePage = false
+            return
+          }
+
+          stackView.replace(profilePage)
+          isOnProfilePage = true
+        }
+        
+        anchors.centerIn: parent
       }
     }
   }

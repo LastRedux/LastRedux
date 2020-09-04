@@ -7,7 +7,7 @@ TextEdit {
   readOnly: true
   renderType: Text.NativeRendering
   selectByMouse: true
-  selectionColor: Qt.rgba(255, 255, 255, 0.15)
+  selectionColor: Qt.rgba(1, 1, 1, 0.15)
   wrapMode: Text.Wrap
 
   // Match style of standard label
