@@ -23,7 +23,7 @@ class ProfileViewModel(QtCore.QObject):
 
   # --- Qt Property Getters ---
 
-  def get_profile_info(self):
+  def get_user_info(self):
     return self.user_info
   
   def get_track_listening_statistics(self):
@@ -53,6 +53,7 @@ class ProfileViewModel(QtCore.QObject):
       'image_url': user_info['image'][-2]['#text'], # Get large size
       'real_name': user_info['realname'],
       'username': user_info['name'],
+      'lastfm_url': user_info['url'],
       'total_scrobbles': total_scrobbles,
       'average_daily_scrobbles': average_daily_scrobbles,
       'total_artists': int(overall_artists_info['@attr']['total']),
@@ -64,6 +65,9 @@ class ProfileViewModel(QtCore.QObject):
       'top_artists_this_week': recent_artists_info['artist']
     }
 
+    self.user_info_changed.emit()
+    self.artist_listening_statistics_changed.emit()
+
   @QtCore.Slot()
   def loadTrackListeningStatistics(self):
     overall_tracks_info = self.lastfm_instance.get_top_tracks()['toptracks']
@@ -73,6 +77,8 @@ class ProfileViewModel(QtCore.QObject):
       'top_tracks_overall': overall_tracks_info['track'],
       'top_tracks_this_week': recent_tracks_info['track']
     }
+
+    self.track_listening_statistics_changed.emit()
 
   @QtCore.Slot()
   def loadAlbumListeningStatistics(self):
@@ -84,9 +90,11 @@ class ProfileViewModel(QtCore.QObject):
       'top_albums_this_week': recent_albums_info['album'],
     }
 
+    self.album_listening_statistics_changed.emit()
+
   # --- Qt Properties ---
 
-  profileInfo = QtCore.Property('QVariant', get_profile_info, notify=user_info_changed)
+  userInfo = QtCore.Property('QVariant', get_user_info, notify=user_info_changed)
   trackListeningStatistics = QtCore.Property('QVariant', get_track_listening_statistics, notify=track_listening_statistics_changed)
   artistListeningStatistics = QtCore.Property('QVariant', get_artist_listening_statistics, notify=artist_listening_statistics_changed)
   albumListeningStatistics = QtCore.Property('QVariant', get_album_listening_statistics, notify=album_listening_statistics_changed)

@@ -1,18 +1,37 @@
 import QtQuick 2.14
 
+import Kale 1.0
+
 import 'Profile'
 
 Item {
   id: root
 
+  property ProfileViewModel viewModel
+
+  property bool isUserInfoLoaded: {
+    if (viewModel) {
+      return !!viewModel.userInfo
+    }
+
+    return false
+  }
+
+  Component.onCompleted: {
+    if (viewModel) {
+      viewModel.loadUserInfoAndArtistListeningStatistics()
+    }
+  }
+
   // --- User Link ---
   
   UserLink {
     id: userLink
-
-    // address:
-    // fullName:
-    // username:
+    
+    address: isUserInfoLoaded && viewModel.userInfo.lastfm_url
+    imageSource: isUserInfoLoaded ? viewModel.userInfo.image_url : ''
+    fullName: isUserInfoLoaded ? viewModel.userInfo.real_name : 'Loading...'
+    username: isUserInfoLoaded ? viewModel.userInfo.username : 'Loading...'
 
     anchors {
       top: parent.top
@@ -42,34 +61,38 @@ Item {
 
     ProfileStatistic {
       iconName: 'scrobble'
-      text: `x scrobbles`
+      value: isUserInfoLoaded && viewModel.userInfo.total_scrobbles
+      caption: 'scrobbles'
 
       width: parent.width
     }
 
-    // --- Plays per day ---
+    // --- Scrobbles Per Day ---
 
     ProfileStatistic {
       iconName: 'clock'
-      text: `x plays per day`
+      value: isUserInfoLoaded && viewModel.userInfo.average_daily_scrobbles
+      caption: 'scrobbles per day'
 
       width: parent.width
     }
 
-    // --- Plays per day ---
+    // --- Artists in Library ---
 
     ProfileStatistic {
       iconName: 'artist'
-      text: `x artists in library`
+      value: isUserInfoLoaded && viewModel.userInfo.total_artists
+      caption: 'artists in library'
 
       width: parent.width
     }
 
-    // --- Plays per day ---
+    // --- Loved Tracks ---
 
     ProfileStatistic {
       iconName: 'heart'
-      text: `x loved tracks`
+      value: isUserInfoLoaded && viewModel.userInfo.total_artists
+      caption: 'loved tracks'
 
       width: parent.width
     }

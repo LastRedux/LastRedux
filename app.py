@@ -6,6 +6,7 @@ from PySide2 import QtCore, QtGui, QtQml
 
 from PlatformIntegrations import PlatformIntegrations
 from HistoryViewModel import HistoryViewModel
+from ProfileViewModel import ProfileViewModel
 from DetailsViewModel import DetailsViewModel
 from HistoryListModel import HistoryListModel
 
@@ -28,6 +29,7 @@ if __name__ == '__main__':
   # Create QML components from Python classes
   # major_version and minor_version represent major and minor version numbers for when we import it in QML
   QtQml.qmlRegisterType(HistoryViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryViewModel')
+  QtQml.qmlRegisterType(ProfileViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ProfileViewModel')
   QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
   QtQml.qmlRegisterType(HistoryListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryListModel')
 

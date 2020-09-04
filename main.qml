@@ -71,11 +71,17 @@ Window {
 
   // --- Profile Page ---
 
+  ProfileViewModel {
+    id: profileViewModel
+  }
+
   Component {
     id: profilePage
 
     Profile {
       id: profile
+
+      viewModel: profileViewModel
     }
   }
 

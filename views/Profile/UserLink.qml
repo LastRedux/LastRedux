@@ -5,9 +5,10 @@ import '../../shared/components'
 Item {
   id: root
 
-  property string address
-  property alias fullName: fullNameLabel.text
+  property var address
+  property alias imageSource: avatar.source
   property alias username: usernameLabel.text
+  property alias fullName: fullNameLabel.text
 
   opacity: hoverHandler.hovered && pointHandler.active ? 0.5 : 1
 
@@ -49,10 +50,10 @@ Item {
     }
   }
 
-  // --- Full Name ---
+  // --- Username ---
 
   Label {
-    id: fullNameLabel
+    id: usernameLabel
 
     elide: Text.ElideRight
     style: kTitleSecondary
@@ -67,17 +68,17 @@ Item {
     }
   }
 
-  // --- Username ---
+  // --- Full Name ---
 
   Label {
-    id: usernameLabel
+    id: fullNameLabel
 
     elide: Text.ElideRight
     opacity: 0.81
     style: kBodyPrimary
 
     anchors {
-      top: fullNameLabel.bottom
+      top: usernameLabel.bottom
       right: parent.right
       left: avatar.right
 

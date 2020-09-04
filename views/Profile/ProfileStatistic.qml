@@ -1,12 +1,16 @@
 import QtQuick 2.14
 
 import '../../shared/components'
+import '../../util/helpers.js' as Helpers
 
 Item {
   property string iconName
-  property alias text: label.text
+  property var value
+  property string caption
   
   height: iconContainer.height
+
+  // --- Icon ---
 
   Item {
     id: iconContainer
@@ -26,11 +30,14 @@ Item {
     }
   }
 
+  // --- Value and Caption ---
+
   Label {
     id: label
     
     elide: Text.ElideRight
     style: kCaption
+    text: value ? `${Helpers.numberWithCommas(value)} ${caption}` : ''
 
     anchors {
       verticalCenter: iconContainer.verticalCenter
@@ -39,6 +46,23 @@ Item {
       left: iconContainer.right
 
       leftMargin: 10
+    }
+
+    // --- Placeholder ---
+
+    Rectangle {
+      opacity: 0.2
+      radius: 4
+      visible: !value
+
+      height: 16
+
+      anchors {
+        verticalCenter: parent.verticalCenter
+
+        right: parent.right
+        left: parent.left
+      }
     }
   }
 }
