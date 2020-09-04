@@ -190,6 +190,70 @@ class LastfmApiWrapper:
       'limit': 30
     })
 
+  def get_user_info(self):
+    '''Get information about the user (total scrobbles, image, registered date, url, etc.)'''
+
+    if not self.__is_logged_in():
+      return
+
+    return self.__lastfm_request({
+      'method': 'user.getInfo',
+      'user': self.__username
+    })
+
+  def get_top_tracks(self, period='overall'):
+    '''Get a user's top 5 tracks'''
+
+    if not self.__is_logged_in():
+      return
+
+    return self.__lastfm_request({
+      'method': 'user.getTopTracks',
+      'user': self.__username,
+      'period': period,
+      'limit': 5
+    })
+  
+  def get_top_artists(self, period='overall'):
+    '''Get a user's top 5 artists and artists total'''
+
+    if not self.__is_logged_in():
+      return
+
+    return self.__lastfm_request({
+      'method': 'user.getTopArtists',
+      'user': self.__username,
+      'period': period,
+      'limit': 5
+    })
+
+  def get_top_albums(self, period='overall'):
+    '''Get a user's top 5 albums'''
+
+    if not self.__is_logged_in():
+      return
+
+    return self.__lastfm_request({
+      'method': 'user.getTopAlbums',
+      'user': self.__username,
+      'period': period,
+      'limit': 5
+    })
+  
+  def get_total_loved_tracks(self):
+    '''Get a user's loved tracks'''
+
+    if not self.__is_logged_in():
+      return
+
+    resp_json = self.__lastfm_request({
+      'method': 'user.getLovedTracks',
+      'user': self.__username,
+      'limit': 1 # We don't actually want any loved tracks
+    })
+    
+    return resp_json['lovedtracks']['@attr']['total']
+
 # Initialize api wrapper instance with login info once to use in multiple files
 __lastfm = None
 
