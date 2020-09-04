@@ -83,10 +83,10 @@ Item {
     onClicked: toggleLastfmIsLoved()
 
     anchors {
-      verticalCenter: trackTitleLabel.verticalCenter
-
+      top: parent.top
       right: parent.right
 
+      topMargin: 6
       rightMargin: 15
     }
   }
