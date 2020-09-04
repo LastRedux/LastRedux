@@ -13,7 +13,6 @@ from tasks.SubmitTrackIsLovedChanged import SubmitTrackIsLovedChanged
 from tasks.FetchRecentScrobblesTask import FetchRecentScrobblesTask
 from tasks.SubmitScrobbleTask import SubmitScrobbleTask
 import util.LastfmApiWrapper as lastfm
-import util.db_helper as db_helper
 
 class HistoryViewModel(QtCore.QObject):
   # Qt Property changed signals
@@ -36,16 +35,9 @@ class HistoryViewModel(QtCore.QObject):
     
     # Initialize media player plugin
     self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
-    
-    # Connect to SQLite
-    db_helper.connect()
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
-
-    # Set Last.fm wrapper session key and username from database
-    username, session_key = db_helper.get_lastfm_session_details()
-    self.lastfm_instance.set_login_info(username, session_key)
     
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []

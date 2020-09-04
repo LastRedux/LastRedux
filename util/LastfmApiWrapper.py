@@ -6,6 +6,8 @@ import webbrowser
 
 import requests
 
+import util.db_helper as db_helper
+
 class LastfmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
 
@@ -255,12 +257,20 @@ class LastfmApiWrapper:
     return resp_json['lovedtracks']['@attr']['total']
 
 # Initialize api wrapper instance with login info once to use in multiple files
-__lastfm = None
+__lastfm_instance = None
 
 def get_static_instance():
-  global __lastfm
+  global __lastfm_instance
   
-  if not __lastfm:
-    __lastfm = LastfmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
+  # If there isn't already LastfmApiWrapper instance, create one and log in using the saved credentials
+  if not __lastfm_instance:
+    __lastfm_instance = LastfmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
 
-  return __lastfm
+    # Connect to SQLite
+    db_helper.connect()
+
+    # Set Last.fm wrapper session key and username from database
+    username, session_key = db_helper.get_lastfm_session_details()
+    __lastfm_instance.set_login_info(username, session_key)
+
+  return __lastfm_instance
