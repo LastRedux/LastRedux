@@ -91,7 +91,7 @@ Item {
 
     ProfileStatistic {
       iconName: 'heart'
-      value: isUserInfoLoaded && viewModel.userInfo.total_artists
+      value: isUserInfoLoaded && viewModel.userInfo.total_loved_tracks
       caption: 'loved tracks'
 
       width: parent.width
