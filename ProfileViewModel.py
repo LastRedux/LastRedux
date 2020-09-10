@@ -42,6 +42,7 @@ class ProfileViewModel(QtCore.QObject):
     user_info = self.lastfm_instance.get_user_info()['user']
     overall_artists_info = self.lastfm_instance.get_top_artists()['topartists']
     recent_artists_info = self.lastfm_instance.get_top_artists('7day')['topartists']
+    total_scrobbles_today = self.lastfm_instance.get_total_scrobbles_today()
 
     # Calculate average daily scrobbles
     registered_timestamp = user_info['registered']['#text']
@@ -55,6 +56,7 @@ class ProfileViewModel(QtCore.QObject):
       'username': user_info['name'],
       'lastfm_url': user_info['url'],
       'total_scrobbles': total_scrobbles,
+      'total_scrobbles_today': total_scrobbles_today,
       'average_daily_scrobbles': average_daily_scrobbles,
       'total_artists': int(overall_artists_info['@attr']['total']),
       'total_loved_tracks': self.lastfm_instance.get_total_loved_tracks()

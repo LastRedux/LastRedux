@@ -3,6 +3,7 @@ import time
 import json
 import hashlib
 import webbrowser
+from datetime import datetime, time
 
 import requests
 
@@ -179,7 +180,7 @@ class LastfmApiWrapper:
       'artist': scrobble.track.artist.name
     }, http_method='POST')
 
-  def get_recent_scrobbles(self):
+  def get_recent_scrobbles(self, period=None):
     '''Get the user's 30 most recent scrobbles'''
 
     if not self.__is_logged_in():
@@ -191,6 +192,24 @@ class LastfmApiWrapper:
       'extended': 1, # Include artist data in response
       'limit': 30
     })
+
+  def get_total_scrobbles_today(self):
+    '''Get total scrobbles in the range of the current day'''
+
+    if not self.__is_logged_in():
+      return
+
+    # Get the unix timestamp of 12am today
+    midnight = int(datetime.combine(datetime.now(), time.min).timestamp()) # Convert to int to trim decimal points (Last.fm 
+
+    resp = self.__lastfm_request({
+      'method': 'user.getRecentTracks',
+      'user': self.__username,
+      'from': midnight,
+      'limit': 1
+    })
+
+    return resp['recenttracks']['@attr']['total']
 
   def get_user_info(self):
     '''Get information about the user (total scrobbles, image, registered date, url, etc.)'''
@@ -274,3 +293,5 @@ def get_static_instance():
     __lastfm_instance.set_login_info(username, session_key)
 
   return __lastfm_instance
+
+  
