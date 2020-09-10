@@ -67,12 +67,22 @@ Item {
       width: parent.width
     }
 
-    // --- Scrobbles Per Day ---
+    // --- Scrobbles Today ---
 
     ProfileStatistic {
       iconName: 'clock'
+      value: isUserInfoLoaded && viewModel.userInfo.total_scrobbles_today
+      caption: 'plays today'
+
+      width: parent.width
+    }
+    
+    // --- Scrobbles Per Day ---
+
+    ProfileStatistic {
+      iconName: 'calendar'
       value: isUserInfoLoaded && viewModel.userInfo.average_daily_scrobbles
-      caption: 'scrobbles per day'
+      caption: 'plays per day'
 
       width: parent.width
     }

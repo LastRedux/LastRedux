@@ -1,6 +1,7 @@
 import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Window 2.14
+import Qt.labs.platform 1.1
 
 import Kale 1.0
 
@@ -20,6 +21,55 @@ Window {
   minimumHeight: 470 //540
   width: 900
   height: 589
+
+  onClosing: { 
+    application.hide()
+
+    // Prevent the window close event from being accepted by the system
+    close.accepted = false // close is a hidden parameter to the onClosing function
+  }
+
+  SystemTrayIcon {
+    id: trayIcon
+
+    visible: true
+    icon.source: 'shared/resources/trayIcon.png'
+    icon.mask: true
+
+    menu: Menu {
+      MenuItem {
+        text: qsTr('Show Window')
+        shortcut: 'Ctrl+Meta+S'
+
+        onTriggered: {
+          application.show()
+          application.raise()
+          application.requestActivate()
+        }
+      }
+      
+      MenuItem {
+        text: qsTr('Preferences...')
+        shortcut: StandardKey.Preferences
+
+        onTriggered: trayIcon.showMessage('', 'If you are seeing this, welcome to the early commit zone :)')
+      }
+
+      MenuSeparator { }
+
+      MenuItem {
+        text: qsTr('Quit LastRedux')
+        shortcut: StandardKey.Quit
+
+        onTriggered: {
+          // Close the application window to deallocate its resources before quitting (otherwise PySide crashes)
+          application.close()
+
+          Qt.quit()
+        }
+      }
+    }
+  }
 
   // --- Details ---
   
