@@ -2,13 +2,14 @@ import QtQuick 2.14
 import QtGraphicalEffects 1.0
 
 Text {
-  readonly property int kTitlePrimary: 0
-  readonly property int kTitleSecondary: 1
-  readonly property int kTitleTertiary: 2
-  readonly property int kCaption: 3
-  readonly property int kBodyPrimary: 4
-  readonly property int kBodySecondary: 5
-  readonly property int kNumber: 6
+  readonly property int kLargeTitle: 0
+  readonly property int kTitlePrimary: 1
+  readonly property int kTitleSecondary: 2
+  readonly property int kTitleTertiary: 3
+  readonly property int kCaption: 4
+  readonly property int kBodyPrimary: 5
+  readonly property int kBodySecondary: 6
+  readonly property int kNumber: 7
 
   property bool isShadowEnabled: true
   property int style: kBodyPrimary
@@ -37,6 +38,8 @@ Text {
 
     pixelSize: {
       switch (style) {
+      case kLargeTitle:
+        return 29
       case kTitlePrimary:
         return 26
       case kTitleTertiary:

@@ -29,6 +29,19 @@ Window {
     close.accepted = false // close is a hidden parameter to the onClosing function
   }
 
+  Window {
+    width: 632
+    height: 427
+    visible: true
+    color: '#1b1b1b'
+
+    modality: Qt.WindowModal
+    
+    Onboarding {
+      anchors.fill: parent
+    }
+  }
+
   SystemTrayIcon {
     id: trayIcon
 

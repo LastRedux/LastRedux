@@ -11,7 +11,8 @@ class PlatformIntegrations(QtCore.QObject):
 
     # Get the system window ID of the first window
     # Other windows like preferences and onboarding should have the standard window style
-    window_id = QtGui.QGuiApplication.allWindows()[0].winId()
+    # TODO: Instead of using 1 actually find the main window
+    window_id = QtGui.QGuiApplication.allWindows()[1].winId()
 
     # Convert system window ID into Objective-C NSView object and get the NSWindow of the view
     window_view = objc.objc_object(c_void_p=ctypes.c_void_p(window_id))
