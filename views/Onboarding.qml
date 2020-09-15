@@ -4,12 +4,12 @@ import QtQuick.Controls 2.14
 import 'Onboarding'
 
 StackView {
-  initialItem: connectingPage
+  initialItem: welcomePage
 
   Component {
-    id: connectingPage
+    id: welcomePage
 
-    OnboardingReady {
+    OnboardingWelcome {
       id: welcome
     }
   }

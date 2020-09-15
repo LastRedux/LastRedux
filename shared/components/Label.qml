@@ -15,6 +15,7 @@ Text {
   property int style: kBodyPrimary
   
   color: '#FFF'
+  linkColor: color
   opacity: style === kTitleTertiary ? 0.81 : 1
   renderType: Text.NativeRendering
 

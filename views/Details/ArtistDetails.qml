@@ -137,7 +137,7 @@ Item {
 
     source: imageUrl
 
-    width: 106
+    width: 139
     height: width
 
     anchors {

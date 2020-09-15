@@ -28,8 +28,8 @@ Item {
 
       Label {
         horizontalAlignment: Qt.AlignHCenter
-        textFormat: Text.RichText
-        text: 'Connect to Last.fm to track Apple Music listening activity on this Mac.<br>If you don’t have a Last.fm account yet, you can create one <a href="https://www.last.fm/join">here</a>.'
+        textFormat: Text.StyledText
+        text: 'Connect to Last.fm to track Apple Music listening activity on this Mac.<br>If you don’t have a Last.fm account yet, you can create one <b><a href="https://www.last.fm/join">here</a></b>.'
         lineHeight: 1.25
         
         onLinkActivated: Qt.openUrlExternally(link)
@@ -46,11 +46,13 @@ Item {
     }
   }
 
-  Rectangle {
+  Image {
     id: buttonContainer
 
-    color: '#171717'
-    height: 60
+    fillMode: Image.TileHorizontally
+    source: '../../shared/resources/onboardingButtonContainerBackground.png'
+    
+    height: 58
     
     anchors {
       right: parent.right
@@ -58,8 +60,8 @@ Item {
       left: parent.left
     }
 
-    Button {
-      text: 'Use Without Account'
+    LabelButton {
+      title: 'Use Without Account'
 
       anchors {
         left: parent.left
@@ -69,8 +71,9 @@ Item {
       }
     }
 
-    Button {
-      text: 'Connect to Last.fm 🚀'
+    LabelButton {
+      style: kPrimary
+      title: 'Connect to Last.fm 🚀'
 
       anchors {
         right: parent.right

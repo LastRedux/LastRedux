@@ -1,4 +1,3 @@
-import QtQuick.Controls 2.14
 import QtQuick 2.14
 
 import '../../shared/components'
@@ -40,7 +39,6 @@ Item {
         width: parent.width
 
         Label {
-          textFormat: Text.RichText
           horizontalAlignment: Qt.AlignHCenter
           text: 'LastRedux is ready 🔥'
           style: kLargeTitle
@@ -50,7 +48,7 @@ Item {
 
         Label {
           horizontalAlignment: Qt.AlignHCenter
-          textFormat: Text.RichText
+          textFormat: Text.StyledText
           text: 'LastRedux lives in your Mac’s status bar. Reopen the LastRedux window by<br>clicking the icon and selecting <b>Show Window</b>.'
           lineHeight: 1.1
           wrapMode: Text.Wrap
@@ -60,8 +58,8 @@ Item {
 
         Label {
           horizontalAlignment: Qt.AlignHCenter
-          textFormat: Text.RichText
-          text: 'If you have questions or bug reports, please share them on <a href="https://github.com/LastRedux/LastRedux">our GitHub</a>.'
+          textFormat: Text.StyledText
+          text: 'If you have questions or bug reports, please share them on <b><a href="https://github.com/LastRedux/LastRedux">our GitHub</a></b>.'
 
           onLinkActivated: Qt.openUrlExternally(link)
           
@@ -78,11 +76,13 @@ Item {
     }
   }
 
-  Rectangle {
+  Image {
     id: buttonContainer
 
-    color: '#171717'
-    height: 60
+    fillMode: Image.TileHorizontally
+    source: '../../shared/resources/onboardingButtonContainerBackground.png'
+    
+    height: 58
     
     anchors {
       right: parent.right
@@ -90,14 +90,15 @@ Item {
       left: parent.left
     }
 
-    Button {
-      text: 'Finish'
+    LabelButton {
+      style: kPrimary
+      title: 'Finish'
 
       anchors {
         right: parent.right
         verticalCenter: parent.verticalCenter
         
-        rightMargin: 20
+        rightMargin: 15
       }
     }
   }

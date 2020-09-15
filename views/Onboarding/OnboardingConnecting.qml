@@ -28,7 +28,7 @@ Item {
 
       Label {
         horizontalAlignment: Qt.AlignHCenter
-        textFormat: Text.RichText
+        textFormat: Text.StyledText
         text: 'Authorize LastRedux by clicking <b>Yes, Allow Access</b> on Last.fm. If a webpage didn’t open, click <b>Try Again</b> or copy and paste this link into your browser:'
         lineHeight: 1.25
         wrapMode: Text.Wrap
@@ -44,11 +44,13 @@ Item {
     }
   }
 
-  Rectangle {
+  Image {
     id: buttonContainer
 
-    color: '#171717'
-    height: 60
+    fillMode: Image.TileHorizontally
+    source: '../../shared/resources/onboardingButtonContainerBackground.png'
+    
+    height: 58
     
     anchors {
       right: parent.right
@@ -56,14 +58,15 @@ Item {
       left: parent.left
     }
 
-    Button {
-      text: 'Back'
+    LabelButton {
+      style: kBack
+      title: 'Back'
 
       anchors {
         left: parent.left
         verticalCenter: parent.verticalCenter
         
-        leftMargin: 20
+        leftMargin: 15
       }
     }
 
@@ -74,15 +77,16 @@ Item {
         right: parent.right
         verticalCenter: parent.verticalCenter
         
-        rightMargin: 20
+        rightMargin: 15
       }
       
-      Button {
-        text: 'Try Again'
+      LabelButton {
+        title: 'Try Again'
       }
 
-      Button {
-        text: 'Continue'
+      LabelButton {
+        style: kPrimary
+        title: 'Continue'
       }
     }
   }

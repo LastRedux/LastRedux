@@ -36,7 +36,7 @@ PictureBackground {
 
     source: albumImageUrl
 
-    width: 160
+    width: 181
 
     anchors {
       top: parent.top

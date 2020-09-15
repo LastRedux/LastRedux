@@ -53,7 +53,7 @@ Rectangle {
   Label {
     id: titleLabel
 
-    style: kBodySecondary
+    style: kTitleSecondary
     verticalAlignment: Qt.AlignVCenter
 
     x: 8
