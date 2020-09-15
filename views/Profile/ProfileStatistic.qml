@@ -37,7 +37,8 @@ Item {
     
     elide: Text.ElideRight
     style: kCaption
-    text: value ? `${Helpers.numberWithCommas(value)} ${caption}` : ''
+    text: value ? `${Helpers.numberWithCommas(value)} ${caption}` : caption
+    visible: value
 
     anchors {
       verticalCenter: iconContainer.verticalCenter
@@ -47,22 +48,22 @@ Item {
 
       leftMargin: 10
     }
+  }
 
-    // --- Placeholder ---
+  // --- Placeholder Box ---
 
-    Rectangle {
-      opacity: 0.2
-      radius: 4
-      visible: !value
+  Rectangle {
+    opacity: 0.2
+    radius: 4
+    visible: !value
 
-      height: 16
+    width: label.contentWidth + 15
+    height: 16
 
-      anchors {
-        verticalCenter: parent.verticalCenter
+    anchors {
+      verticalCenter: label.verticalCenter
 
-        right: parent.right
-        left: parent.left
-      }
+      left: label.left
     }
   }
 }
