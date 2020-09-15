@@ -150,6 +150,17 @@ class LastfmApiWrapper:
       'username': self.__username,
     })
 
+  def get_friends(self):
+    '''Get a list of a the user's friends'''
+
+    if not self.__is_logged_in():
+      return 
+
+    return self.__lastfm_request({
+      'method': 'user.getFriends',
+      'username': self.__username
+    })
+
   def submit_scrobble(self, scrobble):
     '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
 
@@ -176,17 +187,21 @@ class LastfmApiWrapper:
       'artist': scrobble.track.artist.name
     }, http_method='POST')
 
-  def get_recent_scrobbles(self, period=None):
+  def get_recent_scrobbles(self, username=None, period=None, limit=30):
     '''Get the user's 30 most recent scrobbles'''
+
+    # Default parameters cannot refer to self
+    if not username:
+      username = self.__username
 
     if not self.__is_logged_in():
       return
 
     return self.__lastfm_request({
       'method': 'user.getRecentTracks',
-      'user': self.__username,
+      'user': username,
       'extended': 1, # Include artist data in response
-      'limit': 30
+      'limit': limit
     })
 
   def get_total_scrobbles_today(self):
