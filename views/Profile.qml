@@ -9,17 +9,18 @@ Item {
 
   property ProfileViewModel viewModel
 
-  property bool isUserInfoLoaded: {
+  property bool areUserStatisticsLoaded: {
     if (viewModel) {
-      return !!viewModel.userInfo
+      return !!viewModel.userStatistics
     }
 
     return false
   }
 
+  // When the StackView switches to this tab, request date for the profile view
   Component.onCompleted: {
     if (viewModel) {
-      viewModel.loadUserInfoAndArtistListeningStatistics()
+      viewModel.loadUserStatistics()
     }
   }
 
@@ -28,10 +29,10 @@ Item {
   UserLink {
     id: userLink
     
-    address: isUserInfoLoaded && viewModel.userInfo.lastfm_url
-    imageSource: isUserInfoLoaded ? viewModel.userInfo.image_url : ''
-    fullName: isUserInfoLoaded ? viewModel.userInfo.real_name : 'Loading...'
-    username: isUserInfoLoaded ? viewModel.userInfo.username : 'Loading...'
+    address: areUserStatisticsLoaded && viewModel.userInfo.lastfm_url
+    imageSource: areUserStatisticsLoaded ? viewModel.userInfo.image_url : ''
+    fullName: areUserStatisticsLoaded ? viewModel.userInfo.real_name : 'Loading...'
+    username: areUserStatisticsLoaded ? viewModel.userInfo.username : 'Loading...'
 
     anchors {
       top: parent.top
@@ -61,7 +62,7 @@ Item {
 
     ProfileStatistic {
       iconName: 'scrobble'
-      value: isUserInfoLoaded && viewModel.userInfo.total_scrobbles
+      value: areUserStatisticsLoaded && viewModel.userStatistics.total_scrobbles
       caption: 'scrobbles'
 
       width: parent.width
@@ -71,7 +72,7 @@ Item {
 
     ProfileStatistic {
       iconName: 'clock'
-      value: isUserInfoLoaded && viewModel.userInfo.total_scrobbles_today
+      value: areUserStatisticsLoaded && viewModel.userStatistics.total_scrobbles_today
       caption: 'plays today'
 
       width: parent.width
@@ -81,7 +82,7 @@ Item {
 
     ProfileStatistic {
       iconName: 'calendar'
-      value: isUserInfoLoaded && viewModel.userInfo.average_daily_scrobbles
+      value: areUserStatisticsLoaded && viewModel.userStatistics.average_daily_scrobbles
       caption: 'plays per day'
 
       width: parent.width
@@ -91,7 +92,7 @@ Item {
 
     ProfileStatistic {
       iconName: 'artist'
-      value: isUserInfoLoaded && viewModel.userInfo.total_artists
+      value: areUserStatisticsLoaded && viewModel.userStatistics.total_artists
       caption: 'artists in library'
 
       width: parent.width
@@ -101,7 +102,7 @@ Item {
 
     ProfileStatistic {
       iconName: 'heart'
-      value: isUserInfoLoaded && viewModel.userInfo.total_loved_tracks
+      value: areUserStatisticsLoaded && viewModel.userStatistics.total_loved_tracks
       caption: 'loved tracks'
 
       width: parent.width

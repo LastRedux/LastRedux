@@ -2,7 +2,6 @@ import os
 import time
 import json
 import hashlib
-import webbrowser
 from datetime import datetime, time
 
 import requests
@@ -13,6 +12,7 @@ class LastfmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
 
   def __init__(self, api_key, client_secret):
+    # Private attributes
     self.__api_key = api_key
     self.__client_secret = client_secret
     self.__session_key = None
@@ -78,7 +78,7 @@ class LastfmApiWrapper:
     return resp_json
 
   def __is_logged_in(self):
-    if not self.__session_key or not self.__username:
+    if not self.__session_key:
       raise Exception('Last.fm api wrapper not logged in')
     
     return True
@@ -90,17 +90,17 @@ class LastfmApiWrapper:
       'method': 'auth.getToken'
     })['token']
 
-  def set_login_info(self, username, session_key):
-    self.__username = username
+  def set_login_info(self, session_key, username):
     self.__session_key = session_key
+    self.__username = username
 
-  def open_authorization_url(self, auth_token):
-    '''Launch default browser to allow user to authorize our app'''
+  def generate_authorization_url(self, auth_token):
+    '''Generate a Last.fm authentication url for the user to allow access to their account'''
     
-    webbrowser.open(f'https://www.last.fm/api/auth/?api_key={self.__api_key}&token={auth_token}')
+    return f'https://www.last.fm/api/auth/?api_key={self.__api_key}&token={auth_token}'
 
-  def get_new_session(self, auth_token):
-    '''Use an auth token to get a session key to access the user's account (does not expire)'''
+  def get_session_key_and_username(self, auth_token):
+    '''Use an auth token to get the session key and to access the user's account (does not expire)'''
     
     response_json = self.__lastfm_request({
       'method': 'auth.getSession',
@@ -108,13 +108,9 @@ class LastfmApiWrapper:
     })
 
     try:
-      session_key = response_json['session']['key']
-      username = response_json['session']['name']
-
-      return username, session_key
-
+      return response_json['session']['key'], response_json['session']['name']
     except KeyError:
-      print(response_json)
+      raise Exception(f'Error loading new session key: {response_json}')
 
   def get_track_info(self, scrobble):
     '''Get track info about a Scrobble object from a user's Last.fm library'''
@@ -289,8 +285,8 @@ def get_static_instance():
     db_helper.connect()
 
     # Set Last.fm wrapper session key and username from database
-    username, session_key = db_helper.get_lastfm_session_details()
-    __lastfm_instance.set_login_info(username, session_key)
+    session_key, username = db_helper.get_lastfm_session_details()
+    __lastfm_instance.set_login_info(session_key, username)
 
   return __lastfm_instance
 

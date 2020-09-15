@@ -9,7 +9,7 @@ import util.LastfmApiWrapper as lastfm
 import util.iTunesApiHelper as itunes_store
 
 class Scrobble:
-  lastfm = None
+  lastfm_instance = None
 
   def __init__(self, track_title, artist_name, album_name, timestamp=None):
     '''Entry in scrobble history with track information and a timestamp'''
@@ -23,14 +23,14 @@ class Scrobble:
     self.timestamp = timestamp or datetime.now()
 
     # All scrobbles should store a reference to the same lastfm api wrapper instance
-    if not Scrobble.lastfm:
-      Scrobble.lastfm = lastfm.get_static_instance()
+    if not Scrobble.lastfm_instance:
+      Scrobble.lastfm_instance = lastfm.get_static_instance()
 
   def load_lastfm_data(self):
     '''Request info from Last.fm about the track, album, and artist'''
 
     # Get track info from Last.fm
-    track_response = Scrobble.lastfm.get_track_info(self)
+    track_response = Scrobble.lastfm_instance.get_track_info(self)
     self.track.has_requested_lastfm_data = True
 
     # Leave all attributes of the scrobble empty if the track is not in Last.fm's database
@@ -46,7 +46,7 @@ class Scrobble:
     self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
 
     # Get artist info from Last.fm
-    artist_response = Scrobble.lastfm.get_artist_info(self)
+    artist_response = Scrobble.lastfm_instance.get_artist_info(self)
     lastfm_artist = artist_response['artist']
     self.track.artist.lastfm_url = lastfm_artist['url']
     self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
@@ -57,7 +57,7 @@ class Scrobble:
     self.track.artist.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
     # Get album info from Last.fm
-    album_response = Scrobble.lastfm.get_album_info(self)
+    album_response = Scrobble.lastfm_instance.get_album_info(self)
     lastfm_album = album_response['album']
     self.track.album.lastfm_url = lastfm_album['url']
     self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
