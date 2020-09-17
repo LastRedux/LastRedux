@@ -30,9 +30,10 @@ Window {
   }
 
   Window {
+    id: onboardingWindow
+
     color: '#1f1f1f'
     modality: Qt.WindowModal
-    visible: true
 
     minimumWidth: 632
     minimumHeight: 427
@@ -61,6 +62,12 @@ Window {
           application.raise()
           application.requestActivate()
         }
+      }
+
+      MenuItem {
+        text: qsTr('Open Onboarding...')
+
+        onTriggered: onboardingWindow.show()
       }
       
       MenuItem {
