@@ -1,5 +1,5 @@
 import QtQuick 2.14
-import QtQuick.Controls 2.14
+import QtQuick.Controls 2.14 as Controls
 import QtQuick.Window 2.14
 import Qt.labs.platform 1.1
 
@@ -17,16 +17,31 @@ Window {
   title: 'LastRedux'
   visible: true
 
-  minimumWidth: 755 //866
-  minimumHeight: 470 //540
-  width: 900
-  height: 589
+  minimumWidth: 755
+  minimumHeight: 470
+  width: 957
+  height: 600
 
   onClosing: { 
     application.hide()
 
     // Prevent the window close event from being accepted by the system
     close.accepted = false // close is a hidden parameter to the onClosing function
+  }
+
+  Window {
+    color: '#1f1f1f'
+    modality: Qt.WindowModal
+    visible: true
+
+    minimumWidth: 632
+    minimumHeight: 427
+    maximumWidth: 632
+    maximumHeight: 427
+    
+    Onboarding {
+      anchors.fill: parent
+    }
   }
 
   SystemTrayIcon {
@@ -146,7 +161,7 @@ Window {
       left: parent.left
     }
 
-    StackView {
+    Controls.StackView {
       id: stackView
 
       clip: true
@@ -169,8 +184,9 @@ Window {
         left: parent.left
       }
 
-      Button {
-        text: 'Switch Tab'
+      LabelButton {
+        isCompact: true
+        title: 'Switch Tab'
 
         onClicked: {
           if (isOnProfilePage) {

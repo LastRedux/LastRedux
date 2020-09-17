@@ -1,5 +1,4 @@
 import QtQuick 2.14
-import QtQuick.Controls 2.14
 
 import Kale 1.0
 
@@ -44,14 +43,16 @@ Item {
       text: 'Mock Player Plugin'
     }
     
-    Button {
-      text: 'Play next song'
+    LabelButton {
+      isCompact: true
+      title: 'Play next song'
 
       onClicked: viewModel.MOCK_playNextSong()
     }
 
-    Button {
-      text: 'Move song to 75%'
+    LabelButton {
+      isCompact: true
+      title: 'Move song to 75%'
 
       onClicked: viewModel.MOCK_moveTo75Percent()
     }
