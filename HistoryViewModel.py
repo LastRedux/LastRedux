@@ -68,10 +68,14 @@ class HistoryViewModel(QtCore.QObject):
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
 
+    if os.environ.get('SUBMIT_SCROBBLES'):
+      print('~~~ SCROBBLE SUBMISSION IS ENABLED ~~~')
+
     # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
     timer.timeout.connect(self.__load_new_media_player_state)
-    timer.start(1000)
+    polling_interval = 100 if os.environ.get('FASTPOLLING') else 1000
+    timer.start(polling_interval)
 
     # Load media player state immediately
     self.__load_new_media_player_state()
@@ -238,8 +242,9 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble_index_changed.emit()
 
     # Submit scrobble to Last.fm in background thread task
-    ####### submit_scrobble_task = SubmitScrobbleTask(self.lastfm_instance, self.__current_scrobble)
-    ####### QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
+    if os.environ.get('SUBMIT_SCROBBLES'):
+      submit_scrobble_task = SubmitScrobbleTask(self.lastfm_instance, self.__current_scrobble)
+      QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
     if scrobble.track.has_lastfm_data:
