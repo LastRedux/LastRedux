@@ -14,7 +14,7 @@ Item {
 
   signal clicked
 
-  opacity: isEnabled ? (mouseArea.pressed ? 0.75 : 1) : 0.5
+  opacity: isEnabled ? 1 : 0.5
 
   width: height
   height: isCompact ? 24 : 30
@@ -65,7 +65,7 @@ Item {
 
     opacity: {
       if (isEnabled) {
-        if (mouseArea.containsMouse) {
+        if (mouseArea.containsPress) {
           if (style === kPrimary) {
             return 0.25
           }
@@ -75,12 +75,6 @@ Item {
       }
 
       return 0
-    }
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: 75
-      }
     }
 
     anchors.fill: backgroundImage
