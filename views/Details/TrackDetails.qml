@@ -89,36 +89,47 @@ PictureBackground {
 
   // --- Album Name ---
   
-  Label {
-    id: albumNameLeadingText
+  Item {
+    id: albumView
+    visible: !!albumName
 
-    style: kBodyPrimary
-    isShadowEnabled: false
-    text: 'from'
+    height: albumNameLeadingText.height
 
     anchors {
       top: artistNameView.bottom
       left: trackNameView.left
+      right: trackNameView.right
 
       topMargin: 5
     }
-  }
 
-  Link {
-    id: albumNameView
+    Label {
+      id: albumNameLeadingText
 
-    elide: Text.ElideRight
-    isShadowEnabled: false
-    text: albumName
-    address: albumLastfmUrl
+      style: kBodyPrimary
+      isShadowEnabled: false
+      text: 'from'
 
-    // Position to the right of leading text
-    anchors {
-      top: albumNameLeadingText.top
-      right: trackNameView.right
-      left: albumNameLeadingText.right
-      
-      leftMargin: 3
+      anchors {
+        left: parent.left
+      }
+    }
+
+    Link {
+      id: albumNameView
+
+      elide: Text.ElideRight
+      isShadowEnabled: false
+      text: albumName
+      address: albumLastfmUrl
+
+      // Position to the right of leading text
+      anchors {
+        right: parent.right
+        left: albumNameLeadingText.right
+        
+        leftMargin: 3
+      }
     }
   }
 
@@ -131,7 +142,7 @@ PictureBackground {
     visible: lastfmPlays !== undefined
 
     anchors {
-      top: albumNameView.bottom
+      top: albumView.visible ? albumView.bottom : artistNameView.bottom
       right: trackNameView.right
       left: trackNameView.left
 
