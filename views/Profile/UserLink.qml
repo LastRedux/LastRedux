@@ -8,7 +8,7 @@ Item {
   property var address
   property alias imageSource: avatar.source
   property alias username: usernameLabel.text
-  property alias fullName: fullNameLabel.text
+  property alias fullName: realNameLabel.text
 
   opacity: hoverHandler.hovered && pointHandler.active ? 0.5 : 1
 
@@ -68,10 +68,10 @@ Item {
     }
   }
 
-  // --- Full Name ---
+  // --- Real Name ---
 
   Label {
-    id: fullNameLabel
+    id: realNameLabel
 
     elide: Text.ElideRight
     opacity: 0.81
