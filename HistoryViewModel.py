@@ -1,8 +1,7 @@
 import os
-import re
 from datetime import datetime
 
-from PySide2 import QtCore, QtSql
+from PySide2 import QtCore
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
