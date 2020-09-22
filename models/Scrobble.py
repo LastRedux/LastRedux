@@ -11,12 +11,12 @@ import util.iTunesApiHelper as itunes_store
 class Scrobble:
   lastfm_instance = None
 
-  def __init__(self, track_title, artist_name, album_name, timestamp=None):
+  def __init__(self, track_title, artist_name, album_title=None, timestamp=None):
     '''Entry in scrobble history with track information and a timestamp'''
 
     # Create Track instance with associated Artist and Album instances
     artist = Artist(artist_name)
-    album = Album(album_name)
+    album = Album(album_title)
     self.track = Track(track_title, artist, album)
     
     # Automatically generate timestamp if one isn't passed
@@ -56,12 +56,16 @@ class Scrobble:
     self.track.artist.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
     self.track.artist.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
     
-    # Get album info from Last.fm
-    album_response = Scrobble.lastfm_instance.get_album_info(self)
-    lastfm_album = album_response['album']
-    self.track.album.lastfm_url = lastfm_album['url']
-    self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
-    self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
+    # Get album info from Last.fm if the track has an album
+    if self.track.album.title:
+      album_response = Scrobble.lastfm_instance.get_album_info(self)
+      lastfm_album = album_response.get('album')
+      
+      # Not all tracks on Last.fm have an album
+      if lastfm_album:
+        self.track.album.lastfm_url = lastfm_album['url']
+        self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
+        self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
 
     self.track.has_lastfm_data = True
   

@@ -127,6 +127,8 @@ Window {
 
   HistoryViewModel {
     id: historyViewModel
+
+    onShowNotification: (title, message) => trayIcon.showMessage(title, message)
   }
 
   // View (will be loaded into sidebar)

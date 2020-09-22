@@ -1,8 +1,9 @@
 from ScriptingBridge import SBApplication
 
+from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 from datatypes.MediaPlayerState import MediaPlayerState
 
-class AppleMusicPlugin():
+class AppleMusicPlugin(MediaPlayerPlugin):
   # From Music.app BridgeSupport enum definitions
   STOPPED_STATE = 1800426323
   PAUSED_STATE = 1800426352
@@ -11,9 +12,7 @@ class AppleMusicPlugin():
   def __init__(self):
     self.apple_music = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
 
-  def get_state(self):
-    '''Get Apple Music player state and current track if it is running'''
-
+  def get_state(self) -> MediaPlayerState:
     # Store state in a new MediaPlayerState instance
     state = MediaPlayerState()
 
@@ -37,6 +36,6 @@ class AppleMusicPlugin():
           state.error_message = 'The currently playing track needs to be tagged with an artist to scrobble.'
       else:
         # Browse/search page error
-        state.error_message = 'Due to a bug in Apple Music, Music.app failed to provide track information for the current track. Try switching tracks and then switching back.'
+        state.error_message = 'Due to a bug in Apple Music, Music.app can\'t provide track information. Try switching tracks.'
 
     return state

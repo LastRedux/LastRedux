@@ -15,6 +15,8 @@ from tasks.SubmitScrobbleTask import SubmitScrobbleTask
 import util.LastfmApiWrapper as lastfm
 
 class HistoryViewModel(QtCore.QObject):
+  showNotification = QtCore.Signal(str, str)
+
   # Qt Property changed signals
   current_scrobble_data_changed = QtCore.Signal()
   current_scrobble_percentage_changed = QtCore.Signal()
@@ -59,7 +61,8 @@ class HistoryViewModel(QtCore.QObject):
     self.__cached_media_player_data = {
       'furthest_player_position_reached': None,
       'track_start': None,
-      'track_finish': None
+      'track_finish': None,
+      'is_current_track_playable': None
     }
 
     # Load in recent scrobbles from Last.fm and process them
@@ -68,7 +71,7 @@ class HistoryViewModel(QtCore.QObject):
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
 
-    if os.environ.get('SUBMIT_SCROBBLES'):
+    if os.environ.get('SUBMITSCROBBLES'):
       print('~~~ SCROBBLE SUBMISSION IS ENABLED ~~~')
 
     # Start polling interval to check for new media player state
@@ -281,15 +284,28 @@ class HistoryViewModel(QtCore.QObject):
   @QtCore.Slot(dict)
   def __process_new_media_player_state(self, new_media_player_state):
     '''Update cached media player state and replace track if the media player track has changed'''
-    
+
     # Alert the user of any errors that occured while trying to get media player state
-    if new_media_player_state.error_message:
-      # TODO: Notify user of error message
-      print(new_media_player_state.error_message)
+    try:
+      if new_media_player_state.error_message:
+        raise Exception(new_media_player_state.error_message)
+
+      is_current_track_playable = new_media_player_state.track_title and new_media_player_state.artist_name
+
+      if is_current_track_playable:
+        self.__cached_media_player_data['is_current_track_playable'] = True
+      else:
+        # Skip if the problem has already been caught and the user has been notified
+        if not self.__cached_media_player_data['is_current_track_playable']:
+          return
+
+        self.__cached_media_player_data['is_current_track_playable'] = False
+        raise Exception('Track title and artist metadata are required')
+    except Exception as e:
+      self.showNotification.emit('Error loading current track', 'Due to a bug in Apple Music, Music.app can\'t provide track information. Try switching tracks and back.')#str(e))
+      print('Error loading current track: ' + str(e))
       return
 
-    # Only run if thread actually finished and data was recieved
-    # if response['has_thread_succeded']:
     if new_media_player_state.has_track_loaded:
       current_track_changed = (
         not self.__current_scrobble

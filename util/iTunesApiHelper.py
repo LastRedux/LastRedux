@@ -13,13 +13,17 @@ def __format_image_url_to_size(image_url, width, height):
 
   return re.sub(r'\d+x\d+', f'{width}x{height}', image_url)
 
-def get_images(track_title, artist_name, album_name):
+def get_images(track_title, artist_name, album_title):
   '''Get an artist image and album art for a track from the iTunes Search API'''
 
   print(f'Requesting images for {artist_name} - {track_title}')
 
+  # Replace the None value with an empty string for the search term
+  if not album_title:
+    album_title = ''
+
   # Escape special characters in query string
-  escaped_search_term = urllib.parse.quote(f'{artist_name} {track_title} {album_name}')
+  escaped_search_term = urllib.parse.quote(f'{artist_name} {track_title} {album_title}')
 
   # Do a generic search for music with the track, artist, and album name
   track_response = requests.get(f'https://itunes.apple.com/search?media=music&limit=1&term={escaped_search_term}')

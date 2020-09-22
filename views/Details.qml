@@ -60,6 +60,8 @@ Item {
         width: scrollArea.width
 
         TrackDetails {
+          property bool hasAlbum: canDisplayEntireScrobble ? !!viewModel.scrobbleTrackData.album.title : false
+
           title: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
           lastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_url : ''
           lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_listeners : undefined
@@ -70,8 +72,10 @@ Item {
           artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
           artistLastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_url : ''
 
-          albumName: canDisplayScrobble && viewModel.scrobbleTrackData.album.title
-          albumLastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.album.lastfm_url : ''
+          albumName: hasAlbum ? viewModel.scrobbleTrackData.album.title : ''
+          albumLastfmUrl: (hasAlbum && canDisplayEntireScrobble) ? viewModel.scrobbleTrackData.album.lastfm_url : ''
+
+          // Album image is still used to display track art even if there isn't an associated album
           albumImageUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.album.image_url : ''
 
           width: column.width

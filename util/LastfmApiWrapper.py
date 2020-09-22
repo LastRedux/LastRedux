@@ -45,7 +45,7 @@ class LastfmApiWrapper:
 
   def __lastfm_request(self, payload, http_method='GET'):
     '''Make an HTTP request to last.fm and attach the needed keys'''
-    
+
     headers = {'user-agent': self.USER_AGENT}
 
     payload['api_key'] = self.__api_key
@@ -122,6 +122,7 @@ class LastfmApiWrapper:
       'method': 'track.getInfo',
       'track': scrobble.track.title,
       'artist': scrobble.track.artist.name,
+      'autocorrect': 1,
       'username': self.__username
     })
 
@@ -167,13 +168,20 @@ class LastfmApiWrapper:
     if not self.__is_logged_in():
       return 
 
-    return self.__lastfm_request({
+    scrobble_payload = {
       'method': 'track.scrobble',
       'track': scrobble.track.title,
       'artist': scrobble.track.artist.name,
-      'album': scrobble.track.album.title,
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
-    }, http_method='POST')
+    }
+
+    album_title = scrobble.track.album.title
+
+    # Only submit album title if it exists
+    if album_title:
+      scrobble_payload['album'] = album_title
+
+    return self.__lastfm_request(scrobble_payload, http_method='POST')
 
   def set_track_is_loved(self, scrobble, is_loved):
     '''Set loved value on Last.fm for the passed scrobble'''
