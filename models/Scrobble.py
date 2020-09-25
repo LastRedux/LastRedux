@@ -86,6 +86,11 @@ class Scrobble:
     self.track.has_itunes_store_data = True
 
   def equals(self, other_scrobble):
+    '''Compare two scrobbles'''
+    
+    if not other_scrobble:
+      return
+
     if self.track.has_lastfm_data and other_scrobble.track.has_lastfm_data:
       return self.track.lastfm_url == other_scrobble.track.lastfm_url
     
