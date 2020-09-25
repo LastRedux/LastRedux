@@ -13,6 +13,7 @@ class Artist:
   image_url: str = ''
 
   # Last.fm data
+  # TODO: Use create Artist.lastfm_data with empty default
   lastfm_url: str = ''
   lastfm_global_listeners: int = 0
   lastfm_global_plays: int = 0

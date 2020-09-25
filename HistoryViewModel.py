@@ -1,8 +1,7 @@
 import os
-import re
 from datetime import datetime
 
-from PySide2 import QtCore, QtSql
+from PySide2 import QtCore
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
@@ -66,12 +65,12 @@ class HistoryViewModel(QtCore.QObject):
     }
 
     # Load in recent scrobbles from Last.fm and process them
-    if not os.environ.get('NOHISTORY'):
+    if not os.environ.get('NO_HISTORY'):
       fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance)
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
 
-    if os.environ.get('SUBMITSCROBBLES'):
+    if os.environ.get('SUBMIT_SCROBBLES'):
       print('~~~ SCROBBLE SUBMISSION IS ENABLED ~~~')
 
     # Start polling interval to check for new media player state
