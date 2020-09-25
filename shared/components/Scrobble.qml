@@ -15,7 +15,15 @@ Item {
 
   opacity: mouseArea.containsPress ? 0.75 : 1
   
-  height: column.y + column.height + 5
+  height: {
+    const bottomMargin = 5
+
+    if (timestampLabel.visible) {
+      return timestampLabel.y + timestampLabel.height + bottomMargin
+    }
+    
+    return artistNameLabel.y + artistNameLabel.height + bottomMargin
+  }
 
   MouseArea {
     id: mouseArea
@@ -91,10 +99,18 @@ Item {
     }
   }
 
-  Column {
-    id: column
+  // --- Artist Name ---
 
-    spacing: 3
+  Label {
+    id: artistNameLabel
+    
+    // Wrap to 2 lines and then truncate
+    elide: Text.ElideRight
+    maximumLineCount: 2
+
+    style: kBodyPrimary
+    text: artistName
+    wrapMode: Text.Wrap
 
     anchors {
       top: trackTitleLabel.bottom
@@ -104,32 +120,25 @@ Item {
       topMargin: 3
       rightMargin: 15
     }
+  }
 
-    // --- Artist Name ---
+  // --- Timestamp ---
 
-    Label {
-      id: artistNameLabel
-      
-      // Wrap to 2 lines and then truncate
-      elide: Text.ElideRight
-      maximumLineCount: 2
+  Label {
+    id: timestampLabel
 
-      style: kBodyPrimary
-      text: artistName
-      wrapMode: Text.Wrap
+    elide: Text.ElideRight
+    style: kTitleTertiary
+    text: timestamp
+    visible: timestamp
 
-      width: parent.width
-    }
+    anchors {
+      top: artistNameLabel.bottom
+      right: parent.right
+      left: trackTitleLabel.left
 
-    // --- Timestamp ---
-
-    Label {
-      id: timestampLabel
-
-      elide: Text.ElideRight
-      style: kTitleTertiary
-      text: timestamp
-      visible: timestamp
+      topMargin: 3
+      rightMargin: 15
     }
   }
 }
