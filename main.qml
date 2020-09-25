@@ -159,6 +159,22 @@ Window {
     }
   }
 
+  // --- Friends Page ---
+
+  FriendsViewModel {
+    id: friendsViewModel
+  }
+
+  Component {
+    id: friendsPage
+
+    Friends {
+      id: friends
+
+      viewModel: friendsViewModel
+    }
+  }
+
   // --- Sidebar ---
 
   SidebarBackground {
@@ -194,18 +210,16 @@ Window {
       }
 
       LabelButton {
+        property int pageId: 0
+        property var pages: [historyPage, profilePage, friendsPage]
+
         isCompact: true
         title: 'Switch Tab'
 
         onClicked: {
-          if (isOnProfilePage) {
-            stackView.replace(historyPage)
-            isOnProfilePage = false
-            return
-          }
+          pageId++
 
-          stackView.replace(profilePage)
-          isOnProfilePage = true
+          stackView.replace(pages[pageId % pages.length])
         }
         
         anchors.centerIn: parent
