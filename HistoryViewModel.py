@@ -358,8 +358,9 @@ class HistoryViewModel(QtCore.QObject):
     self.current_scrobble_data_changed.emit()
 
     # Tell Last.fm to update the user's now playing status
-    update_now_playing_task = UpdateNowPlayingTask(self.lastfm_instance, self.__current_scrobble)
-    QtCore.QThreadPool.globalInstance().start(update_now_playing_task)
+    if not os.environ.get('MOCK'):
+      update_now_playing_task = UpdateNowPlayingTask(self.lastfm_instance, self.__current_scrobble)
+      QtCore.QThreadPool.globalInstance().start(update_now_playing_task)
 
     # Reset player position to temporary value until a new value can be recieved from the media player
     self.__cached_media_player_data['furthest_player_position_reached'] = 0
