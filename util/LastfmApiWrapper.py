@@ -162,39 +162,6 @@ class LastfmApiWrapper:
       'username': self.__username
     })
 
-  def submit_scrobble(self, scrobble):
-    '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
-
-    if not self.__is_logged_in():
-      return 
-
-    scrobble_payload = {
-      'method': 'track.scrobble',
-      'track': scrobble.track.title,
-      'artist': scrobble.track.artist.name,
-      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
-    }
-
-    album_title = scrobble.track.album.title
-
-    # Only submit album title if it exists
-    if album_title:
-      scrobble_payload['album'] = album_title
-
-    return self.__lastfm_request(scrobble_payload, http_method='POST')
-
-  def set_track_is_loved(self, scrobble, is_loved):
-    '''Set loved value on Last.fm for the passed scrobble'''
-
-    if not self.__is_logged_in():
-      return 
-
-    return self.__lastfm_request({
-      'method': 'track.love' if is_loved else 'track.unlove',
-      'track': scrobble.track.title,
-      'artist': scrobble.track.artist.name
-    }, http_method='POST')
-
   def get_recent_scrobbles(self, username=None, period=None, limit=30):
     '''Get the user's 30 most recent scrobbles'''
 
@@ -293,6 +260,61 @@ class LastfmApiWrapper:
     })
     
     return resp_json['lovedtracks']['@attr']['total']
+
+  # POST requests
+  def submit_scrobble(self, scrobble):
+    '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
+
+    if not self.__is_logged_in():
+      return 
+
+    scrobble_payload = {
+      'method': 'track.scrobble',
+      'track': scrobble.track.title,
+      'artist': scrobble.track.artist.name,
+      'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
+    }
+
+    album_title = scrobble.track.album.title
+
+    # Only submit album title if it exists
+    if album_title:
+      scrobble_payload['album'] = album_title
+
+    return self.__lastfm_request(scrobble_payload, http_method='POST')
+
+  def set_track_is_loved(self, scrobble, is_loved):
+    '''Set loved value on Last.fm for the passed scrobble'''
+
+    if not self.__is_logged_in():
+      return 
+
+    return self.__lastfm_request({
+      'method': 'track.love' if is_loved else 'track.unlove',
+      'track': scrobble.track.title,
+      'artist': scrobble.track.artist.name
+    }, http_method='POST')
+  
+  def update_now_playing(self, scrobble):
+    '''Tell Last.fm to update the user's now playing track'''
+
+    if not self.__is_logged_in():
+      return
+
+    scrobble_payload = {
+      'method': 'track.updateNowPlaying',
+      'track': scrobble.track.title,
+      'artist': scrobble.track.artist.name,
+    }
+
+    album_title = scrobble.track.album.title
+
+    # Only submit album title if it exists
+    if album_title:
+      scrobble_payload['album'] = album_title
+
+    return self.__lastfm_request(scrobble_payload, http_method='POST')
+
 
 # Initialize api wrapper instance with login info once to use in multiple files
 __lastfm_instance = None
