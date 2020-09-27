@@ -95,14 +95,12 @@ Window {
 
   // --- Details ---
   
-  // View model
   DetailsViewModel {
     id: detailsViewModel
 
     historyReference: historyViewModel
   }
 
-  // View
   Details {
     id: details
 
@@ -117,13 +115,6 @@ Window {
   }
 
   // --- History Page ---
-  
-  // View model
-  HistoryListModel {
-    id: historyListModel
-
-    historyReference: historyViewModel
-  }
 
   HistoryViewModel {
     id: historyViewModel
@@ -131,7 +122,12 @@ Window {
     onShowNotification: (title, message) => trayIcon.showMessage(title, message)
   }
 
-  // View (will be loaded into sidebar)
+  HistoryListModel {
+    id: historyListModel
+
+    historyReference: historyViewModel
+  }
+
   Component {
     id: historyPage
 
@@ -165,12 +161,19 @@ Window {
     id: friendsViewModel
   }
 
+  FriendsListModel {
+    id: friendsListModel
+
+    friendsReference: friendsViewModel
+  }
+
   Component {
     id: friendsPage
 
     Friends {
       id: friends
 
+      listModel: friendsListModel
       viewModel: friendsViewModel
     }
   }

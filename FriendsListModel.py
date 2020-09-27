@@ -9,7 +9,7 @@ class FriendsListModel(QtCore.QAbstractListModel):
   __LASTFM_URL_ROLE = QtCore.Qt.UserRole + 3
   __CURRENT_TRACK_TITLE_ROLE = QtCore.Qt.UserRole + 4
   __CURRENT_TRACK_ARTIST_NAME_ROLE = QtCore.Qt.UserRole + 5
-  __CURRENT_TRACK_IS_PLAYING_ROLE = QtCore.Qt.UserRole + 6
+  __IS_CURRENT_TRACK_PLAYING_ROLE = QtCore.Qt.UserRole + 6
   __CURRENT_TRACK_LASTFM_URL_ROLE = QtCore.Qt.UserRole + 7
 
   def __int__(self, parent=None):
@@ -44,7 +44,7 @@ class FriendsListModel(QtCore.QAbstractListModel):
       self.__LASTFM_URL_ROLE: b'lastfmUrl',
       self.__CURRENT_TRACK_TITLE_ROLE: b'currentTrackTitle',
       self.__CURRENT_TRACK_ARTIST_NAME_ROLE: b'currentTrackArtistName',
-      self.__CURRENT_TRACK_IS_PLAYING_ROLE: b'currentTrackIsPlaying',
+      self.__IS_CURRENT_TRACK_PLAYING_ROLE: b'isCurrentTrackPlaying',
       self.__CURRENT_TRACK_LASTFM_URL_ROLE: b'currentTrackLastfmUrl'
     }
 
@@ -80,7 +80,7 @@ class FriendsListModel(QtCore.QAbstractListModel):
           return friend.current_track.artist.name
         elif role == self.__CURRENT_TRACK_LASTFM_URL_ROLE:
           return friend.current_track.lastfm_url
-        elif role == self.__CURRENT_TRACK_IS_PLAYING_ROLE:
+        elif role == self.__IS_CURRENT_TRACK_PLAYING_ROLE:
           return friend.is_current_track_playing
 
     # This is for DisplayRole or if the friends reference doesn't exist

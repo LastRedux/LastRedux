@@ -40,7 +40,7 @@ Item {
   Picture {
     id: avatar
 
-    type: kArtist // Add user type
+    type: kArtist // TODO: Add user type
 
     anchors {
       top: parent.top
