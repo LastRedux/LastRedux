@@ -266,7 +266,7 @@ class LastfmApiWrapper:
     '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
 
     if not self.__is_logged_in():
-      return 
+      return
 
     scrobble_payload = {
       'method': 'track.scrobble',
@@ -287,7 +287,7 @@ class LastfmApiWrapper:
     '''Set loved value on Last.fm for the passed scrobble'''
 
     if not self.__is_logged_in():
-      return 
+      return
 
     return self.__lastfm_request({
       'method': 'track.love' if is_loved else 'track.unlove',
@@ -315,7 +315,6 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request(scrobble_payload, http_method='POST')
 
-
 # Initialize api wrapper instance with login info once to use in multiple files
 __lastfm_instance = None
 
@@ -334,5 +333,3 @@ def get_static_instance():
     __lastfm_instance.set_login_info(session_key, username)
 
   return __lastfm_instance
-
-  
