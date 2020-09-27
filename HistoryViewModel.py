@@ -302,7 +302,7 @@ class HistoryViewModel(QtCore.QObject):
         self.__cached_media_player_data['is_current_track_playable'] = False
         raise Exception('Track title and artist metadata are required')
     except Exception as e:
-      self.showNotification.emit('Error loading current track', 'Due to a bug in Apple Music, Music.app can\'t provide track information. Try switching tracks and back.')#str(e))
+      self.showNotification.emit('Error loading current track', str(e))
       print('Error loading current track: ' + str(e))
       return
 

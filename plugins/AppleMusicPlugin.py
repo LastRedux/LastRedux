@@ -36,6 +36,6 @@ class AppleMusicPlugin(MediaPlayerPlugin):
           state.error_message = 'The currently playing track needs to be tagged with an artist to scrobble.'
       else:
         # Browse/search page error
-        state.error_message = 'Due to a bug in Apple Music, Music.app can\'t provide track information. Try switching tracks.'
+        state.error_message = 'Music.app provided blank track information. Try switching tracks and back.'
 
     return state
