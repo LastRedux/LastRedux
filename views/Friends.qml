@@ -10,50 +10,57 @@ Item {
 
   property FriendsViewModel viewModel
 
+  FriendsListModel {
+    id: listModel
+
+    friendsReference: viewModel
+  }
+  
   Component.onCompleted: {
     if (viewModel) {
       viewModel.loadFriends()
     }
   }
 
-  Column {
-    spacing: 10
+  Label {
+    visible: listView.count === 0
+    text: 'Loading...'
+  }
 
-    Label {
-      visible: viewModel && viewModel.friendsArray.length
+  ListView {
+    id: listView
 
-      text: 'Loading...'
-    }
+    model: listModel
 
-    Repeater {
-      model: viewModel.friendsArray
-      visible: !!viewModel.friendsArray
+    clip: true // Prevent content from appearing outside the list's bounding box
 
-      delegate: Column {
-        spacing: 5
+    anchors.fill: parent
 
-        Label {
-          text: modelData.username
-        }
+    delegate: Column {
+      width: listView.width
+      spacing: 5
 
-        Label {
-          text: modelData.real_name
-        }
+      Label {
+        text: model.username
+      }
 
-        Label {
-          text: modelData.current_track.title
-        }
+      Label {
+        text: model.realName
+      }
 
-        Label {
-          text: modelData.current_track.artist.name
-        }
+      Label {
+        text: model.currentTrackTitle
+      }
 
-        Rectangle {
-          width: 10
-          height: 10
-          
-          color: modelData.is_current_track_playing ? 'blue' : 'gray'
-        }
+      Label {
+        text: model.currentTrackArtistName
+      }
+
+      Rectangle {
+        width: 10
+        height: 10
+        
+        color: model.currentTrackIsPlaying ? 'blue' : 'gray'
       }
     }
   }

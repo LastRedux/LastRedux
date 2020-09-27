@@ -20,5 +20,6 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
 
       return Friend.build_from_lastfm_friend_and_track(lastfm_friend, last_track)
 
-    friends = map(lastfm_friend_to_friend, self.lastfm_instance.get_friends()['friends']['user'])
+    friends = list(map(lastfm_friend_to_friend, self.lastfm_instance.get_friends()['friends']['user']))
+    
     self.finished.emit(friends)

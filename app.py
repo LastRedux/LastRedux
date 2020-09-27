@@ -9,6 +9,7 @@ from HistoryViewModel import HistoryViewModel
 from HistoryListModel import HistoryListModel
 from ProfileViewModel import ProfileViewModel
 from FriendsViewModel import FriendsViewModel
+from FriendsListModel import FriendsListModel
 from DetailsViewModel import DetailsViewModel
 
 # Get the built application path
@@ -33,6 +34,7 @@ if __name__ == '__main__':
   QtQml.qmlRegisterType(HistoryListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryListModel')
   QtQml.qmlRegisterType(ProfileViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ProfileViewModel')
   QtQml.qmlRegisterType(FriendsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsViewModel')
+  QtQml.qmlRegisterType(FriendsListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsListModel')
   QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
 
   # Enable retina support
