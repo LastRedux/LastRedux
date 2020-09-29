@@ -197,7 +197,7 @@ class LastfmApiWrapper:
 
     return resp['recenttracks']['@attr']['total']
 
-  def get_user_info(self):
+  def get_account_details(self):
     '''Get information about the user (total scrobbles, image, registered date, url, etc.)'''
 
     if not self.__is_logged_in():
