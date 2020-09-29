@@ -1,4 +1,4 @@
-import QtQuick 2.14
+import QtQuick 2.15
 
 import '../../shared/components'
 
@@ -32,6 +32,7 @@ Item {
 
     bottomMargin: 10 // Bottom padding must be added in list instead of anchors because content overflows into the margin zone when scrolling instead of being cut off
     clip: true // Prevent content from appearing outside the list's bounding box
+    reuseItems: true
 
     // Transition for new items sliding in
     add: Transition {

@@ -25,24 +25,7 @@ Item {
     }
   }
 
-  // --- User Link ---
-  
-  UserLink {
-    id: userLink
-    
-    address: isProfileLoaded && viewModel.accountDetails.lastfm_url
-    imageSource: isProfileLoaded ? viewModel.accountDetails.image_url : ''
-    fullName: isProfileLoaded ? viewModel.accountDetails.real_name : 'Loading...'
-    username: isProfileLoaded ? viewModel.accountDetails.username : 'Loading...'
-
-    anchors {
-      top: parent.top
-      right: parent.right
-      left: parent.left
-
-      topMargin: 10
-    }
-  }
+  // --- Profile Statistics ---
 
   Column {
     id: profileStatistics
@@ -107,6 +90,24 @@ Item {
       caption: 'loved tracks'
 
       width: parent.width
+    }
+  }
+
+  // --- User Link ---
+  
+  // Below profile statistics in code so shadow is on top
+  UserLink {
+    id: userLink
+    
+    address: isProfileLoaded && viewModel.accountDetails.lastfm_url
+    imageSource: isProfileLoaded ? viewModel.accountDetails.image_url : ''
+    username: isProfileLoaded ? viewModel.accountDetails.username : ''
+    fullName: isProfileLoaded ? viewModel.accountDetails.real_name : ''
+
+    anchors {
+      top: parent.top
+      right: parent.right
+      left: parent.left
     }
   }
 

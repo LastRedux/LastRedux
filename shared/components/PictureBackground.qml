@@ -4,6 +4,8 @@ import QtGraphicalEffects 1.0
 Item {
   id: root
 
+  property bool isBlurEnabled: true
+
   // Passthrough so source can be set from outside of component
   property alias source: image.source
 
@@ -15,7 +17,7 @@ Item {
     PropertyChanges {
       target: overlay
       color: '#000' // Switch to black overlay color after image load instead of gray
-      opacity: 0.5
+      opacity: isBlurEnabled ? 0.5 : 0.75
     }
 
     PropertyChanges {
@@ -78,7 +80,7 @@ Item {
     // Replicate same color overlay as image
     Rectangle {
       color: '#000'
-      opacity: 0.5
+      opacity: isBlurEnabled ? 0.5 : 0.75
 
       anchors.fill: parent
     }
@@ -135,7 +137,7 @@ Item {
     }
   }
 
-  // --- Shadow ---
+  // --- Shadow and Border ---
 
   Image {
     fillMode: Image.TileHorizontally
@@ -151,6 +153,18 @@ Item {
     }
   }
 
+  Rectangle {
+    color: Qt.rgba(0, 0, 0, 0.17)
+
+    height: 1
+
+    anchors {
+      top: parent.bottom
+      right: parent.right
+      left: parent.left
+    }
+  }
+
   // --- Image ---
 
   // Invisible image that will be blurred and then reflected
@@ -158,7 +172,7 @@ Item {
     id: image
 
     fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
-    visible: false
+    visible: !isBlurEnabled
 
     anchors.fill: parent
   }
@@ -170,6 +184,7 @@ Item {
     cached: true // Redraw only when image is changed, not every frame
     radius: 128
     source: image
+    visible: isBlurEnabled
 
     anchors.fill: image
   }
