@@ -2,7 +2,7 @@ from datetime import date
 
 from PySide2 import QtCore
 
-class FetchUserAndArtistStatisticsTask(QtCore.QObject, QtCore.QRunnable):
+class FetchProfileAndTopArtistsTask(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(dict)
 
   def __init__(self, lastfm_instance):
@@ -12,11 +12,12 @@ class FetchUserAndArtistStatisticsTask(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self):
-    '''Return information for the top section of the profile page with user info and artist listening statistics'''
+    '''Fetch user account details, profile statistics, and top artists'''
 
     user_info = self.lastfm_instance.get_user_info()['user']
-    overall_artists_info = self.lastfm_instance.get_top_artists()['topartists']
-    recent_artists_info = self.lastfm_instance.get_top_artists('7day')['topartists']
+    top_artists_all_time_with_metadata = self.lastfm_instance.get_top_artists()['topartists']
+    top_artists_all_time = top_artists_all_time_with_metadata['artist']
+    top_artists_last_7_days = self.lastfm_instance.get_top_artists('7day')['topartists']
     total_scrobbles_today = self.lastfm_instance.get_total_scrobbles_today()
 
     # Calculate average daily scrobbles
@@ -26,21 +27,21 @@ class FetchUserAndArtistStatisticsTask(QtCore.QObject, QtCore.QRunnable):
     average_daily_scrobbles = round(total_scrobbles / total_days_registered)
     
     self.finished.emit({
-      'user_info': {
+      'account_details': {
         'username': user_info['name'],
         'real_name': user_info['realname'],
         'lastfm_url': user_info['url'],
         'image_url': user_info['image'][-2]['#text'] # Get large size
       },
-      'user_statistics': {
+      'profile_statistics': {
         'total_scrobbles': total_scrobbles,
         'total_scrobbles_today': total_scrobbles_today,
         'average_daily_scrobbles': average_daily_scrobbles,
-        'total_artists': int(overall_artists_info['@attr']['total']),
+        'total_artists': int(top_artists_all_time_with_metadata['@attr']['total']),
         'total_loved_tracks': self.lastfm_instance.get_total_loved_tracks()
       },
-      'artist_statistics': {
-        'top_artists_overall': overall_artists_info['artist'],
-        'top_artists_this_week': recent_artists_info['artist']
+      'top_artists': {
+        'all_time': top_artists_all_time,
+        'last_7_days': top_artists_last_7_days
       }
     })
