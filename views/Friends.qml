@@ -43,4 +43,10 @@ Item {
       width: listView.width
     }
   }
+
+  WheelScrollArea {
+    flickable: listView
+    
+    anchors.fill: listView
+  }
 }
