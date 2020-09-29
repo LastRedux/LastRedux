@@ -48,13 +48,8 @@ Item {
   Picture {
     id: coverArt
 
-    anchors {
-      top: parent.top
-      left: parent.left
-
-      topMargin: 5
-      leftMargin: 15
-    }
+    x: 15
+    y: 5
   }
 
   /// --- Track Title ---
@@ -70,15 +65,9 @@ Item {
     text: trackTitle
     wrapMode: Text.Wrap
 
-    anchors {
-      top: parent.top
-      right: heart.left
-      left: coverArt.right
-
-      topMargin: 5
-      rightMargin: 5
-      leftMargin: 10
-    }
+    x: coverArt.x + coverArt.width + 10
+    y: 5
+    width: parent.width - x - 15 - heart.width - 10
   }
 
   // --- Heart ---
@@ -90,13 +79,8 @@ Item {
 
     onClicked: toggleLastfmIsLoved()
 
-    anchors {
-      top: parent.top
-      right: parent.right
-
-      topMargin: 6
-      rightMargin: 15
-    }
+    y: 6
+    x: parent.width - 15 - width
   }
 
   // --- Artist Name ---
@@ -112,14 +96,9 @@ Item {
     text: artistName
     wrapMode: Text.Wrap
 
-    anchors {
-      top: trackTitleLabel.bottom
-      right: parent.right
-      left: trackTitleLabel.left
-
-      topMargin: 3
-      rightMargin: 15
-    }
+    x: trackTitleLabel.x
+    y: trackTitleLabel.y + trackTitleLabel.height + 3
+    width: parent.width - x - 15
   }
 
   // --- Timestamp ---
@@ -132,13 +111,8 @@ Item {
     text: timestamp
     visible: timestamp
 
-    anchors {
-      top: artistNameLabel.bottom
-      right: parent.right
-      left: trackTitleLabel.left
-
-      topMargin: 3
-      rightMargin: 15
-    }
+    x: trackTitleLabel.x
+    y: artistNameLabel.y + artistNameLabel.height + 3
+    width: artistNameLabel.width
   }
 }
