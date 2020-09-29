@@ -1,4 +1,6 @@
+from __future__ import annotations # For self-referential return type
 from dataclasses import dataclass, field
+
 from typing import List
 
 from datatypes.Tag import Tag
@@ -21,3 +23,12 @@ class Artist:
   lastfm_bio: str = ''
   lastfm_tags: List[Tag] = field(default_factory=list)
   lastfm_similar_artists: List[SimilarArtist] = field(default_factory=list)
+
+  @staticmethod
+  def build_from_lastfm_artist(lastfm_artist) -> Artist:
+    return Artist(
+      name=lastfm_artist['name'],
+      image_url='',
+      lastfm_url=lastfm_artist['url'],
+      lastfm_plays=lastfm_artist['playcount'],
+    )
