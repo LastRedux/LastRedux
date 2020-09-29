@@ -37,35 +37,17 @@ class Scrobble:
     if 'error' in track_response and track_response['message'] == 'Track not found':
       return
 
-    lastfm_track = track_response['track']
-    self.track.lastfm_url = lastfm_track['url']
-    self.track.lastfm_global_listeners = int(lastfm_track['listeners'])
-    self.track.lastfm_global_plays = int(lastfm_track['playcount'])
-    self.track.lastfm_plays = int(lastfm_track['userplaycount'])
-    self.track.lastfm_is_loved = bool(int(lastfm_track['userloved'])) # Convert 0/1 to bool
-    self.track.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
-
-    # Get artist info from Last.fm
-    artist_response = Scrobble.lastfm_instance.get_artist_info(self)
-    lastfm_artist = artist_response['artist']
-    self.track.artist.lastfm_url = lastfm_artist['url']
-    self.track.artist.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
-    self.track.artist.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])
-    self.track.artist.lastfm_plays = int(lastfm_artist['stats']['userplaycount'])
-    self.track.artist.lastfm_bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
-    self.track.artist.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
-    self.track.artist.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
+    self.track.load_lastfm_track_data(track_response['track'])
+    self.track.artist.load_lastfm_artist_data(Scrobble.lastfm_instance.get_artist_info(self)['artist'])
     
     # Get album info from Last.fm if the track has an album
     if self.track.album.title:
       album_response = Scrobble.lastfm_instance.get_album_info(self)
       lastfm_album = album_response.get('album')
       
-      # Not all tracks on Last.fm have an album
+      # Not all tracks on Last.fm have an album (for example if a user scrobbles a track elsewhere and it shows up in history)
       if lastfm_album:
-        self.track.album.lastfm_url = lastfm_album['url']
-        self.track.album.image_url = lastfm_album['image'][4]['#text'] # Pick mega size in images array
-        self.track.album.image_url_small = lastfm_album['image'][1]['#text'] # Pick medium size in images array
+        self.track.album.load_lastfm_album_data(lastfm_album)
 
     self.track.has_lastfm_data = True
   

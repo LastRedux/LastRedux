@@ -122,6 +122,7 @@ class HistoryViewModel(QtCore.QObject):
 
     # Submit current scrobble if the scrobble percentage (progress towards the scrobble threshold) is 100%
     if not self.__is_current_scrobble_submitted and scrobble_percentage == 1:
+      # TODO: Only submit when the song changes or the app is closed
       self.__is_current_scrobble_submitted = True
       self.__submit_scrobble(self.__current_scrobble)
 

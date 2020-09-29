@@ -5,6 +5,7 @@ from typing import List
 
 from datatypes.Artist import Artist
 from datatypes.Album import Album
+from datatypes.SimilarArtist import SimilarArtist
 from datatypes.Tag import Tag
 
 @dataclass
@@ -28,21 +29,31 @@ class Track:
   has_lastfm_data: bool = False
   has_itunes_store_data: bool = False
 
+  def load_lastfm_track_data(self, lastfm_track) -> None:
+    self.lastfm_url = lastfm_track['url']
+    self.lastfm_global_listeners = int(lastfm_track['listeners'])
+    self.lastfm_global_plays = int(lastfm_track['playcount'])
+    self.lastfm_plays = int(lastfm_track['userplaycount'])
+    self.lastfm_is_loved = bool(int(lastfm_track['userloved'])) # Convert 0/1 to bool
+    self.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_track['toptags']['tag']))
+
   @staticmethod
-  def build_from_lastfm_track(lastfm_track) -> Track:
+  def build_from_lastfm_recent_track(lastfm_recent_track) -> Track:
+    '''Build a Track from a user scrobble event (does NOT contain user plays nor global stats)'''
+
     artist = Artist(
-      name=lastfm_track['artist']['name'],
+      name=lastfm_recent_track['artist']['name'],
       image_url=''
     )
 
     album = Album(
-      title=lastfm_track['album']['#text'],
-      image_url=lastfm_track['image'][-1]['#text'], # Pick mega size in images array
-      image_url_small=lastfm_track['image'][1]['#text'] # Pick medium size in images array
+      title=lastfm_recent_track['album']['#text'],
+      image_url=lastfm_recent_track['image'][-1]['#text'], # Pick mega size in images array
+      image_url_small=lastfm_recent_track['image'][1]['#text'] # Pick medium size in images array
     )
 
     return Track(
-      title=lastfm_track['name'],
+      title=lastfm_recent_track['name'],
       artist=artist,
       album=album
     )
