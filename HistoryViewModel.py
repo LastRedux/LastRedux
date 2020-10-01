@@ -82,7 +82,7 @@ class HistoryViewModel(QtCore.QObject):
     # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
     timer.timeout.connect(self.__load_new_media_player_state)
-    polling_interval = 100 if os.environ.get('FASTPOLLING') else 1000
+    polling_interval = 100 if os.environ.get('FAST_POLLING') else 1000
     timer.start(polling_interval)
 
     # Load media player state immediately
