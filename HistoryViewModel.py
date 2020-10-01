@@ -21,6 +21,7 @@ class HistoryViewModel(QtCore.QObject):
   current_scrobble_data_changed = QtCore.Signal()
   current_scrobble_percentage_changed = QtCore.Signal()
   is_using_mock_player_plugin_changed = QtCore.Signal()
+  is_in_mini_mode_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
   
@@ -37,6 +38,9 @@ class HistoryViewModel(QtCore.QObject):
     
     # Initialize media player plugin
     self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
+
+    # Track window mode
+    self.is_in_mini_mode = bool(os.environ.get('MINI_MODE'))
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
@@ -130,6 +134,9 @@ class HistoryViewModel(QtCore.QObject):
   
   def get_is_using_mock_player_plugin(self):
     return isinstance(self.media_player, MockPlayerPlugin)
+
+  def get_is_in_mini_mode(self):
+    return self.is_in_mini_mode
     
   def get_selected_scrobble_index(self):
     '''Make the private selected scrobble index variable available to the UI'''
@@ -189,6 +196,11 @@ class HistoryViewModel(QtCore.QObject):
     # Tell Last.fm about our new is_loved value
     submit_track_is_loved_task = SubmitTrackIsLovedChanged(self.lastfm_instance, scrobble, new_is_loved)
     QtCore.QThreadPool.globalInstance().start(submit_track_is_loved_task)
+
+  @QtCore.Slot()
+  def toggleMiniMode(self):
+    self.is_in_mini_mode = not self.is_in_mini_mode
+    self.is_in_mini_mode_changed.emit()
 
   # --- Mock Slots ---
 
@@ -428,3 +440,6 @@ class HistoryViewModel(QtCore.QObject):
 
   # Make the current scrobble index available to the view
   selectedScrobbleIndex = QtCore.Property(int, get_selected_scrobble_index, set_selected_scrobble_index, notify=selected_scrobble_index_changed)
+
+  # TODO: Move this to an ApplicationViewModel
+  miniMode = QtCore.Property(bool, get_is_in_mini_mode, notify=is_in_mini_mode_changed)

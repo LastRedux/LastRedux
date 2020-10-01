@@ -12,13 +12,22 @@ Window {
   id: application
 
   property bool isOnProfilePage: false
+  property bool isInMiniMode: {
+    if (historyViewModel) {
+      if (historyViewModel.miniMode) {
+        return 755
+      }
+
+      return 0
+    }
+  }
 
   color: '#171717'
   title: 'LastRedux'
   visible: true
 
-  minimumWidth: 755
-  minimumHeight: 470
+  minimumWidth: isInMiniMode ? 0 : 755
+  minimumHeight: isInMiniMode ? 0 : 470
   width: 957
   height: 600
 
@@ -69,6 +78,12 @@ Window {
 
         onTriggered: onboardingWindow.show()
       }
+
+      MenuItem {
+        text: qsTr('Toggle mini mode')
+
+        onTriggered: historyViewModel.toggleMiniMode()
+      }
       
       MenuItem {
         text: qsTr('Preferences...')
@@ -110,7 +125,7 @@ Window {
       top: parent.top
       right: parent.right
       bottom: parent.bottom
-      left: sidebar.right
+      left: isInMiniMode ? parent.left : sidebar.right
     }
   }
 
@@ -182,6 +197,7 @@ Window {
 
   SidebarBackground {
     id: sidebar
+    visible: isInMiniMode ? false : true
 
     anchors {
       top: parent.top
