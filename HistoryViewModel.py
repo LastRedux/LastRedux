@@ -66,7 +66,8 @@ class HistoryViewModel(QtCore.QObject):
       'furthest_player_position_reached': None,
       'track_start': None,
       'track_finish': None,
-      'is_current_track_playable': None
+      'is_current_track_valid': None,
+      'ticks_since_track_changed': 0
     }
 
     # Load in recent scrobbles from Last.fm and process them
@@ -128,6 +129,7 @@ class HistoryViewModel(QtCore.QObject):
     if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
       # TODO: Only submit when the song changes or the app is closed
       self.__should_submit_current_scrobble = True
+      print(f'Ready for submission: {self.__current_scrobble.track.title}')
 
     return scrobble_percentage
   
@@ -302,16 +304,16 @@ class HistoryViewModel(QtCore.QObject):
       if new_media_player_state.error_message:
         raise Exception(new_media_player_state.error_message)
 
-      is_current_track_playable = bool(new_media_player_state.track_title and new_media_player_state.artist_name)
+      is_current_track_valid = bool(new_media_player_state.track_title and new_media_player_state.artist_name)
 
-      if is_current_track_playable:
-        self.__cached_media_player_data['is_current_track_playable'] = True
+      if is_current_track_valid:
+        self.__cached_media_player_data['is_current_track_valid'] = True
       else:
         # Skip if the problem has already been caught and the user has been notified
-        if not self.__cached_media_player_data['is_current_track_playable']:
+        if not self.__cached_media_player_data['is_current_track_valid']:
           return
 
-        self.__cached_media_player_data['is_current_track_playable'] = False
+        self.__cached_media_player_data['is_current_track_valid'] = False
         raise Exception('Track title and artist metadata are required')
     except Exception as e:
       self.showNotification.emit('Error loading current track', str(e))
@@ -327,6 +329,15 @@ class HistoryViewModel(QtCore.QObject):
       )
 
       if current_track_changed:
+        # If the title didn't change, but the artist title did, that could mean that the media player is providing bad data so wait 3 ticks to be sure
+        # Don't check if there insn't a current scrobble yet
+        if self.__current_scrobble:
+          if self.__cached_media_player_data['ticks_since_track_changed'] < 3:
+            if new_media_player_state.track_title == self.__current_scrobble.track.title:
+              print(f'Skipping bad data: {new_media_player_state.track_title} - {new_media_player_state.artist_name} vs. {self.__current_scrobble.track.title} = {self.__current_scrobble.track.artist.name}')
+              self.__cached_media_player_data['ticks_since_track_changed'] += 1
+              return
+
         # Submit the last scrobble when the current track changes if it hit the scrobbling threshold
         if self.__should_submit_current_scrobble:
           self.__submit_scrobble(self.__current_scrobble)

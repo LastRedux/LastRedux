@@ -16,7 +16,7 @@ def __format_image_url_to_size(image_url, width, height):
 def get_images(track_title, artist_name, album_title):
   '''Get an artist image and album art for a track from the iTunes Search API'''
 
-  print(f'Requesting images for {artist_name} - {track_title}')
+  print(f'Requesting images: {track_title}')
 
   # Replace the None value with an empty string for the search term
   if not album_title:

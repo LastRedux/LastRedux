@@ -9,6 +9,18 @@ class MockPlayerPlugin(MediaPlayerPlugin):
     'track_start': 0,
     'track_finish': 100
   }, {
+    # Test consecutive tracks with the same title
+    'track_title': 'Alone',
+    'artist_name': 'Marshmello',
+    'track_start': 0,
+    'track_finish': 100
+  }, {
+    # Test consecutive tracks with the same title
+    'track_title': 'Alone',
+    'artist_name': 'Alan Walker',
+    'track_start': 0,
+    'track_finish': 100
+  }, {
     # Test Last.fm corrections API
     'track_title': 'Waters (feat. Phluze) [Elbor edit]',
     'artist_name': 'Elbor',
