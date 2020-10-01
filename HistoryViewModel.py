@@ -50,9 +50,6 @@ class HistoryViewModel(QtCore.QObject):
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
-
-    # Keep track of whether the current scrobble has been submitted (both to the scrobble history and to Last.fm)
-    self.__is_current_scrobble_submitted = False
     
     # Hold the index of the selected scrobble in the sidebar
     self.__selected_scrobble_index = None # -1 for current scrobble, None for no scrobble, numbers > 0 for history items
@@ -128,7 +125,7 @@ class HistoryViewModel(QtCore.QObject):
     scrobble_percentage = min(scrobble_percentage, 1)
 
     # Submit current scrobble if the scrobble percentage (progress towards the scrobble threshold) is 100%
-    if not self.__is_current_scrobble_submitted and scrobble_percentage == 1:
+    if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
       # TODO: Only submit when the song changes or the app is closed
       self.__should_submit_current_scrobble = True
 
@@ -305,7 +302,7 @@ class HistoryViewModel(QtCore.QObject):
       if new_media_player_state.error_message:
         raise Exception(new_media_player_state.error_message)
 
-      is_current_track_playable = new_media_player_state.track_title and new_media_player_state.artist_name
+      is_current_track_playable = bool(new_media_player_state.track_title and new_media_player_state.artist_name)
 
       if is_current_track_playable:
         self.__cached_media_player_data['is_current_track_playable'] = True
@@ -333,10 +330,8 @@ class HistoryViewModel(QtCore.QObject):
         # Submit the last scrobble when the current track changes if it hit the scrobbling threshold
         if self.__should_submit_current_scrobble:
           self.__submit_scrobble(self.__current_scrobble)
-          self.__is_current_scrobble_submitted = True
 
         self.__update_scrobble_to_match_new_media_player_data(new_media_player_state)
-        self.__should_submit_current_scrobble = False
       
       # Refresh cached media player data for currently playing track
       player_position = new_media_player_state.player_position
@@ -373,7 +368,7 @@ class HistoryViewModel(QtCore.QObject):
     self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
 
     # Reset flag so new scrobble can later be submitted
-    self.__is_current_scrobble_submitted = False
+    self.__should_submit_current_scrobble = False
 
     # Update UI content in current scrobble sidebar item
     self.current_scrobble_data_changed.emit()
