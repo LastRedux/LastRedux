@@ -11,7 +11,8 @@ import './views'
 Window {
   id: application
 
-  property bool isOnProfilePage: false
+  property int currentTabIndex: 0
+
   property bool isInMiniMode: {
     if (historyViewModel) {
       if (historyViewModel.miniMode) {
@@ -30,6 +31,23 @@ Window {
   minimumHeight: isInMiniMode ? 0 : 470
   width: 957
   height: 600
+
+  function switchToTab(tabIndex) {
+    if (currentTabIndex !== tabIndex) {
+      currentTabIndex = tabIndex
+
+      switch (tabIndex) {
+      case 0:
+        stackView.replace(historyPage)
+        break
+      case 1:
+        stackView.replace(profilePage)
+        break
+      case 2:
+        stackView.replace(friendsPage)
+      }
+    }
+  }
 
   onClosing: { 
     application.hide()
@@ -197,6 +215,7 @@ Window {
 
   SidebarBackground {
     id: sidebar
+
     visible: isInMiniMode ? false : true
 
     anchors {
@@ -210,6 +229,8 @@ Window {
 
       clip: true
       initialItem: historyPage
+      replaceEnter: Transition { }
+      replaceExit: Transition { }
 
       anchors {
         top: tabBar.bottom
@@ -228,20 +249,39 @@ Window {
         left: parent.left
       }
 
-      LabelButton {
-        property int pageId: 0
-        property var pages: [historyPage, profilePage, friendsPage]
+      Item {
+        anchors {
+          fill: parent
 
-        isCompact: true
-        title: 'Switch Tab'
-
-        onClicked: {
-          pageId++
-
-          stackView.replace(pages[pageId % pages.length])
+          topMargin: 22
         }
-        
-        anchors.centerIn: parent
+
+        Row {
+          spacing: 29
+
+          anchors.centerIn: parent
+
+          ToolbarItem {
+            iconName: 'history'
+            isSelected: currentTabIndex === 0
+
+            onClicked: switchToTab(0)
+          }
+
+          ToolbarItem {
+            iconName: 'profile'
+            isSelected: currentTabIndex === 1
+
+            onClicked: switchToTab(1)
+          }
+
+          ToolbarItem {
+            iconName: 'friends'
+            isSelected: currentTabIndex === 2
+
+            onClicked: switchToTab(2)
+          }
+        }
       }
     }
   }
