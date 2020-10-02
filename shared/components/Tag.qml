@@ -65,7 +65,7 @@ Rectangle {
   Image {
     id: icon
 
-    source: '../resources/link.png'
+    source: '../resources/tagLink.png'
 
     x: titleLabel.x + titleLabel.width + 5
     y: 3

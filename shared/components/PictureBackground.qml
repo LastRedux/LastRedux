@@ -92,6 +92,7 @@ Item {
     maskSource: mask
     opacity: 0 // Will be faded in through component state once image loads
     source: reflectionSource // Apply mask to the cloned, recolored image
+    visible: isBlurEnabled
 
     // Use transformation matrix to vertically flip view
     // Must be done on final shown item, doesn't work if used on item earlier in chain like ShaderEffectSource
@@ -154,7 +155,7 @@ Item {
   }
 
   Rectangle {
-    color: Qt.rgba(0, 0, 0, 0.17)
+    color: Qt.rgba(0, 0, 0, 0.23)
 
     height: 1
 

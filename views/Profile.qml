@@ -45,6 +45,7 @@ Item {
     // --- Scrobbles ---
 
     ProfileStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library`
       iconName: 'scrobble'
       value: isProfileLoaded && viewModel.profileStatistics.total_scrobbles
       caption: 'scrobbles'
@@ -55,6 +56,12 @@ Item {
     // --- Scrobbles Today ---
 
     ProfileStatistic {
+      property string currentDate: {
+        const today = new Date()
+        return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+      }
+
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library?from=${currentDate}&to=${currentDate}`
       iconName: 'clock'
       value: isProfileLoaded && viewModel.profileStatistics.total_scrobbles_today
       caption: 'plays today'
@@ -65,6 +72,7 @@ Item {
     // --- Scrobbles Per Day ---
 
     ProfileStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library`
       iconName: 'calendar'
       value: isProfileLoaded && viewModel.profileStatistics.average_daily_scrobbles
       caption: 'plays per day'
@@ -75,6 +83,7 @@ Item {
     // --- Artists in Library ---
 
     ProfileStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library/artists`
       iconName: 'artist'
       value: isProfileLoaded && viewModel.profileStatistics.total_artists
       caption: 'artists in library'
@@ -85,6 +94,7 @@ Item {
     // --- Loved Tracks ---
 
     ProfileStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/loved`
       iconName: 'heart'
       value: isProfileLoaded && viewModel.profileStatistics.total_loved_tracks
       caption: 'loved tracks'
@@ -158,13 +168,13 @@ Item {
       anchors.fill: parent
       
       contentWidth: parent.width
-      contentHeight: column.height + 10
+      contentHeight: column.y + column.height + 10
       clip: true
 
       Column {
         id: column
 
-        spacing: 8
+        spacing: 15
 
         anchors {
           top: parent.top
@@ -174,50 +184,68 @@ Item {
           topMargin: 10
         }
         
-        Label {
-          text: 'Top last 7 days'
-          style: kTitleTertiary
-
-          x: 15
-        }
-
         Column {
+          spacing: 8
+
           width: parent.width
 
-          Repeater {
-            model: viewModel.topArtists && viewModel.topArtists.last_7_days
+          Label {
+            text: 'Top last 7 days'
+            style: kTitleTertiary
 
-            delegate: ListeningStatistic {
-              imageSource: modelData.image_url
-              title: modelData.title
-              scrobbleCount: modelData.lastfm_plays
-              scrobbleCountPercentage: modelData.percentage
+            x: 15
+          }
 
-              width: flickable.width
+          Column {
+            spacing: 10
+
+            width: parent.width
+
+            Repeater {
+              model: viewModel.topArtists && viewModel.topArtists.last_7_days
+
+              delegate: ListeningStatistic {
+                imageSource: modelData.image_url
+                lastfmUrl: modelData.lastfm_url
+                title: modelData.title
+                scrobbleCount: modelData.lastfm_plays
+                scrobbleCountPercentage: modelData.percentage
+
+                width: flickable.width
+              }
             }
           }
         }
 
-        Label {
-          text: 'Top all time'
-          style: kTitleTertiary
-
-          x: 15
-        }
-
         Column {
+          spacing: 8
+
           width: parent.width
 
-          Repeater {
-            model: viewModel.topArtists && viewModel.topArtists.all_time
+          Label {
+            text: 'Top all time'
+            style: kTitleTertiary
 
-            delegate: ListeningStatistic {
-              imageSource: modelData.image_url
-              title: modelData.title
-              scrobbleCount: modelData.lastfm_plays
-              scrobbleCountPercentage: modelData.percentage
+            x: 15
+          }
 
-              width: flickable.width
+          Column {
+            spacing: 10
+
+            width: parent.width
+
+            Repeater {
+              model: viewModel.topArtists && viewModel.topArtists.all_time
+
+              delegate: ListeningStatistic {
+                imageSource: modelData.image_url
+                lastfmUrl: modelData.lastfm_url
+                title: modelData.title
+                scrobbleCount: modelData.lastfm_plays
+                scrobbleCountPercentage: modelData.percentage
+
+                width: flickable.width
+              }
             }
           }
         }
@@ -246,7 +274,7 @@ Item {
 
     // Border
     Rectangle {
-      color: Qt.rgba(0, 0, 0, 0.17)
+      color: Qt.rgba(0, 0, 0, 0.23)
 
       height: 1
 

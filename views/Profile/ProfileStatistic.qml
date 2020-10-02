@@ -4,6 +4,9 @@ import '../../shared/components'
 import '../../util/helpers.js' as Helpers
 
 Item {
+  id: root
+
+  property string address
   property string iconName
   property var value
   property string caption
@@ -32,9 +35,10 @@ Item {
 
   // --- Value and Caption ---
 
-  Label {
-    id: label
+  Link {
+    id: link
     
+    address: root.address || ''
     elide: Text.ElideRight
     style: kCaption
     text: value ? `${Helpers.numberWithCommas(value)} ${caption}` : caption
@@ -57,13 +61,13 @@ Item {
     radius: 4
     visible: !value
 
-    width: label.contentWidth + 15
+    width: link.contentWidth + 15
     height: 16
 
     anchors {
-      verticalCenter: label.verticalCenter
+      verticalCenter: link.verticalCenter
 
-      left: label.left
+      left: link.left
     }
   }
 }

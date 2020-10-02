@@ -5,12 +5,39 @@ import "../../shared/components"
 Item {
   property bool hasImage: true
   property alias imageSource: picture.source
+  property string lastfmUrl
   property alias title: titleLabel.text
   property alias subtitle: subtitleLabel.text
   property string scrobbleCount
   property alias scrobbleCountPercentage: scrobbleCountProgressBar.percentage
 
-  height: scrobbleCountLabel.y + scrobbleCountLabel.height + 5
+  opacity: hoverHandler.hovered && pointHandler.active ? 0.5 : 1
+
+  height: Math.max(picture.height, scrobbleCountLabel.y + scrobbleCountLabel.height)
+
+  // --- Pointer Handlers ---
+
+  HoverHandler {
+    id: hoverHandler
+  }
+
+  // TODO: Add context menu
+  PointHandler {
+    id: pointHandler
+
+    enabled: !!lastfmUrl
+  }
+  
+  TapHandler {
+    acceptedButtons: Qt.LeftButton
+
+    onTapped: {
+      if (lastfmUrl) {
+        console.log(lastfmUrl)
+        Qt.openUrlExternally(lastfmUrl)
+      }
+    }
+  }
 
   // --- Picture ---
 
@@ -24,7 +51,6 @@ Item {
       top: parent.top
       left: parent.left
 
-      topMargin: 5
       leftMargin: 15
     }
   }
@@ -40,7 +66,7 @@ Item {
     style: kTitleSecondary
     wrapMode: Text.Wrap
 
-    y: 7
+    y: 2
 
     anchors {
       right: parent.right

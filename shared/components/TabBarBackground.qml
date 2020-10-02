@@ -22,7 +22,7 @@ Image {
 
   // Border
   Rectangle {
-    color: Qt.rgba(0, 0, 0, 0.17)
+    color: Qt.rgba(0, 0, 0, 0.23)
 
     height: 1
 
