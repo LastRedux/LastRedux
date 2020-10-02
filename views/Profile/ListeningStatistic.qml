@@ -1,22 +1,24 @@
+import QtQuick 2.14
+
+import "../../shared/components"
+
 Item {
+  property bool hasImage: true
+  property alias imageSource: picture.source
   property alias title: titleLabel.text
   property alias subtitle: subtitleLabel.text
-  property alias scrobbleCount: scrobbleCountLabel.text
+  property string scrobbleCount
   property alias scrobbleCountPercentage: scrobbleCountProgressBar.percentage
 
   height: scrobbleCountLabel.y + scrobbleCountLabel.height + 5
-
-  anchors {
-    top: parent.top
-    left: parent.left
-
-    margins: 30
-  }
 
   // --- Picture ---
 
   Picture {
     id: picture
+
+    type: kArtist // TODO: Allow configuration
+    visible: hasImage
 
     anchors {
       top: parent.top
@@ -36,17 +38,16 @@ Item {
     maximumLineCount: 2
 
     style: kTitleSecondary
-    text: 'Experience'
     wrapMode: Text.Wrap
 
-    y: 5
+    y: 7
 
     anchors {
       right: parent.right
-      left: picture.right
+      left: hasImage ? picture.right : parent.left
 
       rightMargin: 15
-      leftMargin: 10
+      leftMargin: hasImage ? 10 : 15
     }
   }
 
@@ -57,8 +58,7 @@ Item {
     
     elide: Text.ElideRight
     maximumLineCount: 2
-
-    text: 'Victoria Monét, Khalid & SG Lewis'
+    visible: text
     wrapMode: Text.Wrap
 
     y: titleLabel.y + titleLabel.height + 1
@@ -77,7 +77,7 @@ Item {
     percentage: 1
 
     y: {
-      let topMargin = 7
+      let topMargin = 6
 
       if (subtitleLabel.visible) {
         return subtitleLabel.y + subtitleLabel.height + topMargin
@@ -99,7 +99,7 @@ Item {
 
     horizontalAlignment: Qt.AlignRight
     style: kTitleTertiary
-    text: '000 plays'
+    text: `${scrobbleCount} plays`
 
     width: 62
 

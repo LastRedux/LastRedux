@@ -32,12 +32,3 @@ class Artist:
     self.lastfm_bio = lastfm_artist['bio']['content'].split(' <')[0].strip() # Remove read more on Last.fm link because a QML Link component is used instead
     self.lastfm_tags = list(map(lambda tag: Tag(tag['name'], tag['url']), lastfm_artist['tags']['tag']))
     self.lastfm_similar_artists = list(map(lambda similar_artist: SimilarArtist(similar_artist['name'], similar_artist['url']), lastfm_artist['similar']['artist']))
-
-  @staticmethod
-  def build_from_lastfm_artist(lastfm_artist) -> Artist:
-    return Artist(
-      name=lastfm_artist['name'],
-      image_url='',
-      lastfm_url=lastfm_artist['url'],
-      lastfm_plays=lastfm_artist['playcount'],
-    )

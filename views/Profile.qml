@@ -164,39 +164,36 @@ Item {
       Column {
         id: column
 
+        spacing: 8
+
         anchors {
           top: parent.top
           right: parent.right
           left: parent.left
           
           topMargin: 10
-          rightMargin: 15
-          leftMargin: 15
         }
         
         Label {
           text: 'Top all time'
           style: kTitleTertiary
+
+          x: 15
         }
 
-        Repeater {
-          model: viewModel.topArtists && viewModel.topArtists.all_time
+        Column {
+          width: parent.width
 
-          delegate: Row {
-            Picture {
-              type: kArtist
+          Repeater {
+            model: viewModel.topArtists && viewModel.topArtists.all_time
 
-              source: modelData.image_url
-            }
+            delegate: ListeningStatistic {
+              imageSource: modelData.image_url
+              title: modelData.title
+              scrobbleCount: modelData.lastfm_plays
+              scrobbleCountPercentage: modelData.percentage
 
-            Column {
-              Label {
-                text: modelData.name
-              }
-              
-              Label {
-                text: `Plays: ${modelData.lastfm_plays}`
-              }
+              width: flickable.width
             }
           }
         }

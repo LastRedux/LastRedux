@@ -36,20 +36,18 @@ class ProfileViewModel(QtCore.QObject):
   
   @QtCore.Slot()
   def loadProfileAndTopArtists(self):
+    def __process_new_profile_and_top_artists(new_profile_statistics_and_top_artists):
+      self.account_details = new_profile_statistics_and_top_artists['account_details']
+      self.profile_statistics = new_profile_statistics_and_top_artists['profile_statistics']
+      self.top_artists = new_profile_statistics_and_top_artists['top_artists']
+      
+      self.account_details_changed.emit()
+      self.profile_statistics_changed.emit()
+      self.top_artists_changed.emit()
+
     fetch_profile_and_top_artists_task = FetchProfileAndTopArtistsTask(self.lastfm_instance)
-    fetch_profile_and_top_artists_task.finished.connect(self.__process_new_profile_and_top_artists)
+    fetch_profile_and_top_artists_task.finished.connect(__process_new_profile_and_top_artists)
     QtCore.QThreadPool.globalInstance().start(fetch_profile_and_top_artists_task)
-
-  # --- Private Methods ---
-
-  def __process_new_profile_and_top_artists(self, new_profile_statistics_and_top_artists):
-    self.account_details = new_profile_statistics_and_top_artists['account_details']
-    self.profile_statistics = new_profile_statistics_and_top_artists['profile_statistics']
-    self.top_artists = new_profile_statistics_and_top_artists['top_artists']
-    
-    self.account_details_changed.emit()
-    self.profile_statistics_changed.emit()
-    self.top_artists_changed.emit()
 
   # --- Qt Properties ---
 
