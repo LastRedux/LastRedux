@@ -175,6 +175,30 @@ Item {
         }
         
         Label {
+          text: 'Top last 7 days'
+          style: kTitleTertiary
+
+          x: 15
+        }
+
+        Column {
+          width: parent.width
+
+          Repeater {
+            model: viewModel.topArtists && viewModel.topArtists.last_7_days
+
+            delegate: ListeningStatistic {
+              imageSource: modelData.image_url
+              title: modelData.title
+              scrobbleCount: modelData.lastfm_plays
+              scrobbleCountPercentage: modelData.percentage
+
+              width: flickable.width
+            }
+          }
+        }
+
+        Label {
           text: 'Top all time'
           style: kTitleTertiary
 
