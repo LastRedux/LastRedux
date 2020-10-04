@@ -59,6 +59,7 @@ class HistoryViewModel(QtCore.QObject):
     self.selected_scrobble = None
 
     # Keep track of whether the current scrobble has hit the threshold for scrobbling (to submit when current track changes)
+    self.__current_scrobble_percentage = 0
     self.__should_submit_current_scrobble = None
 
     # Cached data from the media player for the currently playing track
@@ -106,32 +107,7 @@ class HistoryViewModel(QtCore.QObject):
     return None
 
   def get_current_scrobble_percentage(self):
-    '''Return the percentage of the track that has played compared to a user-set percentage of the track length'''
-
-    if not self.__current_scrobble:
-      return 0
-
-    # Compensate for custom track start and end times
-    # TODO: Only do this if the media player is Apple Music/iTunes
-    relative_position = self.__cached_media_player_data['furthest_player_position_reached'] - self.__cached_media_player_data['track_start']
-    relative_track_length = self.__cached_media_player_data['track_finish'] - self.__cached_media_player_data['track_start']
-    min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database
-    
-    # Prevent scenarios where the relative position is negative
-    relative_position = max(0, relative_position)
-
-    scrobble_percentage = relative_position / min_scrobble_length
-
-    # Prevent scenarios where the relative player position is greater than the relative track length (don't let the percentage by greater than 1)
-    scrobble_percentage = min(scrobble_percentage, 1)
-
-    # Submit current scrobble if the scrobble percentage (progress towards the scrobble threshold) is 100%
-    if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
-      # TODO: Only submit when the song changes or the app is closed
-      self.__should_submit_current_scrobble = True
-      print(f'Ready for submission: {self.__current_scrobble.track.title}')
-
-    return scrobble_percentage
+    return self.__current_scrobble_percentage
   
   def get_is_using_mock_player_plugin(self):
     return isinstance(self.media_player, MockPlayerPlugin)
@@ -352,6 +328,8 @@ class HistoryViewModel(QtCore.QObject):
       # TODO: Add support for different scrobble submission styles such as counting seconds of playback
       if player_position >= self.__cached_media_player_data['furthest_player_position_reached']:
         self.__cached_media_player_data['furthest_player_position_reached'] = player_position
+      
+      self.__current_scrobble_percentage = self.__determine_current_scrobble_percentage()
 
       # Update scrobble progress bar UI
       self.current_scrobble_percentage_changed.emit()
@@ -370,6 +348,34 @@ class HistoryViewModel(QtCore.QObject):
           # Update the current scrobble highlight and song details pane views
           self.selected_scrobble_index_changed.emit()
           self.selected_scrobble_changed.emit()
+  
+  def __determine_current_scrobble_percentage(self):
+    '''Determine the percentage of the track that has played compared to a user-set percentage of the track length'''
+
+    if not self.__current_scrobble:
+      return 0
+
+    # Compensate for custom track start and end times
+    # TODO: Only do this if the media player is Apple Music/iTunes
+    relative_position = self.__cached_media_player_data['furthest_player_position_reached'] - self.__cached_media_player_data['track_start']
+    relative_track_length = self.__cached_media_player_data['track_finish'] - self.__cached_media_player_data['track_start']
+    min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database
+    
+    # Prevent scenarios where the relative position is negative
+    relative_position = max(0, relative_position)
+
+    scrobble_percentage = relative_position / min_scrobble_length
+
+    # Prevent scenarios where the relative player position is greater than the relative track length (don't let the percentage by greater than 1)
+    scrobble_percentage = min(scrobble_percentage, 1)
+
+    # Submit current scrobble if the scrobble percentage (progress towards the scrobble threshold) is 100%
+    if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
+      # TODO: Only submit when the song changes or the app is closed
+      self.__should_submit_current_scrobble = True
+      print(f'Ready for submission: {self.__current_scrobble.track.title}')
+
+    return scrobble_percentage
           
   def __update_scrobble_to_match_new_media_player_data(self, new_media_player_state):
     '''Set __current_scrobble to a new Scrobble object created from the currently playing track, update the playback data for track start/finish, and update the UI'''
