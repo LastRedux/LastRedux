@@ -22,9 +22,9 @@ class FriendsViewModel(QtCore.QObject):
   @QtCore.Slot()
   def loadFriends(self):
     def __load_friends(new_friends):
-      self.begin_refresh_friends.emit()
-      self.friends = new_friends
-      self.end_refresh_friends.emit()
+        self.begin_refresh_friends.emit()
+        self.friends = new_friends.copy()
+        self.end_refresh_friends.emit()
 
     fetch_friends_task = FetchFriendsTask(self.lastfm_instance)
     fetch_friends_task.finished.connect(__load_friends)

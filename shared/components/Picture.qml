@@ -1,5 +1,5 @@
 import QtQuick 2.14
-import QtGraphicalEffects 1.0
+import QtGraphicalEffects 1.12
 
 Image {
   id: root
@@ -13,7 +13,7 @@ Image {
   height: width
 
   layer {
-    enabled: true
+    enabled: root.width === root.height
 
     effect: DropShadow {
       color: Qt.rgba(0, 0, 0, 0.4)
@@ -26,9 +26,16 @@ Image {
     id: placeholder
 
     opacity: 1
-    source: `../resources/${type === kArtist ? 'artistP' : 'p'}laceholder.png`
+    source: root.width === root.height ? `../resources/${type === kArtist ? 'artistP' : 'p'}laceholder.png` : ''
     
     anchors.fill: parent
+
+    Rectangle {
+      color: '#252525'
+      visible: root.width !== root.height
+
+      anchors.fill: parent
+    }
 
     states: State {
       name: 'loaded'

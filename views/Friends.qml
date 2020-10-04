@@ -36,6 +36,7 @@ Item {
       userImage: model.imageUrl
       username: model.username
       userRealName: model.realName
+      trackImage: model.currentTrackAlbumImageUrl
       trackTitle: model.currentTrackTitle
       trackArtistName: model.currentTrackArtistName
       isTrackPlaying: model.isCurrentTrackPlaying

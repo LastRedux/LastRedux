@@ -1,5 +1,5 @@
 import QtQuick 2.14
-import QtGraphicalEffects 1.0
+import QtGraphicalEffects 1.12
 
 Item {
   id: root

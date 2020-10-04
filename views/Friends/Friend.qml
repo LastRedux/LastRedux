@@ -1,4 +1,5 @@
 import QtQuick 2.14
+import QtGraphicalEffects 1.12
 
 import '../../shared/components'
 
@@ -10,16 +11,69 @@ Item {
   property alias username: usernameLabel.text
   property alias userRealName: userRealNameLabel.text
 
+  property string trackImage
   property string trackTitle
   property string trackArtistName
   property bool isTrackPlaying
 
-  opacity: userLinkHoverHandler.hovered && userLinkPointHandler.active ? 0.5 : 1
-
   height: trackTitle ? trackLink.y + trackLink.height : userLink.height
+
+  Picture {
+    fillMode: Image.PreserveAspectCrop
+    source: trackImage || ''
+    visible: isTrackPlaying
+
+    anchors.fill: parent
+
+    LinearGradient {
+      anchors.fill: parent
+
+      gradient: Gradient {
+        GradientStop {
+          color: Qt.rgba(0, 0, 0, 0.5)
+          position: 0
+        }
+
+        GradientStop {
+          color: Qt.rgba(0, 0, 0, 0.75)
+          position: 1
+        }
+      }
+    }
+
+    // --- Shadow and Border ---
+
+    Image {
+      fillMode: Image.TileHorizontally
+      source: '../../shared/resources/effects/trackDetailsShadow.png'
+
+      height: 16
+
+      // Position outside of and under bounding box
+      anchors {
+        top: parent.bottom
+        right: parent.right
+        left: parent.left
+      }
+    }
+
+    Rectangle {
+      color: Qt.rgba(0, 0, 0, 0.23)
+
+      height: 1
+
+      anchors {
+        top: parent.bottom
+        right: parent.right
+        left: parent.left
+      }
+    }
+  }
 
   Item {
     id: userLink
+
+    opacity: userLinkHoverHandler.hovered && userLinkPointHandler.active ? 0.5 : 1
 
     width: parent.width
     height: userImageView.height + 20
@@ -81,6 +135,7 @@ Item {
         id: usernameLabel
 
         elide: Text.ElideRight
+        isShadowEnabled: !isTrackPlaying
         style: kTitleSecondary
 
         width: parent.width
@@ -90,6 +145,7 @@ Item {
         id: userRealNameLabel
 
         elide: Text.ElideRight
+        isShadowEnabled: !isTrackPlaying
         opacity: 0.81
         visible: text
 
@@ -125,11 +181,8 @@ Item {
 
     // --- Track Playback Status ---
 
-    Rectangle {
+    Item {
       id: trackPlaybackStatusView
-
-      color: isTrackPlaying ? 'cyan' : 'gray'
-      radius: 5
 
       width: 18
       height: 18
@@ -140,6 +193,16 @@ Item {
 
         leftMargin: 15
       }
+
+      Image {
+        source: `../../shared/resources/icons/small/${isTrackPlaying ? 'currentlyPlaying' : 'clock'}.png`
+
+        anchors {
+          fill: parent
+
+          margins: -6
+        }
+      }
     }
 
     // --- Track Title ---
@@ -148,6 +211,7 @@ Item {
       id: trackTitleLabel
 
       elide: Text.ElideRight
+      isShadowEnabled: !isTrackPlaying
       style: kTitleSecondary
       text: trackTitle || ''
 
@@ -167,6 +231,7 @@ Item {
       id: trackArtistNameView
 
       elide: Text.ElideRight
+      isShadowEnabled: !isTrackPlaying
       opacity: 0.81
       text: trackArtistName || ''
 
