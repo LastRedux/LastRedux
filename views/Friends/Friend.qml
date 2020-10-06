@@ -6,7 +6,7 @@ import '../../shared/components'
 Item {
   id: root
 
-  property var userAddress
+  property var userLastfmUrl
   property alias userImage: userImageView.source
   property alias username: usernameLabel.text
   property alias userRealName: userRealNameLabel.text
@@ -14,6 +14,8 @@ Item {
   property string trackImage
   property string trackTitle
   property string trackArtistName
+  property alias trackLastfmUrl: trackTitleLabel.address
+  property alias trackArtistLastfmUrl: trackArtistNameView.address
   property bool isTrackPlaying
 
   height: trackTitle ? trackLink.y + trackLink.height : userLink.height
@@ -87,15 +89,15 @@ Item {
     PointHandler {
       id: userLinkPointHandler
 
-      enabled: !!userAddress
+      enabled: !!userLastfmUrl
     }
 
     TapHandler {
       acceptedButtons: Qt.LeftButton
 
       onTapped: {
-        if (userAddress) {
-          Qt.openUrlExternally(userAddress)
+        if (userLastfmUrl) {
+          Qt.openUrlExternally(userLastfmUrl)
         }
       }
     }
@@ -179,10 +181,12 @@ Item {
     width: parent.width
     height: trackTitle ? trackArtistNameView.y + trackArtistNameView.height + 10 : 0
 
-    // --- Track Playback Status ---
+    // --- Track Playback Status - Not Currently Playing ---
 
     Item {
-      id: trackPlaybackStatusView
+      id: notCurrentlyPlaying
+
+      visible: !isTrackPlaying
 
       width: 18
       height: 18
@@ -195,7 +199,7 @@ Item {
       }
 
       Image {
-        source: `../../shared/resources/icons/small/${isTrackPlaying ? 'currentlyPlaying' : 'clock'}.png`
+        source: `../../shared/resources/icons/small/clock.png`
 
         anchors {
           fill: parent
@@ -205,20 +209,34 @@ Item {
       }
     }
 
+    // --- Track Playback Status - Currently Playing ---
+
+    PlaybackIndicator {
+      id: playbackIndicator
+
+      visible: isTrackPlaying
+
+      anchors {
+        top: parent.top
+        left: parent.left
+
+        leftMargin: 15
+      }
+    }
+
     // --- Track Title ---
 
-    Label {
+    Link {
       id: trackTitleLabel
 
       elide: Text.ElideRight
       isShadowEnabled: !isTrackPlaying
-      style: kTitleSecondary
       text: trackTitle || ''
 
       anchors {
         top: parent.top
         right: parent.right
-        left: trackPlaybackStatusView.right
+        left: playbackIndicator.right
 
         rightMargin: 15
         leftMargin: 10
@@ -227,12 +245,13 @@ Item {
 
     // --- Track Artist Name ---
 
-    Label {
+    Link {
       id: trackArtistNameView
 
       elide: Text.ElideRight
       isShadowEnabled: !isTrackPlaying
       opacity: 0.81
+      style: kBodyPrimary
       text: trackArtistName || ''
 
       anchors {

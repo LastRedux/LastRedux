@@ -36,6 +36,9 @@ class DetailsViewModel(QtCore.QObject):
 
     return None
 
+  def get_is_current_scrobble(self):
+    return self.__history_reference and self.__history_reference.get_selected_scrobble_index() == -1
+
   # --- Qt Properties ---
 
   # Allow the __history_reference to be set in the view
@@ -43,3 +46,5 @@ class DetailsViewModel(QtCore.QObject):
 
   # Make the __history_reference available to the view
   scrobbleTrackData = QtCore.Property('QVariant', get_scrobble_track_data, notify=scrobble_track_data_changed)
+
+  isCurrentScrobble = QtCore.Property(bool, get_is_current_scrobble, notify=scrobble_track_data_changed) # Update when scrobble track data updates

@@ -7,6 +7,7 @@ import '../../util/helpers.js' as Helpers
 PictureBackground {
   id: root
 
+  property bool isCurrentlyScrobbling
   property string title
   property string lastfmUrl
   
@@ -48,6 +49,21 @@ PictureBackground {
 
   // --- Track Name ---
 
+  PlaybackIndicator {
+    id: playbackIndicator
+
+    isLarge: true
+    visible: isCurrentlyScrobbling
+
+    anchors {
+      top: albumImageView.top
+      left: albumImageView.right
+
+      topMargin: 10
+      leftMargin: 20
+    }
+  }
+
   Link {
     id: trackNameView
     
@@ -58,13 +74,12 @@ PictureBackground {
     address: lastfmUrl
 
     anchors {
-      top: albumImageView.top
+      top: playbackIndicator.top
       right: parent.right
-      left: albumImageView.right
+      left: playbackIndicator.visible ? playbackIndicator.right : playbackIndicator.left
 
-      topMargin: 10
       rightMargin: 30
-      leftMargin: 20
+      leftMargin: playbackIndicator.visible ? 10 : 0
     }
   }
 
@@ -81,7 +96,7 @@ PictureBackground {
     anchors {
       top: trackNameView.bottom
       right: trackNameView.right
-      left: trackNameView.left
+      left: playbackIndicator.left
 
       topMargin: 5
     }
@@ -97,7 +112,7 @@ PictureBackground {
 
     anchors {
       top: artistNameView.bottom
-      left: trackNameView.left
+      left: playbackIndicator.left
       right: trackNameView.right
 
       topMargin: 5
@@ -144,7 +159,7 @@ PictureBackground {
     anchors {
       top: albumView.visible ? albumView.bottom : artistNameView.bottom
       right: trackNameView.right
-      left: trackNameView.left
+      left: playbackIndicator.left
 
       topMargin: 10
     }
@@ -179,7 +194,7 @@ PictureBackground {
     anchors {
       top: statistics.bottom
       right: trackNameView.right
-      left: trackNameView.left
+      left: playbackIndicator.left
 
       topMargin: 15
     }

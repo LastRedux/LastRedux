@@ -43,6 +43,7 @@ class Track:
 
     artist = Artist(
       name=lastfm_recent_track['artist']['name'],
+      lastfm_url=lastfm_recent_track['artist']['url'],
       image_url=''
     )
 
@@ -55,5 +56,6 @@ class Track:
     return Track(
       title=lastfm_recent_track['name'],
       artist=artist,
-      album=album
+      album=album,
+      lastfm_url=lastfm_recent_track['url']
     )

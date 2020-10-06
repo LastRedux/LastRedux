@@ -7,11 +7,12 @@ class FriendsListModel(QtCore.QAbstractListModel):
   __REAL_NAME_ROLE = QtCore.Qt.UserRole + 1
   __IMAGE_URL_ROLE = QtCore.Qt.UserRole + 2
   __LASTFM_URL_ROLE = QtCore.Qt.UserRole + 3
-  __CURRENT_TRACK_TITLE_ROLE = QtCore.Qt.UserRole + 4
-  __CURRENT_TRACK_ARTIST_NAME_ROLE = QtCore.Qt.UserRole + 5
-  __CURRENT_TRACK_ALBUM_IMAGE_URL_ROLE = QtCore.Qt.UserRole + 6
-  __IS_CURRENT_TRACK_PLAYING_ROLE = QtCore.Qt.UserRole + 7
-  __CURRENT_TRACK_LASTFM_URL_ROLE = QtCore.Qt.UserRole + 8
+  __TRACK_TITLE_ROLE = QtCore.Qt.UserRole + 4
+  __TRACK_LASTFM_URL_ROLE = QtCore.Qt.UserRole + 5
+  __TRACK_ARTIST_NAME_ROLE = QtCore.Qt.UserRole + 6
+  __TRACK_ARTIST_LASTFM_URL_ROLE = QtCore.Qt.UserRole + 7
+  __TRACK_ALBUM_IMAGE_URL_ROLE = QtCore.Qt.UserRole + 8
+  __IS_TRACK_PLAYING_ROLE = QtCore.Qt.UserRole + 9
 
   def __int__(self, parent=None):
     QtCore.QAbstractListModel.__init__(self, parent)
@@ -43,11 +44,12 @@ class FriendsListModel(QtCore.QAbstractListModel):
       self.__REAL_NAME_ROLE: b'realName',
       self.__IMAGE_URL_ROLE: b'imageUrl',
       self.__LASTFM_URL_ROLE: b'lastfmUrl',
-      self.__CURRENT_TRACK_TITLE_ROLE: b'currentTrackTitle',
-      self.__CURRENT_TRACK_ARTIST_NAME_ROLE: b'currentTrackArtistName',
-      self.__CURRENT_TRACK_ALBUM_IMAGE_URL_ROLE: b'currentTrackAlbumImageUrl',
-      self.__IS_CURRENT_TRACK_PLAYING_ROLE: b'isCurrentTrackPlaying',
-      self.__CURRENT_TRACK_LASTFM_URL_ROLE: b'currentTrackLastfmUrl'
+      self.__TRACK_TITLE_ROLE: b'trackTitle',
+      self.__TRACK_LASTFM_URL_ROLE: b'trackLastfmUrl',
+      self.__TRACK_ARTIST_NAME_ROLE: b'trackArtistName',
+      self.__TRACK_ARTIST_LASTFM_URL_ROLE: b'trackArtistLastfmUrl',
+      self.__TRACK_ALBUM_IMAGE_URL_ROLE: b'trackAlbumImageUrl',
+      self.__IS_TRACK_PLAYING_ROLE: b'isTrackPlaying',
     }
 
   def rowCount(self, parent=QtCore.QModelIndex()):
@@ -76,16 +78,18 @@ class FriendsListModel(QtCore.QAbstractListModel):
           return friend.image_url
         elif role == self.__LASTFM_URL_ROLE:
           return friend.lastfm_url
-        elif role == self.__CURRENT_TRACK_TITLE_ROLE:
-          return friend.current_track.title
-        elif role == self.__CURRENT_TRACK_ARTIST_NAME_ROLE:
-          return friend.current_track.artist.name
-        elif role == self.__CURRENT_TRACK_ALBUM_IMAGE_URL_ROLE:
-          return friend.current_track.album.image_url
-        elif role == self.__CURRENT_TRACK_LASTFM_URL_ROLE:
-          return friend.current_track.lastfm_url
-        elif role == self.__IS_CURRENT_TRACK_PLAYING_ROLE:
-          return friend.is_current_track_playing
+        elif role == self.__TRACK_TITLE_ROLE:
+          return friend.track.title
+        elif role == self.__TRACK_LASTFM_URL_ROLE:
+          return friend.track.lastfm_url
+        elif role == self.__TRACK_ARTIST_NAME_ROLE:
+          return friend.track.artist.name
+        elif role == self.__TRACK_ARTIST_LASTFM_URL_ROLE:
+          return friend.track.artist.lastfm_url
+        elif role == self.__TRACK_ALBUM_IMAGE_URL_ROLE:
+          return friend.track.album.image_url
+        elif role == self.__IS_TRACK_PLAYING_ROLE:
+          return friend.is_track_playing
 
     # This is for DisplayRole or if the friends reference doesn't exist
     return None 

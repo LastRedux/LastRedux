@@ -62,6 +62,7 @@ Item {
         TrackDetails {
           property bool hasAlbum: canDisplayEntireScrobble ? !!viewModel.scrobbleTrackData.album.title : false
 
+          isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble
           title: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
           lastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_url : ''
           lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_listeners : undefined

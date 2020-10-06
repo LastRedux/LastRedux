@@ -32,14 +32,16 @@ Item {
     anchors.fill: parent
 
     delegate: Friend {
-      userAddress: model.lastfmUrl
+      userLastfmUrl: model.lastfmUrl
       userImage: model.imageUrl
       username: model.username
       userRealName: model.realName
-      trackImage: model.currentTrackAlbumImageUrl
-      trackTitle: model.currentTrackTitle
-      trackArtistName: model.currentTrackArtistName
-      isTrackPlaying: model.isCurrentTrackPlaying
+      trackTitle: model.trackTitle
+      trackImage: model.trackAlbumImageUrl
+      trackLastfmUrl: model.trackLastfmUrl
+      trackArtistName: model.trackArtistName
+      trackArtistLastfmUrl: model.trackArtistLastfmUrl
+      isTrackPlaying: model.isTrackPlaying
 
       width: listView.width
     }
