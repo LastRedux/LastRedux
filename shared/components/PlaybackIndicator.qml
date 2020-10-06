@@ -1,5 +1,4 @@
 import QtQuick 2.14
-import QtGraphicalEffects 1.12
 
 Item {
   id: root
@@ -27,19 +26,19 @@ Item {
 
       radius: width / 2
 
-      layer {
-        enabled: root.visible
-
-        effect: DropShadow {
-          color: Qt.rgba(0, 0, 0, 0.25)
-          radius: 0
-          verticalOffset: -1
-        }
-      }
-
       x: (isLarge ? 7 : 4) * (model.index + 1)
       y: isLarge ? 7 + (17 - height) : 4 + (10 - height)
       width: isLarge ? 3 : 2
+
+      Rectangle {
+        color: Qt.rgba(0, 0, 0, 0.25)
+        radius: width / 2
+        z: -1
+
+        y: -1
+        width: parent.width
+        height: width
+      }
 
       SequentialAnimation {
         loops: Animation.Infinite
