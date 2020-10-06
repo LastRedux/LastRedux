@@ -203,7 +203,6 @@ PictureBackground {
       model: lastfmTags
 
       delegate: Tag {
-        isShadowEnabled: false
         name: modelData.name
         address: modelData.url
       }

@@ -4,7 +4,6 @@ import Qt.labs.platform 1.0
 Rectangle {
   id: root
   
-  property alias isShadowEnabled: titleLabel.isShadowEnabled
   property alias name: titleLabel.text
   property var address
 
@@ -53,6 +52,7 @@ Rectangle {
   Label {
     id: titleLabel
 
+    isShadowEnabled: false
     style: kTitleSecondary
     verticalAlignment: Qt.AlignVCenter
 
