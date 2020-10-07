@@ -7,6 +7,7 @@ import '../../util/helpers.js' as Helpers
 PictureBackground {
   id: root
 
+  property bool isInMiniMode
   property bool isCurrentlyScrobbling
   property string title
   property string lastfmUrl
@@ -53,7 +54,7 @@ PictureBackground {
     id: playbackIndicator
 
     isLarge: true
-    visible: isCurrentlyScrobbling
+    visible: isCurrentlyScrobbling && !isInMiniMode
 
     anchors {
       top: albumImageView.top

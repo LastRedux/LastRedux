@@ -8,6 +8,7 @@ import '../shared/components'
 Item {
   // Store reference to view model counterpart that can be set from main.qml
   property DetailsViewModel viewModel
+  property alias isInMiniMode: trackDetails.isInMiniMode
 
   property bool canDisplayScrobble: {
     // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
@@ -60,6 +61,8 @@ Item {
         width: scrollArea.width
 
         TrackDetails {
+          id: trackDetails
+
           property bool hasAlbum: canDisplayEntireScrobble ? !!viewModel.scrobbleTrackData.album.title : false
 
           isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble

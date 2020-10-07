@@ -22,6 +22,7 @@ Window {
       return 0
     }
   }
+  property alias isInMiniMode: details.isInMiniMode
 
   color: '#171717'
   title: 'LastRedux'
