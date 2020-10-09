@@ -253,7 +253,7 @@ class HistoryViewModel(QtCore.QObject):
     # Tell the history list model that we are going to change the data it relies on
     self.begin_refresh_history.emit()
 
-    for lastfm_scrobble in lastfm_recent_scrobbles:
+    for i, lastfm_scrobble in enumerate(lastfm_recent_scrobbles):
       # Don't include currently playing track to scrobble history
       if lastfm_scrobble.get('@attr') and lastfm_scrobble.get('@attr').get('nowplaying'):
         continue
@@ -266,7 +266,7 @@ class HistoryViewModel(QtCore.QObject):
       )
       
       self.scrobble_history.append(scrobble)
-      self.__load_additional_scrobble_data(scrobble, should_load_itunes_store_data=False)
+      self.__load_additional_scrobble_data(scrobble, should_load_itunes_store_data=(i <= 10))
 
     # Tell the history list model that we finished changing the data it relies on
     self.end_refresh_history.emit()

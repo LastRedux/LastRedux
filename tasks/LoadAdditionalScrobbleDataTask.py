@@ -8,7 +8,7 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
   def __init__(self, scrobble, should_load_itunes_store_data):
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
-    self.scrobble = scrobble
+    self.scrobble: Scrobble = scrobble
     self.should_load_itunes_store_data = should_load_itunes_store_data
     self.setAutoDelete(True)
 

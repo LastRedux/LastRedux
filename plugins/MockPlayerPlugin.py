@@ -3,6 +3,13 @@ from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
 class MockPlayerPlugin(MediaPlayerPlugin):
   MOCK_TRACKS = [{
+    # Test song with album on Last.fm that doesn't match Apple Music album
+    'track_title': 'Don\'t Stop',
+    'artist_name': 'Kuuro',
+    'album_title': 'Don\'t Stop - Single',
+    'track_start': 0,
+    'track_finish': 100
+  }, {
     # Test song with no album
     'track_title': 'Where It\'s At',
     'artist_name': 'Beck',

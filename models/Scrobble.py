@@ -15,9 +15,7 @@ class Scrobble:
     '''Entry in scrobble history with track information and a timestamp'''
 
     # Create Track instance with associated Artist and Album instances
-    artist = Artist(artist_name)
-    album = Album(album_title)
-    self.track = Track(track_title, artist, album)
+    self.track = Track(track_title, Artist(artist_name), Album(album_title))
     
     # Automatically generate timestamp if one isn't passed
     self.timestamp = timestamp or datetime.now()
@@ -37,17 +35,25 @@ class Scrobble:
     if 'error' in track_response and track_response['message'] == 'Track not found':
       return
 
-    self.track.load_lastfm_track_data(track_response['track'])
+    lastfm_track = track_response['track']
+    self.track.load_lastfm_track_data(lastfm_track)
     self.track.artist.load_lastfm_artist_data(Scrobble.lastfm_instance.get_artist_info(self)['artist'])
-    
-    # Get album info from Last.fm if the track has an album
+
+    # If the scrobble has album data
     if self.track.album.title:
-      album_response = Scrobble.lastfm_instance.get_album_info(self)
-      lastfm_album = album_response.get('album')
+      lastfm_album = Scrobble.lastfm_instance.get_album_info(self).get('album')
       
-      # Not all tracks on Last.fm have an album (for example if a user scrobbles a track elsewhere and it shows up in history)
+      # If the album exists on Last.fm
       if lastfm_album:
         self.track.album.load_lastfm_album_data(lastfm_album)
+    
+    # No matter what, if no album art was found, use track art instead (usually a 'single' album art ie. `Aamon - Single`)
+    # One of the following cases: 
+    # - The scrobble has no album data
+    # - The album doesn't exist on Last.fm 
+    # - The album on Last.fm has no image
+    if not self.track.album.image_url and lastfm_track.get('album'):
+      self.track.album.load_lastfm_track_images(lastfm_track)
 
     self.track.has_lastfm_data = True
   
