@@ -251,6 +251,8 @@ Window {
       }
 
       Item {
+        clip: true
+
         anchors {
           fill: parent
 
@@ -264,6 +266,7 @@ Window {
 
           ToolbarItem {
             iconName: 'history'
+            isLoading: historyViewModel.isLoading
             isSelected: currentTabIndex === 0
 
             onClicked: switchToTab(0)
@@ -271,6 +274,7 @@ Window {
 
           ToolbarItem {
             iconName: 'profile'
+            isLoading: profileViewModel.isLoading
             isSelected: currentTabIndex === 1
 
             onClicked: switchToTab(1)
@@ -278,6 +282,7 @@ Window {
 
           ToolbarItem {
             iconName: 'friends'
+            isLoading: friendsViewModel.isLoading
             isSelected: currentTabIndex === 2
 
             onClicked: switchToTab(2)

@@ -20,5 +20,5 @@ class ListeningStatistic:
       lastfm_plays=int(lastfm_artist['playcount']),
       lastfm_url=lastfm_artist['url'],
       image_url='',
-      has_image=True
+      has_image=False
     )

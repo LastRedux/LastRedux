@@ -123,38 +123,38 @@ Item {
 
   // --- Tabs ---
 
-  Row {
-    id: tabs
+  // Row {
+  //   id: tabs
 
-    spacing: 5
+  //   spacing: 5
 
-    anchors {
-      horizontalCenter: parent.horizontalCenter
+  //   anchors {
+  //     horizontalCenter: parent.horizontalCenter
 
-      top: profileStatistics.bottom
+  //     top: profileStatistics.bottom
 
-      topMargin: 15
-    }
+  //     topMargin: 15
+  //   }
 
-    Tab {
-      title: 'Tracks'
-    }
+  //   Tab {
+  //     title: 'Tracks'
+  //   }
 
-    Tab {
-      title: 'Artists'
-      isSelected: true
-    }
+  //   Tab {
+  //     title: 'Artists'
+  //     isSelected: true
+  //   }
 
-    Tab {
-      title: 'Albums'
-    }
-  }
+  //   Tab {
+  //     title: 'Albums'
+  //   }
+  // }
 
   Rectangle {
     color: '#171717'
 
     anchors {
-      top: tabs.bottom
+      top: profileStatistics.bottom
       right: parent.right
       bottom: parent.bottom
       left: parent.left
@@ -190,7 +190,7 @@ Item {
           width: parent.width
 
           Label {
-            text: 'Top last 7 days'
+            text: 'Top Artists This Week'
             style: kTitleTertiary
 
             x: 15
@@ -205,6 +205,7 @@ Item {
               model: viewModel.topArtists && viewModel.topArtists.last_7_days
 
               delegate: ListeningStatistic {
+                hasImage: modelData.has_image
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
@@ -223,7 +224,7 @@ Item {
           width: parent.width
 
           Label {
-            text: 'Top all time'
+            text: 'Top Artists Overall'
             style: kTitleTertiary
 
             x: 15
@@ -238,6 +239,7 @@ Item {
               model: viewModel.topArtists && viewModel.topArtists.all_time
 
               delegate: ListeningStatistic {
+                hasImage: modelData.has_image
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title

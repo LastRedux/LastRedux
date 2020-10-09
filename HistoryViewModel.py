@@ -24,6 +24,7 @@ class HistoryViewModel(QtCore.QObject):
   is_in_mini_mode_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
+  is_loading_changed = QtCore.Signal()
   
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
@@ -47,6 +48,12 @@ class HistoryViewModel(QtCore.QObject):
     
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
+
+    # Keep track of whether the tab is loading data
+    self.__is_loading = True
+
+    # Keep track of how many of the initially loaded scrobbles have Last.fm data
+    self.__initial_batch_loaded_count = 0
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
@@ -266,7 +273,7 @@ class HistoryViewModel(QtCore.QObject):
       )
       
       self.scrobble_history.append(scrobble)
-      self.__load_additional_scrobble_data(scrobble, should_load_itunes_store_data=(i <= 10))
+      self.__load_additional_scrobble_data(scrobble, (i <= 10), is_part_of_initial_batch=True)
 
     # Tell the history list model that we finished changing the data it relies on
     self.end_refresh_history.emit()
@@ -420,16 +427,25 @@ class HistoryViewModel(QtCore.QObject):
 
     self.__load_additional_scrobble_data(self.__current_scrobble)
 
-  def __load_additional_scrobble_data(self, scrobble, should_load_itunes_store_data=True):
+  def __load_additional_scrobble_data(self, scrobble, should_load_itunes_store_data=True, is_part_of_initial_batch=False):
     '''Create thread task to get additional info about track from Last.fm in the background'''
 
-    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble, should_load_itunes_store_data)
+    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble, should_load_itunes_store_data, is_part_of_initial_batch)
 
     # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
     load_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.__emit_scrobble_ui_update_signals)
+    load_additional_scrobble_data_task.finished.connect(self.__increment_initial_batch_loaded_count)
 
     # Add task to global thread pool and run
     QtCore.QThreadPool.globalInstance().start(load_additional_scrobble_data_task)
+
+  def __increment_initial_batch_loaded_count(self):
+    self.__initial_batch_loaded_count += 1
+    print('inc ' + str(self.__initial_batch_loaded_count))
+    
+    if self.__initial_batch_loaded_count == 10:
+      self.__is_loading = False
+      self.is_loading_changed.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble):
     # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
@@ -463,3 +479,5 @@ class HistoryViewModel(QtCore.QObject):
 
   # TODO: Move this to an ApplicationViewModel
   miniMode = QtCore.Property(bool, get_is_in_mini_mode, notify=is_in_mini_mode_changed)
+
+  isLoading = QtCore.Property(bool, lambda self: self.__is_loading, notify=is_loading_changed)

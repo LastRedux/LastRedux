@@ -72,7 +72,7 @@ Item {
       right: parent.right
       left: hasImage ? picture.right : parent.left
 
-      rightMargin: 15
+      rightMargin: 30 // 15
       leftMargin: hasImage ? 10 : 15
     }
   }

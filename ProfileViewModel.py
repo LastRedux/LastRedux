@@ -1,4 +1,5 @@
 from datetime import date
+import json
 
 from PySide2 import QtCore
 
@@ -9,6 +10,7 @@ class ProfileViewModel(QtCore.QObject):
   account_details_changed = QtCore.Signal()
   profile_statistics_changed = QtCore.Signal()
   top_artists_changed = QtCore.Signal()
+  is_loading_changed = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
@@ -16,34 +18,31 @@ class ProfileViewModel(QtCore.QObject):
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
 
-    self.account_details = None
-    self.profile_statistics = None
-    self.top_artists = None
-
-  # --- Qt Property Getters ---
-
-  def get_account_details(self):
-    return self.account_details
-
-  def get_profile_statistics(self):
-    return self.profile_statistics
-  
-  def get_top_artists(self):
-    import json
-    return json.loads(json.dumps(self.top_artists, default=lambda o: o.__dict__))
+    self.__is_loading = False
+    self.__account_details = None
+    self.__profile_statistics = None
+    self.__top_artists = None
 
   # --- Slots ---
   
   @QtCore.Slot()
   def loadProfileAndTopArtists(self):
     def __process_new_profile_and_top_artists(new_profile_statistics_and_top_artists):
-      self.account_details = new_profile_statistics_and_top_artists['account_details']
-      self.profile_statistics = new_profile_statistics_and_top_artists['profile_statistics']
-      self.top_artists = new_profile_statistics_and_top_artists['top_artists']
+      self.__account_details = new_profile_statistics_and_top_artists['account_details']
+      self.__profile_statistics = new_profile_statistics_and_top_artists['profile_statistics']
+      self.__top_artists = new_profile_statistics_and_top_artists['top_artists']
       
       self.account_details_changed.emit()
       self.profile_statistics_changed.emit()
       self.top_artists_changed.emit()
+
+      # Update loading indicator on tab bar
+      self.__is_loading = False
+      self.is_loading_changed.emit()
+
+    # Update loading indicator on tab bar
+    self.__is_loading = True
+    self.is_loading_changed.emit()
 
     fetch_profile_and_top_artists_task = FetchProfileAndTopArtistsTask(self.lastfm_instance)
     fetch_profile_and_top_artists_task.finished.connect(__process_new_profile_and_top_artists)
@@ -51,6 +50,7 @@ class ProfileViewModel(QtCore.QObject):
 
   # --- Qt Properties ---
 
-  accountDetails = QtCore.Property('QVariant', get_account_details, notify=account_details_changed)
-  profileStatistics = QtCore.Property('QVariant', get_profile_statistics, notify=profile_statistics_changed)
-  topArtists = QtCore.Property('QVariant', get_top_artists, notify=top_artists_changed)
+  accountDetails = QtCore.Property('QVariant', lambda self: self.__account_details, notify=account_details_changed)
+  profileStatistics = QtCore.Property('QVariant', lambda self: self.__profile_statistics, notify=profile_statistics_changed)
+  topArtists = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_artists, default=lambda o: o.__dict__)), notify=top_artists_changed)
+  isLoading = QtCore.Property(bool, lambda self: self.__is_loading, notify=is_loading_changed)

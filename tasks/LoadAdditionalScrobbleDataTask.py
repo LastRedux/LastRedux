@@ -4,12 +4,15 @@ from models.Scrobble import Scrobble
 
 class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
   emit_scrobble_ui_update_signals = QtCore.Signal(Scrobble)
+  finished = QtCore.Signal()
 
-  def __init__(self, scrobble, should_load_itunes_store_data):
+  def __init__(self, scrobble, should_load_itunes_store_data, is_part_of_initial_batch=False):
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
+
     self.scrobble: Scrobble = scrobble
     self.should_load_itunes_store_data = should_load_itunes_store_data
+    self.is_part_of_initial_batch = is_part_of_initial_batch
     self.setAutoDelete(True)
 
   def run(self):
@@ -22,8 +25,14 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
 
     # Don't load iTunes data for tracks that are being loaded from Last.fm as recent tracks or tracks that already have iTunes data
     if not self.should_load_itunes_store_data or self.scrobble.track.has_itunes_store_data:
+      if self.is_part_of_initial_batch:
+        self.finished.emit()
+      
       return
 
     # Get artist image and album art from iTunes
     self.scrobble.load_itunes_store_data()
     self.emit_scrobble_ui_update_signals.emit(self.scrobble)
+
+    if self.is_part_of_initial_batch:
+      self.finished.emit()
