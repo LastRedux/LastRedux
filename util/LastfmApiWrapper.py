@@ -112,7 +112,7 @@ class LastfmApiWrapper:
     except KeyError:
       raise Exception(f'Error loading new session key: {response_json}')
 
-  def get_track_info(self, scrobble):
+  def get_track_info(self, track):
     '''Get track info about a Scrobble object from a user's Last.fm library'''
     
     if not self.__is_logged_in():
@@ -120,26 +120,26 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'track.getInfo',
-      'track': scrobble.track.title,
-      'artist': scrobble.track.artist.name,
+      'track': track.title,
+      'artist': track.artist.name,
       'autocorrect': 1,
       'username': self.__username
     })
 
-  def get_album_info(self, scrobble):
+  def get_album_info(self, track):
     '''Get album info about a Scrobble object from a user's Last.fm library'''
     
     if not self.__is_logged_in():
-      return 
+      return
 
     return self.__lastfm_request({
       'method': 'album.getInfo',
-      'artist': scrobble.track.artist.name,
-      'album': scrobble.track.album.title,
-      'username': self.__username,
+      'artist': track.artist.name,
+      'album': track.album.title,
+      'username': self.__username
     })
 
-  def get_artist_info(self, scrobble):
+  def get_artist_info(self, track):
     '''Get artist info about a Scrobble object from a user's Last.fm library'''
 
     if not self.__is_logged_in():
@@ -147,7 +147,7 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'artist.getInfo',
-      'artist': scrobble.track.artist.name,
+      'artist': track.artist.name,
       'username': self.__username,
     })
 
@@ -270,12 +270,12 @@ class LastfmApiWrapper:
 
     scrobble_payload = {
       'method': 'track.scrobble',
-      'track': scrobble.track.title,
-      'artist': scrobble.track.artist.name,
+      'track': scrobble.title,
+      'artist': scrobble.artist.name,
       'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
     }
 
-    album_title = scrobble.track.album.title
+    album_title = scrobble.album.title
 
     # Only submit album title if it exists
     if album_title:
@@ -291,8 +291,8 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'track.love' if is_loved else 'track.unlove',
-      'track': scrobble.track.title,
-      'artist': scrobble.track.artist.name
+      'track': scrobble.title,
+      'artist': scrobble.artist.name
     }, http_method='POST')
   
   def update_now_playing(self, scrobble):
@@ -303,11 +303,11 @@ class LastfmApiWrapper:
 
     scrobble_payload = {
       'method': 'track.updateNowPlaying',
-      'track': scrobble.track.title,
-      'artist': scrobble.track.artist.name,
+      'track': scrobble.title,
+      'artist': scrobble.artist.name,
     }
 
-    album_title = scrobble.track.album.title
+    album_title = scrobble.album.title
 
     # Only submit album title if it exists
     if album_title:

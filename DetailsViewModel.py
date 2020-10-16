@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from PySide2 import QtCore
 
@@ -32,7 +33,7 @@ class DetailsViewModel(QtCore.QObject):
   def get_scrobble_track_data(self):
     if self.__history_reference and self.__history_reference.selected_scrobble:
       # TODO: Do this properly with QObjects
-      return json.loads(json.dumps(self.__history_reference.selected_scrobble.track, default=lambda o: o.__dict__))
+      return json.loads(json.dumps(self.__history_reference.selected_scrobble, default=lambda o: o.__dict__ if type(o) != datetime else None)) # Exclude non-object keys from json dump
 
     return None
 

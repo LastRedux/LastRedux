@@ -4,7 +4,6 @@ Item {
   id: root
 
   property string iconName
-  property bool isLoading
   property bool isSelected
 
   signal clicked
@@ -31,52 +30,6 @@ Item {
       fill: parent
 
       margins: -8
-    }
-  }
-
-  Item {
-    id: loadingIndicator
-
-    visible: isLoading && isSelected
-
-    width: 5
-    height: width
-
-    anchors {
-      horizontalCenter: parent.horizontalCenter
-
-      bottom: parent.bottom
-
-      bottomMargin: -6
-    }
-
-    Image {
-      source: '../resources/loadingIndicator.png'
-
-      anchors {
-        fill: parent
-
-        margins: -16
-      }
-    }
-
-    SequentialAnimation {
-      loops: Animation.Infinite
-      running: loadingIndicator
-
-      NumberAnimation {
-        target: loadingIndicator
-        property: 'opacity'
-        to: 1
-        duration: 450
-      }
-
-      NumberAnimation {
-        target: loadingIndicator
-        property: 'opacity'
-        to: 0
-        duration: 450
-      }
     }
   }
 }

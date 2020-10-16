@@ -103,11 +103,11 @@ class HistoryViewModel(QtCore.QObject):
     
     if self.__current_scrobble:
       return {
-        'hasLastfmData': self.__current_scrobble.track.has_lastfm_data,
-        'trackTitle': self.__current_scrobble.track.title,
-        'artistName': self.__current_scrobble.track.artist.name,
-        'lastfmIsLoved': self.__current_scrobble.track.lastfm_is_loved,
-        'albumImageUrl': self.__current_scrobble.track.album.image_url_small # The scrobble history album arts are small so we don't want to render the full size art
+        'hasLastfmData': self.__current_scrobble.has_lastfm_data,
+        'trackTitle': self.__current_scrobble.title,
+        'artistName': self.__current_scrobble.artist.name,
+        'lastfmIsLoved': self.__current_scrobble.lastfm_is_loved,
+        'albumImageUrl': self.__current_scrobble.album.image_url_small # The scrobble history album arts are small so we don't want to render the full size art
       }
     
     # Return None if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
@@ -144,7 +144,7 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble = self.scrobble_history[new_index]
 
       # Load additional scrobble data if it isn't already present
-      if not self.selected_scrobble.track.has_lastfm_data or not self.selected_scrobble.track.has_itunes_store_data:
+      if not self.selected_scrobble.has_lastfm_data or not self.selected_scrobble.has_itunes_store_data:
         self.__load_additional_scrobble_data(self.selected_scrobble)
     
     # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
@@ -162,18 +162,18 @@ class HistoryViewModel(QtCore.QObject):
     else:
       scrobble = self.scrobble_history[index]
 
-    if not scrobble.track.has_lastfm_data:
+    if not scrobble.has_lastfm_data:
       return
     
-    new_is_loved = not scrobble.track.lastfm_is_loved
+    new_is_loved = not scrobble.lastfm_is_loved
 
     if index == -1:
-      scrobble.track.lastfm_is_loved = new_is_loved
+      scrobble.lastfm_is_loved = new_is_loved
     
     # Update any scrobbles in the scrobble history array that match the scrobble that changed
     for history_item in self.scrobble_history:
       if scrobble.equals(history_item):
-        history_item.track.lastfm_is_loved = new_is_loved
+        history_item.lastfm_is_loved = new_is_loved
 
     self.__emit_scrobble_ui_update_signals(scrobble)
     
@@ -247,9 +247,9 @@ class HistoryViewModel(QtCore.QObject):
       QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
-    if scrobble.track.has_lastfm_data:
-      scrobble.track.lastfm_plays += 1
-      scrobble.track.artist.lastfm_plays += 1
+    if scrobble.has_lastfm_data:
+      scrobble.lastfm_plays += 1
+      scrobble.artist.lastfm_plays += 1
 
       # Refresh scrobble details pane if the submitted scrobble is selected
       if self.selected_scrobble == scrobble:
@@ -269,11 +269,11 @@ class HistoryViewModel(QtCore.QObject):
         lastfm_scrobble['name'], 
         lastfm_scrobble['artist']['name'], 
         lastfm_scrobble['album']['#text'], 
-        timestamp=datetime.fromtimestamp(int(lastfm_scrobble['date']['uts']))
+        datetime.fromtimestamp(int(lastfm_scrobble['date']['uts']))
       )
       
       self.scrobble_history.append(scrobble)
-      self.__load_additional_scrobble_data(scrobble, (i <= 10), is_part_of_initial_batch=True)
+      self.__load_additional_scrobble_data(scrobble, (i <= 10), (i <= 10))
 
     # Tell the history list model that we finished changing the data it relies on
     self.end_refresh_history.emit()
@@ -306,9 +306,9 @@ class HistoryViewModel(QtCore.QObject):
     if new_media_player_state.has_track_loaded:
       current_track_changed = (
         not self.__current_scrobble
-        or new_media_player_state.track_title != self.__current_scrobble.track.title
-        or new_media_player_state.artist_name != self.__current_scrobble.track.artist.name
-        or new_media_player_state.album_title != self.__current_scrobble.track.album.title
+        or new_media_player_state.track_title != self.__current_scrobble.title
+        or new_media_player_state.artist_name != self.__current_scrobble.artist.name
+        or new_media_player_state.album_title != self.__current_scrobble.album.title
       )
 
       if current_track_changed:
@@ -316,8 +316,8 @@ class HistoryViewModel(QtCore.QObject):
         # Don't check if there insn't a current scrobble yet
         if self.__current_scrobble:
           if self.__cached_media_player_data['ticks_since_track_changed'] < 3:
-            if new_media_player_state.track_title == self.__current_scrobble.track.title:
-              print(f'Skipping bad data: {new_media_player_state.track_title} - {new_media_player_state.artist_name} vs. {self.__current_scrobble.track.title} = {self.__current_scrobble.track.artist.name}')
+            if new_media_player_state.track_title == self.__current_scrobble.title:
+              print(f'Skipping bad data: {new_media_player_state.track_title} - {new_media_player_state.artist_name} vs. {self.__current_scrobble.title} = {self.__current_scrobble.artist.name}')
               self.__cached_media_player_data['ticks_since_track_changed'] += 1
               return
 
@@ -380,7 +380,7 @@ class HistoryViewModel(QtCore.QObject):
     if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
       # TODO: Only submit when the song changes or the app is closed
       self.__should_submit_current_scrobble = True
-      print(f'Ready for submission: {self.__current_scrobble.track.title}')
+      print(f'Ready for submission: {self.__current_scrobble.title}')
 
     return scrobble_percentage
           
@@ -441,7 +441,6 @@ class HistoryViewModel(QtCore.QObject):
 
   def __increment_initial_batch_loaded_count(self):
     self.__initial_batch_loaded_count += 1
-    print('inc ' + str(self.__initial_batch_loaded_count))
     
     if self.__initial_batch_loaded_count == 10:
       self.__is_loading = False

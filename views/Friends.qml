@@ -17,12 +17,6 @@ Item {
     }
   }
 
-  Label {
-    visible: listView.count === 0
-
-    text: 'Loading...'
-  }
-
   ListView {
     id: listView
 

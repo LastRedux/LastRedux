@@ -9,4 +9,4 @@ class UpdateNowPlayingTask(QtCore.QRunnable): # Don't inherit from QObject becau
   
   def run(self):
     self.lastfm_instance.update_now_playing(self.scrobble)
-    print(f'Updated now playing: {self.scrobble.track.title}')
+    print(f'Updated now playing: {self.scrobble.title}')

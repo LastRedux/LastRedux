@@ -264,7 +264,7 @@ Window {
 
           anchors.centerIn: parent
 
-          ToolbarItem {
+          TabBarItem {
             iconName: 'history'
             isLoading: historyViewModel.isLoading
             isSelected: currentTabIndex === 0
@@ -272,7 +272,7 @@ Window {
             onClicked: switchToTab(0)
           }
 
-          ToolbarItem {
+          TabBarItem {
             iconName: 'profile'
             isLoading: profileViewModel.isLoading
             isSelected: currentTabIndex === 1
@@ -280,7 +280,7 @@ Window {
             onClicked: switchToTab(1)
           }
 
-          ToolbarItem {
+          TabBarItem {
             iconName: 'friends'
             isLoading: friendsViewModel.isLoading
             isSelected: currentTabIndex === 2

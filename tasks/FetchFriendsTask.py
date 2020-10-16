@@ -17,7 +17,6 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
 
     def lastfm_friend_to_friend(lastfm_friend):
       recent_track = self.lastfm_instance.get_recent_scrobbles(username=lastfm_friend['name'], limit=1)['recenttracks']['track'][0]
-
       return Friend.build_from_lastfm_friend_and_recent_track(lastfm_friend, recent_track)
 
     friends = list(map(lastfm_friend_to_friend, self.lastfm_instance.get_friends()['friends']['user']))

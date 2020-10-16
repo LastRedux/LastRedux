@@ -32,8 +32,15 @@ class FriendsListModel(QtCore.QAbstractListModel):
 
       self.__friends_reference.begin_refresh_friends.connect(lambda: self.beginResetModel())
       self.__friends_reference.end_refresh_friends.connect(lambda: self.endResetModel())
+      self.__friends_reference.album_image_url_changed.connect(self.__track_album_image_url_changed)
 
   # --- List Model Implementation ---
+
+  def __track_album_image_url_changed(self, row):
+    '''Tell the list model that the album image url has changed'''
+
+    index = self.createIndex(row, 0)
+    self.dataChanged.emit(index, index, [self.__TRACK_ALBUM_IMAGE_URL_ROLE])
 
   def roleNames(self):
     '''Create a mapping of our enum ints to their JS object key names'''

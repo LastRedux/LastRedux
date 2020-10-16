@@ -20,7 +20,7 @@ Item {
   // var to support lists
   property var lastfmTags
 
-  height: column.y + column.height + 30
+  height: Math.max(column.y + column.height + 30, artistImageView.y + artistImageView.height + 30)
 
   Column {
     id: column

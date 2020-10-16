@@ -93,17 +93,17 @@ class HistoryListModel(QtCore.QAbstractListModel):
         scrobble = self.__history_reference.scrobble_history[index.row()]
 
         if role == self.__TRACK_TITLE_ROLE:
-          return scrobble.track.title
+          return scrobble.title
         elif role == self.__ARTIST_NAME_ROLE:
-          return scrobble.track.artist.name
+          return scrobble.artist.name
         elif role == self.__ALBUM_IMAGE_URL_ROLE:
-          return scrobble.track.album.image_url_small
+          return scrobble.album.image_url_small
         elif role == self.__LASTFM_IS_LOVED_ROLE:
-          return scrobble.track.lastfm_is_loved
+          return scrobble.lastfm_is_loved
         elif role == self.__TIMESTAMP_ROLE:
           return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
         elif role == self.__HAS_LASTFM_DATA:
-          return scrobble.track.has_lastfm_data
+          return scrobble.has_lastfm_data
 
     # Return no data if we don't have a reference to the scrobble history view model
     return None
