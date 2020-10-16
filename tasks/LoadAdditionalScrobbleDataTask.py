@@ -1,6 +1,6 @@
 from PySide2 import QtCore
 
-from models.Scrobble import Scrobble
+from datatypes.Scrobble import Scrobble
 
 class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
   emit_scrobble_ui_update_signals = QtCore.Signal(Scrobble)

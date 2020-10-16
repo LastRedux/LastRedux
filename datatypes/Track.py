@@ -95,7 +95,7 @@ class Track:
       self.album.title = old_name
       
       if lastfm_album_no_single:
-        self.track.album.load_lastfm_album_data(lastfm_album_no_single)
+        self.album.load_lastfm_album_data(lastfm_album_no_single)
       else:
         # Try getting "canonical" album images
         if not track_response:

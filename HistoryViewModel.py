@@ -5,7 +5,7 @@ from PySide2 import QtCore
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.AppleMusicPlugin import AppleMusicPlugin
-from models.Scrobble import Scrobble
+from datatypes.Scrobble import Scrobble
 from tasks.FetchNewMediaPlayerStateTask import FetchNewMediaPlayerStateTask
 from tasks.LoadAdditionalScrobbleDataTask import LoadAdditionalScrobbleDataTask
 from tasks.SubmitTrackIsLovedChanged import SubmitTrackIsLovedChanged
