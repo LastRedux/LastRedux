@@ -73,6 +73,7 @@ class Track:
     # Don't load artist info if there is already some loaded (Friends page)
     if not self.artist.lastfm_url:
       self.artist.load_lastfm_artist_data(Track.lastfm_instance.get_artist_info(self)['artist'])
+      print(f'Using listed album image for {self.title}')
 
     # If the track has album data
     if self.album.title:
@@ -89,21 +90,29 @@ class Track:
     # - The album on Last.fm has no image
     if not self.album.image_url:
       # Try getting an album without ' - Single'
-      old_name = self.album.title
+      old_album_title = self.album.title
       self.album.title = self.album.title.replace(' - Single', '')
-      lastfm_album_no_single = Track.lastfm_instance.get_album_info(self).get('album')
-      self.album.title = old_name
-      
-      if lastfm_album_no_single:
-        self.album.load_lastfm_album_data(lastfm_album_no_single)
-      else:
-        # Try getting "canonical" album images
-        if not track_response:
-          # Request a track.getInfo response since we didn't request it earlier (most likely we are on the friends page)
-          track_response = Track.lastfm_instance.get_track_info(self)
 
-        if track_response.get('image'):
-          self.album.load_lastfm_track_images(track_response['image'])
+      # Only try getting non-single album art for tracks with album titles that have - Single in their name
+      if self.album.title != old_album_title:
+        lastfm_album_no_single = Track.lastfm_instance.get_album_info(self).get('album')
+        self.album.title = old_album_title
+      
+        if lastfm_album_no_single:
+          self.album.load_lastfm_album_data(lastfm_album_no_single)
+          self.has_lastfm_data = True
+          print(f'Using album without ` - Single ` image for {self.title}')
+
+          return
+
+      # Try getting "canonical" album images
+      if not track_response:
+        # Request a track.getInfo response since we didn't request it earlier (most likely we are on the friends page)
+        track_response = Track.lastfm_instance.get_track_info(self)
+
+      if track_response.get('image'):
+        self.album.load_lastfm_track_images(track_response['image'])
+        print(f'Using canonical track image for {self.title}')
 
     self.has_lastfm_data = True
   
