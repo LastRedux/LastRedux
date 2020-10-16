@@ -31,7 +31,7 @@ Image {
     anchors.fill: parent
 
     Rectangle {
-      color: '#252525'
+      color: '#757575'
       visible: root.width !== root.height
 
       anchors.fill: parent

@@ -22,6 +22,7 @@ Window {
       return 0
     }
   }
+
   property alias isInMiniMode: details.isInMiniMode
 
   color: '#171717'
@@ -46,6 +47,17 @@ Window {
         break
       case 2:
         stackView.replace(friendsPage)
+      }
+    }
+  }
+
+  onActiveChanged: {
+    if (active) {
+      switch (currentTabIndex) {
+      case 1:
+        profileViewModel.loadProfileAndTopArtists()
+      case 2:
+        friendsViewModel.loadFriends()
       }
     }
   }
