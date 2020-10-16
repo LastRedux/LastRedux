@@ -88,12 +88,22 @@ class Track:
     # - The album doesn't exist on Last.fm 
     # - The album on Last.fm has no image
     if not self.album.image_url:
-      if not track_response:
-        # Request a track.getInfo response since we didn't request it earlier (most likely we are on the friends page)
-        track_response = Track.lastfm_instance.get_track_info(self)
+      # Try getting an album without ' - Single'
+      old_name = self.album.title
+      self.album.title = self.album.title.replace(' - Single', '')
+      lastfm_album_no_single = Track.lastfm_instance.get_album_info(self).get('album')
+      self.album.title = old_name
+      
+      if lastfm_album_no_single:
+        self.track.album.load_lastfm_album_data(lastfm_album_no_single)
+      else:
+        # Try getting "canonical" album images
+        if not track_response:
+          # Request a track.getInfo response since we didn't request it earlier (most likely we are on the friends page)
+          track_response = Track.lastfm_instance.get_track_info(self)
 
-      if track_response.get('image'):
-        self.album.load_lastfm_track_images(track_response['image'])
+        if track_response.get('image'):
+          self.album.load_lastfm_track_images(track_response['image'])
 
     self.has_lastfm_data = True
   
