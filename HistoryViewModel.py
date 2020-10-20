@@ -50,7 +50,7 @@ class HistoryViewModel(QtCore.QObject):
     self.scrobble_history = []
 
     # Keep track of whether the tab is loading data
-    self.__is_loading = True
+    self.__is_loading = False
 
     # Keep track of how many of the initially loaded scrobbles have Last.fm data
     self.__initial_batch_loaded_count = 0
@@ -80,6 +80,7 @@ class HistoryViewModel(QtCore.QObject):
 
     # Load in recent scrobbles from Last.fm and process them
     if not os.environ.get('NO_HISTORY'):
+      self.__is_loading = True
       fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance)
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
@@ -312,12 +313,12 @@ class HistoryViewModel(QtCore.QObject):
       )
 
       if current_track_changed:
-        # If the title didn't change, but the artist title did, that could mean that the media player is providing bad data so wait 3 ticks to be sure
+        # If the title didn't change, but the artist title or album title did, that could mean that the media player is providing bad data so wait 3 media player poll ticks to be sure
         # Don't check if there insn't a current scrobble yet
         if self.__current_scrobble:
           if self.__cached_media_player_data['ticks_since_track_changed'] < 3:
             if new_media_player_state.track_title == self.__current_scrobble.title:
-              print(f'Skipping bad data: {new_media_player_state.track_title} - {new_media_player_state.artist_name} vs. {self.__current_scrobble.title} = {self.__current_scrobble.artist.name}')
+              print(f'Skipping bad data: {new_media_player_state.track_title} - {new_media_player_state.artist_name} vs. {self.__current_scrobble.title} - {self.__current_scrobble.artist.name}')
               self.__cached_media_player_data['ticks_since_track_changed'] += 1
               return
 
@@ -383,7 +384,7 @@ class HistoryViewModel(QtCore.QObject):
       print(f'Ready for submission: {self.__current_scrobble.title}')
 
     return scrobble_percentage
-          
+
   def __update_scrobble_to_match_new_media_player_data(self, new_media_player_state):
     '''Set __current_scrobble to a new Scrobble object created from the currently playing track, update the playback data for track start/finish, and update the UI'''
 
