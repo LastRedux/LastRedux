@@ -59,6 +59,7 @@ class LastfmApiWrapper:
     payload['api_sig'] = self.__generate_method_signature(payload)
 
     resp = None
+    resp_json = None
 
     if http_method == 'GET':
       resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
