@@ -135,6 +135,7 @@ Item {
 
     type: kArtist
 
+    fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
     source: imageUrl
 
     width: 139

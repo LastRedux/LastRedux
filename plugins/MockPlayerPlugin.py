@@ -67,22 +67,23 @@ class MockPlayerPlugin(MediaPlayerPlugin):
     'album_title': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack] - Single',
     'track_start': 0,
     'track_finish': 221
+  }, {
+    # Test track with super long list of artists
+    'track_title': 'Interstate 5 (feat. Azure Onyxscore, Hum4n01d, Arimyth, Mr. Serpent, console.frog, SpaghettiSauce, INDIR3CT & Glacial Viper)',
+    'artist_name': 'Auxy Collective',
+    'album_title': 'Interstate 5 (feat. Azure Onyxscore, Hum4n01d, Arimyth, Mr. Serpent, console.frog, SpaghettiSauce, INDIR3CT & Glacial Viper) - Single',
+    'track_start': 0,
+    'track_finish': 221
   }]
 
   def __init__(self):
-    self.has_track_loaded_variable = False
     self.current_track = {}
-    self.__next_track_index = -1
+    self.track_index = -1
     self.player_position = 0
 
-  # Special mock player method
-  def get_next_track(self):
-    track = self.MOCK_TRACKS[self.__next_track_index % len(self.MOCK_TRACKS)]
-    self.__next_track_index += 1
-
   def get_state(self):
-    if self.__next_track_index != -1:
-      track = self.MOCK_TRACKS[self.__next_track_index % len(self.MOCK_TRACKS)]
+    if self.track_index != -1:
+      track = self.MOCK_TRACKS[self.track_index % len(self.MOCK_TRACKS)]
 
       return MediaPlayerState(True, self.player_position, **track)
     

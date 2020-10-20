@@ -1,5 +1,6 @@
 import os
 
+from loguru import logger
 from PySide2 import QtCore
 
 class SubmitScrobbleTask(QtCore.QRunnable): # Don't inherit from QObject because no signals are used
@@ -11,8 +12,8 @@ class SubmitScrobbleTask(QtCore.QRunnable): # Don't inherit from QObject because
   
   def run(self):
     if os.environ.get('MOCK'):
-      print(f'MOCK submitted: {self.scrobble.title}')
+      loguru.success(f'MOCK submitted: {self.scrobble.title}')
       return
 
     self.lastfm_instance.submit_scrobble(self.scrobble)
-    print(f'Submitted: {self.scrobble.title}')
+    loguru.success(f'Submitted: {self.scrobble.title}')

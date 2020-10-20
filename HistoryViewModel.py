@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from loguru import logger
 from PySide2 import QtCore
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
@@ -86,7 +87,7 @@ class HistoryViewModel(QtCore.QObject):
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
 
     if os.environ.get('SUBMIT_SCROBBLES'):
-      print('~~~ SCROBBLE SUBMISSION IS ENABLED ~~~')
+      logger.info('Scrobble submission is enabled')
 
     # Start polling interval to check for new media player state
     timer = QtCore.QTimer(self)
@@ -145,7 +146,7 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble = self.scrobble_history[new_index]
 
       # Load additional scrobble data if it isn't already present
-      if not self.selected_scrobble.has_lastfm_data or not self.selected_scrobble.has_itunes_store_data:
+      if not self.selected_scrobble.has_lastfm_data or not self.selected_scrobble.has_spotify_data:
         self.__load_additional_scrobble_data(self.selected_scrobble)
     
     # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
@@ -191,19 +192,13 @@ class HistoryViewModel(QtCore.QObject):
 
   @QtCore.Slot()
   def MOCK_playNextSong(self):
-    self.media_player.current_track = self.media_player.get_next_track()
-    self.media_player.has_track_loaded_variable = True
+    self.media_player.track_index += 1
     self.media_player.player_position = 0
-
-  @QtCore.Slot()
-  def MOCK_stopSong(self):
-    self.media_player.has_track_loaded_variable = False
-    self.media_player.current_track = {}
 
   @QtCore.Slot()
   def MOCK_moveTo75Percent(self):
     self.media_player.player_position = self.__cached_media_player_data['track_finish'] * 0.75
-      
+
   # --- Private Functions ---
 
   @QtCore.Slot()
@@ -301,7 +296,7 @@ class HistoryViewModel(QtCore.QObject):
         raise Exception('Track title and artist metadata are required')
     except Exception as e:
       self.showNotification.emit('Error loading current track', str(e))
-      print('Error loading current track: ' + str(e))
+      logger.debug('Error loading media player state: ' + str(e))
       return
 
     if new_media_player_state.has_track_loaded:
@@ -318,7 +313,9 @@ class HistoryViewModel(QtCore.QObject):
         if self.__current_scrobble:
           if self.__cached_media_player_data['ticks_since_track_changed'] < 3:
             if new_media_player_state.track_title == self.__current_scrobble.title:
-              print(f'Skipping bad data: {new_media_player_state.track_title} - {new_media_player_state.artist_name} vs. {self.__current_scrobble.title} - {self.__current_scrobble.artist.name}')
+              logger.debug('Skipping potentially bad media player data:')
+              logger.debug(f'New track: {new_media_player_state.artist_name} - {new_media_player_state.track_title}')
+              logger.debug(f'Current track: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title}')
               self.__cached_media_player_data['ticks_since_track_changed'] += 1
               return
 
@@ -381,7 +378,7 @@ class HistoryViewModel(QtCore.QObject):
     if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
       # TODO: Only submit when the song changes or the app is closed
       self.__should_submit_current_scrobble = True
-      print(f'Ready for submission: {self.__current_scrobble.title}')
+      logger.debug(f'Ready for submission: {self.__current_scrobble.title}')
 
     return scrobble_percentage
 
@@ -428,10 +425,10 @@ class HistoryViewModel(QtCore.QObject):
 
     self.__load_additional_scrobble_data(self.__current_scrobble)
 
-  def __load_additional_scrobble_data(self, scrobble, should_load_itunes_store_data=True, is_part_of_initial_batch=False):
+  def __load_additional_scrobble_data(self, scrobble, should_load_spotify_data=True, is_part_of_initial_batch=False):
     '''Create thread task to get additional info about track from Last.fm in the background'''
 
-    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble, should_load_itunes_store_data, is_part_of_initial_batch)
+    load_additional_scrobble_data_task = LoadAdditionalScrobbleDataTask(scrobble, should_load_spotify_data, is_part_of_initial_batch)
 
     # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
     load_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.__emit_scrobble_ui_update_signals)
