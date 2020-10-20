@@ -4,7 +4,7 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtQml
 
-from PlatformIntegrations import PlatformIntegrations
+from platform_integrations.WindowStyle import WindowStyle
 from HistoryViewModel import HistoryViewModel
 from HistoryListModel import HistoryListModel
 from ProfileViewModel import ProfileViewModel
@@ -54,7 +54,7 @@ if __name__ == '__main__':
   engine.load(QtCore.QUrl.fromLocalFile(file))
 
   # Apply macOS-specific code which changes the main window to a seamless appearance
-  PlatformIntegrations.applyMacOsWindowTreatment()
+  WindowStyle.applyMacOsWindowTreatment()
   
   # Use the app's status as an exit code
   sys.exit(app.exec_()) # exec_ to avoid collision with built in exec function

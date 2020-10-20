@@ -1,6 +1,6 @@
 from PySide2 import QtCore, QtGui
 
-class PlatformIntegrations(QtCore.QObject):
+class WindowStyle(QtCore.QObject):
   def applyMacOsWindowTreatment():
     '''Apply settings to the macOS window object to make it seamless and force dark mode'''
 
