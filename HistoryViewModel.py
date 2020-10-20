@@ -50,8 +50,11 @@ class HistoryViewModel(QtCore.QObject):
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
 
-    # Keep track of whether the tab is loading data
+    # Keep track of whether the history view is loading data
     self.__is_loading = False
+
+    # Keep track of how many scrobbles have their additional data loaded from Last.fm and Spotify
+    self.__scrobbles_with_additional_data_count = 0
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
     self.__current_scrobble = None
@@ -79,6 +82,8 @@ class HistoryViewModel(QtCore.QObject):
     # Load in recent scrobbles from Last.fm and process them
     if not os.environ.get('NO_HISTORY'):
       self.__is_loading = True
+      self.is_loading_changed.emit()
+
       fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance)
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
@@ -429,9 +434,17 @@ class HistoryViewModel(QtCore.QObject):
 
     # Connect the emit_scrobble_ui_update_signals signal in the task to the local slot with the same name
     load_additional_scrobble_data_task.emit_scrobble_ui_update_signals.connect(self.__emit_scrobble_ui_update_signals)
+    load_additional_scrobble_data_task.finished.connect(self.__recent_scrobbles_done_loading)
 
     # Add task to global thread pool and run
     QtCore.QThreadPool.globalInstance().start(load_additional_scrobble_data_task)
+
+  def __recent_scrobbles_done_loading(self):
+    self.__scrobbles_with_additional_data_count += 1
+
+    if self.__scrobbles_with_additional_data_count == 30:
+      self.__is_loading = False
+      self.is_loading_changed.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble):
     # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)

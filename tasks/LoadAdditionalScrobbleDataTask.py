@@ -4,6 +4,7 @@ from datatypes.Scrobble import Scrobble
 
 class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
   emit_scrobble_ui_update_signals = QtCore.Signal(Scrobble)
+  finished = QtCore.Signal()
 
   def __init__(self, scrobble: Scrobble):
     QtCore.QObject.__init__(self)
@@ -23,3 +24,4 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
     # Get artist image and album art from Spotify
     self.scrobble.load_spotify_data()
     self.emit_scrobble_ui_update_signals.emit(self.scrobble)
+    self.finished.emit()
