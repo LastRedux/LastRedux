@@ -2,6 +2,7 @@ import os
 import signal
 import sys
 
+from loguru import logger
 from PySide2 import QtCore, QtGui, QtQml
 
 from platform_integrations.WindowStyle import WindowStyle
@@ -55,6 +56,11 @@ if __name__ == '__main__':
 
   # Apply macOS-specific code which changes the main window to a seamless appearance
   WindowStyle.applyMacOsWindowTreatment()
+  
+  # Hide debug level messages unless debug mode is enabled
+  if not os.environ.get('DEBUG'):
+    logger.remove()
+    logger.add(sys.stderr, level='INFO')
   
   # Use the app's status as an exit code
   sys.exit(app.exec_()) # exec_ to avoid collision with built in exec function

@@ -4,6 +4,7 @@ import json
 import hashlib
 from datetime import datetime, time
 
+from loguru import logger
 import requests
 
 import util.db_helper as db_helper
@@ -58,6 +59,7 @@ class LastfmApiWrapper:
     payload['api_sig'] = self.__generate_method_signature(payload)
 
     resp = None
+    resp_json = None
 
     if http_method == 'GET':
       resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
@@ -69,11 +71,11 @@ class LastfmApiWrapper:
     try:
       resp_json = resp.json()
     except json.decoder.JSONDecodeError:
-      print(resp.text)
+      logger.error(f'Error decoding Last.fm response: {resp.text}')
 
     # TODO: Handle rate limit condition
-    if 'error' in resp_json and resp_json['message'] != 'Track not found':
-      print(f'Last.fm error: {resp_json["message"]} with payload: {payload}')
+    if 'error' in resp_json and not resp_json['message'] in ['Track not found', 'Album not found']:
+      logger.error(f'Last.fm response error: {resp_json["message"]}')
 
     return resp_json
 
@@ -126,7 +128,7 @@ class LastfmApiWrapper:
       'username': self.__username
     })
 
-  def get_album_info(self, track):
+  def get_album_info(self, artist_name, album_title):
     '''Get album info about a Scrobble object from a user's Last.fm library'''
     
     if not self.__is_logged_in():
@@ -134,8 +136,8 @@ class LastfmApiWrapper:
 
     return self.__lastfm_request({
       'method': 'album.getInfo',
-      'artist': track.artist.name,
-      'album': track.album.title,
+      'artist': artist_name,
+      'album': album_title,
       'username': self.__username
     })
 

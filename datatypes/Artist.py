@@ -8,10 +8,7 @@ from datatypes.SimilarArtist import SimilarArtist
 
 @dataclass
 class Artist:
-  # Media player data
   name: str
-
-  # iTunes store data
   image_url: str = ''
 
   # Last.fm data
