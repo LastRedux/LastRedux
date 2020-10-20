@@ -100,7 +100,8 @@ class Track:
       
         # Load album art if there is an image in the response (Last.fm can return blank strings for image urls even when the album exists)
         if lastfm_album_no_single and lastfm_album_no_single['image'][0]['#text']:
-          self.album.load_lastfm_album_data(lastfm_album_no_single)
+          # Only load images, not album url since it isn't technically the right album
+          self.album.load_lastfm_images(lastfm_album_no_single['image'])
           logger.debug(f'Album art found on Last.fm (single label removed): {self.artist.name} - {self.title} ({self.album.title})')
 
     # If all previous methods to find album art fail, use track art instead (usually a 'single' album art ie. `Aamon - Single`)
