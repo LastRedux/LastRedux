@@ -12,8 +12,8 @@ class SubmitScrobbleTask(QtCore.QRunnable): # Don't inherit from QObject because
   
   def run(self):
     if os.environ.get('MOCK'):
-      loguru.success(f'MOCK submitted: {self.scrobble.title}')
+      logger.success(f'MOCK submitted: {self.scrobble.title}')
       return
 
     self.lastfm_instance.submit_scrobble(self.scrobble)
-    loguru.success(f'Submitted: {self.scrobble.title}')
+    logger.success(f'Submitted: {self.scrobble.title}')

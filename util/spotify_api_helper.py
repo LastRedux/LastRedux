@@ -35,6 +35,7 @@ def get_images(track_title, artist_name, album_title=''):
   track = None
 
   if not track_json['tracks']['items']:
+    logger.debug(f'No Spotify search results for: {stripped_artist_name} - {stripped_track_title} ({artist_name} - {track_title})')
     return
 
   track = track_json['tracks']['items'][0]
