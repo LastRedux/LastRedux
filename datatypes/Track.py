@@ -5,11 +5,11 @@ from typing import List, ClassVar
 from loguru import logger
 
 import util.LastfmApiWrapper as lastfm
+from util.LastfmApiWrapper import LastfmApiWrapper
 import util.spotify_api_helper as spotify_api_helper
 from datatypes.Artist import Artist
 from datatypes.SpotifyArtist import SpotifyArtist
 from datatypes.Album import Album
-from datatypes.SimilarArtist import SimilarArtist
 from datatypes.Tag import Tag
 
 @dataclass
@@ -19,7 +19,7 @@ class Track:
   album: Album
 
   # Reference to helper instances
-  lastfm_instance: ClassVar = lastfm.get_static_instance()
+  lastfm_instance: ClassVar[LastfmApiWrapper] = lastfm.get_static_instance()
 
   # Last.fm data
   lastfm_url: str = ''

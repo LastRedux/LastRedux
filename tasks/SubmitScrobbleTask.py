@@ -16,4 +16,4 @@ class SubmitScrobbleTask(QtCore.QRunnable): # Don't inherit from QObject because
       return
 
     self.lastfm_instance.submit_scrobble(self.scrobble)
-    logger.success(f'Submitted: {self.scrobble.title}')
+    logger.success(f'Submitted to Last.fm: {self.scrobble.title}')

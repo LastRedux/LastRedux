@@ -11,4 +11,4 @@ class SubmitTrackIsLovedChanged(QtCore.QRunnable): # Don't inherit from QObject 
   
   def run(self):
     self.lastfm_instance.set_track_is_loved(self.scrobble, self.is_loved)
-    loguru.success(f'Set loved for {self.scrobble.title} to {self.is_loved}')
+    logger.success(f'Set loved on Last.fm: {self.scrobble.title} - {self.is_loved}')
