@@ -57,16 +57,5 @@ if __name__ == '__main__':
   # Apply macOS-specific code which changes the main window to a seamless appearance
   WindowStyle.applyMacOsWindowTreatment()
   
-  # Hide debug level messages unless debug mode is enabled
-  if os.environ.get('DEBUG'):
-    logger.remove()
-    logger.add(sys.stderr, level='DEBUG')
-  elif os.environ.get('TRACE'):
-    logger.remove()
-    logger.add(sys.stderr, level='TRACE')
-  else:
-    logger.remove()
-    logger.add(sys.stderr, level='INFO')
-  
   # Use the app's status as an exit code
   sys.exit(app.exec_()) # exec_ to avoid collision with built in exec function
