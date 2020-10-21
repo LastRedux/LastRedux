@@ -88,7 +88,7 @@ class Track:
 
         # Only log successful album art load if album art was actually loaded (Last.fm can return blank strings for image urls even when the album exists)
         if self.album.image_url:
-          logger.debug(f'Album art found on Last.fm: {self.artist.name} - {self.title} ({self.album.title})')
+          logger.debug(f'Album art found on Last.fm: {self.title} | {self.album.title}')
     
     # Try getting an album without ' - Single' if there is an album title
     if not self.album.image_url and self.album.title:
@@ -102,7 +102,7 @@ class Track:
         if lastfm_album_no_single and lastfm_album_no_single['image'][0]['#text']:
           # Only load images, not album url since it isn't technically the right album
           self.album.load_lastfm_images(lastfm_album_no_single['image'])
-          logger.debug(f'Album art found on Last.fm (single label removed): {self.artist.name} - {self.title} ({self.album.title})')
+          logger.debug(f'Album art found on Last.fm (single label removed): {self.title} | {self.album.title}')
 
     # If all previous methods to find album art fail, use track art instead (usually a 'single' album art ie. `Aamon - Single`)
     # One of the following could result in this case: 
@@ -116,7 +116,7 @@ class Track:
 
       if track_response.get('image'):
         self.album.load_lastfm_track_images(track_response['image'])
-        logger.debug(f'Album art found on Last.fm (track image): {self.artist.name} - {self.title} ({self.album.title})')
+        logger.debug(f'Album art found on Last.fm (track image): {self.title} | {self.album.title}')
 
     self.has_lastfm_data = True
   
@@ -133,7 +133,7 @@ class Track:
       if not self.album.image_url:
         self.album.image_url = album_image
         self.album.image_url_small = album_image_small
-        logger.debug(f'Album art found on Spotify: {self.artist.name} - {self.title} ({self.album.title})')
+        logger.debug(f'Album art found on Spotify: {self.title} | {self.album.title}')
 
     self.has_spotify_data = True
 
