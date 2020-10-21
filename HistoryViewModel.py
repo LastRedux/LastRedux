@@ -316,8 +316,8 @@ class HistoryViewModel(QtCore.QObject):
           if self.__cached_media_player_data['ticks_since_track_changed'] < 3:
             if new_media_player_state.track_title == self.__current_scrobble.title:
               logger.debug('Skipping potentially bad media player data:')
-              logger.debug(f'New track: {new_media_player_state.artist_name} - {new_media_player_state.track_title}')
-              logger.debug(f'Current track: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title}')
+              logger.debug(f'New track: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
+              logger.debug(f'Current track: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title} | {new_media_player_state.album_title}')
               self.__cached_media_player_data['ticks_since_track_changed'] += 1
               return
 
@@ -380,7 +380,7 @@ class HistoryViewModel(QtCore.QObject):
     if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
       # TODO: Only submit when the song changes or the app is closed
       self.__should_submit_current_scrobble = True
-      logger.info(f'Ready for submission: {self.__current_scrobble.title}')
+      logger.debug(f'Ready for submission: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title} | {self.__current_scrobble.album.title}')
 
     return scrobble_percentage
 
@@ -390,6 +390,8 @@ class HistoryViewModel(QtCore.QObject):
     # Initialize a new Scrobble object with the currently playing track data
     # This will set the Scrobble's timestamp to the current date
     self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
+
+    logger.trace(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
 
     # Reset flag so new scrobble can later be submitted
     self.__should_submit_current_scrobble = False

@@ -58,7 +58,13 @@ if __name__ == '__main__':
   WindowStyle.applyMacOsWindowTreatment()
   
   # Hide debug level messages unless debug mode is enabled
-  if not os.environ.get('DEBUG'):
+  if os.environ.get('DEBUG'):
+    logger.remove()
+    logger.add(sys.stderr, level='DEBUG')
+  elif os.environ.get('TRACE'):
+    logger.remove()
+    logger.add(sys.stderr, level='TRACE')
+  else:
     logger.remove()
     logger.add(sys.stderr, level='INFO')
   

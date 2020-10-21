@@ -20,7 +20,7 @@ def get_images(track_title, artist_name, album_title=''):
   stripped_track_title = re.sub(r'[^A-Za-z0-9 ]+', '', track_title)
   stripped_track_title = stripped_track_title.replace('feat', '')
   stripped_artist_name = artist_name.replace('&', '')
-  query = f'{stripped_artist_name} {stripped_track_title}'
+  query = f'{stripped_track_title} {stripped_artist_name}'
 
   resp = requests.get('https://api.spotify.com/v1/search', params={
     'q': query,
@@ -34,8 +34,8 @@ def get_images(track_title, artist_name, album_title=''):
 
   track = None
 
-  if not track_json['tracks'].get('items'):
-    logger.debug(f'No Spotify search results for: {stripped_artist_name} - {stripped_track_title} ({artist_name} - {track_title})')
+  if not track_json.get('tracks').get('items'):
+    logger.warning(f'No Spotify search results for: {query} (originally {artist_name} - {track_title})')
     return
 
   track = track_json['tracks']['items'][0]
