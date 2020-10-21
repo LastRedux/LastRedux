@@ -28,7 +28,7 @@ def search_tracks(query):
 def get_images(track_title, artist_name, album_title=''):
   global token 
 
-  stripped_track_title = re.sub(r'[^A-Za-z0-9 ]+', '', track_title)
+  stripped_track_title = re.sub(r'[^A-Za-z0-9 -]+', '', track_title)
   stripped_track_title = stripped_track_title.replace('feat', '')
   stripped_artist_name = artist_name.replace('&', '')
   query = f'{stripped_track_title} {stripped_artist_name}'
