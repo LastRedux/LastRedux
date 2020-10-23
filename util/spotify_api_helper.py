@@ -26,11 +26,11 @@ def search_tracks(query):
   }).json()
 
 def get_images(track_title, artist_name, album_title=''):
-  global token 
+  global token
 
-  stripped_track_title = re.sub(r'[^A-Za-z0-9 -]+', '', track_title)
+  stripped_track_title = re.sub(r'[^A-Za-z0-9 -]+', '', track_title.lower())
   stripped_track_title = stripped_track_title.replace('feat', '')
-  stripped_artist_name = artist_name.replace('&', '')
+  stripped_artist_name = artist_name.lower().replace('&', '')
   query = f'{stripped_track_title} {stripped_artist_name}'
 
   search_results = search_tracks(query)
@@ -63,7 +63,13 @@ def get_images(track_title, artist_name, album_title=''):
 
     artist_image = artist_json['images'][0]['url'] if artist_json['images'] else ''
     
-    artists.append(SpotifyArtist(artist_json['name'], artist_json['href'], artist_image))
+    artists.append(
+      SpotifyArtist(
+        name=artist_json['name'], 
+        spotify_url=artist_json['external_urls']['spotify'], 
+        image_url=artist_image
+      )
+    )
 
   return artists, album_image, album_image_small
 
