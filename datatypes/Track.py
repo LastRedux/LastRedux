@@ -63,16 +63,24 @@ class Track:
 
     # Load track info if there isn't already some loaded (ie. Friends page)
     if not self.lastfm_url:
-      # Get track info from Last.fm
-      track_response = Track.lastfm_instance.get_track_info(self)
-      self.has_requested_lastfm_data = True
+      lastfm_track_sucessfully_loaded = False
 
-      # Leave all attributes of the track empty if the track is not in Last.fm's database
-      if 'error' in track_response and track_response['message'] == 'Track not found':
-        return
+      while not lastfm_track_sucessfully_loaded:        
+        # Get track info from Last.fm
+        track_response = Track.lastfm_instance.get_track_info(self)
+        self.has_requested_lastfm_data = True
 
-      # Load non-image attribuets of the Last.fm track.getInfo response
-      self.load_lastfm_track_data(track_response['track'])
+        # Leave all attributes of the track empty if the track is not in Last.fm's database
+        if 'error' in track_response and track_response['message'] == 'Track not found':
+          return
+
+        try:
+          # Load non-image attributes of the Last.fm track.getInfo response
+          self.load_lastfm_track_data(track_response['track'])
+          lastfm_track_sucessfully_loaded = True
+        except KeyError as e:
+          # There is a missing key in the Last.fm response
+          logger.warning(f'Last.fm returned an incomplete track response: {self.title} - {e}')
 
     # Load artist info from Last.fm if there isn't already some some loaded (ie. Friends page)
     if not self.artist.lastfm_url:
@@ -99,7 +107,7 @@ class Track:
         lastfm_album_no_single = Track.lastfm_instance.get_album_info(self.artist.name, album_title_no_single).get('album')
       
         # Load album art if there is an image in the response (Last.fm can return blank strings for image urls even when the album exists)
-        if lastfm_album_no_single and lastfm_album_no_single['image'][0]['#text']:
+        if lastfm_album_no_single and lastfm_album_no_single['image'][0].get('#text', ''):
           # Only load images, not album url since it isn't technically the right album
           self.album.load_lastfm_images(lastfm_album_no_single['image'])
           logger.debug(f'Album art found on Last.fm (single label removed): {self.title} | {self.album.title}')
@@ -126,8 +134,6 @@ class Track:
     if spotify_images:
       artists, album_image, album_image_small = spotify_images
       self.spotify_artists = artists
-
-      self.artist.image_url = self.spotify_artists[0].image_url
 
       # Use Spotify album art if Last.fm didn't provide it
       if not self.album.image_url:
