@@ -47,7 +47,7 @@ def get_images(track_title, artist_name, album_title=''):
     logger.warning(f'No Spotify search results for: {query} (originally {artist_name} - {track_title})')
     return
 
-  track = search_results['tracks']['items'][0]
+  track = sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)[0]
 
   album_image = track['album']['images'][0]['url']
   album_image_small = track['album']['images'][-1]['url']
