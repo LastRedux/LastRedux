@@ -95,6 +95,7 @@ Item {
           lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
           lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
           imageUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.image_url : ''
+          spotifyArtists: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.spotify_artists : []
 
           isNotInLastfmDatabase: {
             // Assume the track is in the database if a scrobble isn't loaded

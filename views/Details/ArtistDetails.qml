@@ -16,12 +16,13 @@ Item {
   property var lastfmGlobalListeners
   property var lastfmGlobalPlays
   property var lastfmPlays
+  property var spotifyArtists
 
   // var to support lists
   property var lastfmTags
 
   height: Math.max(column.y + column.height + 30, artistImageView.y + artistImageView.height + 30)
-
+  
   Column {
     id: column
 
@@ -29,12 +30,12 @@ Item {
 
     anchors {
       top: artistImageView.top
-      right: parent.right
-      left: artistImageView.right
+      right: artistImageView.left
+      left: parent.left
 
       topMargin: 10
       rightMargin: 30
-      leftMargin: 20
+      leftMargin: 30
     }
 
     // --- Name ---
@@ -130,22 +131,74 @@ Item {
 
   // --- Artist Image ---
 
-  Picture {
+  Column {
     id: artistImageView
 
-    type: kArtist
-
-    fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
-    source: imageUrl
-
-    width: 139
-    height: width
+    width: 220
+    spacing: 15
 
     anchors {
       top: parent.top
-      left: parent.left
+      right: parent.right
 
       margins: 30
+    }
+
+    Repeater {
+      model: spotifyArtists
+
+      delegate: Item {
+        width: parent.width
+        height: 52
+
+        Picture {
+          id: spotifyArtistImage
+
+          type: kArtist
+          
+          fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
+          source: modelData.image_url
+
+          width: 52
+          height: width
+        }
+
+        Image {
+          id: spotifyIcon
+          
+          source: '../../shared/resources/spotifyIconGreen.png'
+          
+          width: 21
+          height: width
+
+          anchors {
+            left: spotifyArtistImage.right
+            
+            verticalCenter: spotifyArtistImage.verticalCenter
+            
+            leftMargin: 15
+          }
+        }
+
+        Link {
+          text: modelData.name
+
+          address: modelData.spotify_url
+          
+          maximumLineCount: 2
+          wrapMode: Text.Wrap
+          elide: Text.ElideRight
+
+          anchors {
+            left: spotifyIcon.right
+            right: parent.right
+
+            verticalCenter: spotifyArtistImage.verticalCenter
+
+            leftMargin: 8
+          } 
+        }
+      }
     }
   }
 }
