@@ -1,6 +1,6 @@
-from datetime import date
 import json
 
+from loguru import logger
 from PySide2 import QtCore
 
 from tasks.FetchProfileAndTopArtistsTask import FetchProfileAndTopArtistsTask
@@ -28,6 +28,7 @@ class ProfileViewModel(QtCore.QObject):
   @QtCore.Slot()
   def loadProfileAndTopArtists(self):
     def __process_new_profile_and_top_artists(new_profile_statistics_and_top_artists):
+      logger.trace(f'Fetched Last.fm profile data and top artists for profile view')
       self.__account_details = new_profile_statistics_and_top_artists['account_details']
       self.__profile_statistics = new_profile_statistics_and_top_artists['profile_statistics']
       self.__top_artists = new_profile_statistics_and_top_artists['top_artists']

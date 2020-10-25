@@ -1,3 +1,4 @@
+from loguru import logger
 from PySide2 import QtCore
 
 from tasks.FetchFriendsTask import FetchFriendsTask
@@ -26,6 +27,7 @@ class FriendsViewModel(QtCore.QObject):
   @QtCore.Slot()
   def loadFriends(self):
     def __load_friends(new_friends):
+      logger.trace(f'Fetched Last.fm friend data for friends view')
       self.begin_refresh_friends.emit()
       self.friends = new_friends.copy()
       self.end_refresh_friends.emit()
