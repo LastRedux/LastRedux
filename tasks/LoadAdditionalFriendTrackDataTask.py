@@ -16,5 +16,4 @@ class LoadAdditionalFriendTrackDataTask(QtCore.QObject, QtCore.QRunnable):
     '''Fetch and attach information from Last.fm and iTunes to the passed Track object '''
 
     self.track.load_lastfm_data()
-    self.track.load_spotify_data()
     self.finished.emit(self.row_in_friends_list)
