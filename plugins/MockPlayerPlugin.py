@@ -3,6 +3,40 @@ from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
 class MockPlayerPlugin(MediaPlayerPlugin):
   MOCK_TRACKS = [{
+    'track_title': 'Feels (feat. Pharrell Williams, Katy Perry & Big Sean)',
+    'artist_name': 'Calvin Harris',
+    'album_title': 'Funk Wav Bounces Vol. 1',
+    'track_start': 0,
+    'track_finish': 221
+  }, {
+    # Test track from soundtrack album
+    'track_title': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack]',
+    'artist_name': 'Diplo, French Montana & Lil Pump',
+    'album_title': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack] - Single',
+    'track_start': 0,
+    'track_finish': 221
+  }, {
+    # Test track with album only on Apple Music (pre-release as of 10/25/20)
+    'track_title': 'NEVERMIND',
+    'artist_name': 'HRVY',
+    'album_title': 'Can Anybody Hear Me? (Deluxe Edition)',
+    'track_start': 0,
+    'track_finish': 221
+  }, {
+    # Test song with inconsistent artist names between platforms (Teddy Killers on Apple Music vs. Teddy Killerz on Spotify)
+    'track_title': 'Shut It Down (feat. MC Mota)',
+    'artist_name': 'Muzzy & Teddy Killers',
+    'album_title': 'The Cascade - EP',
+    'track_start': 0,
+    'track_finish': 100
+  }, {
+    # Test song with more popular remix on Spotify
+    'track_title': 'Horsepower',
+    'artist_name': 'Muzzy',
+    'album_title': 'Rocket League x Monstercat, Vol. 4 - EP',
+    'track_start': 0,
+    'track_finish': 100
+  }, {
     # Test song with album on Last.fm that doesn't match Apple Music album
     'track_title': 'Don\'t Stop',
     'artist_name': 'Kuuro',
@@ -19,19 +53,21 @@ class MockPlayerPlugin(MediaPlayerPlugin):
     # Test consecutive tracks with the same title
     'track_title': 'Alone',
     'artist_name': 'Marshmello',
+    'album_title': 'Alone - Single',
     'track_start': 0,
     'track_finish': 100
   }, {
     # Test consecutive tracks with the same title
     'track_title': 'Alone',
     'artist_name': 'Alan Walker',
+    'album_title': 'Alone - Single',
     'track_start': 0,
     'track_finish': 100
   }, {
     # Test Last.fm corrections API
     'track_title': 'Waters (feat. Phluze) [Elbor edit]',
     'artist_name': 'Elbor',
-    'album_title': 'Waters (Elbor edit) [feat. Phluze] - single',
+    'album_title': 'Waters (Elbor edit) [feat. Phluze] - Single',
     'track_start': 0,
     'track_finish': 100
   }, {
@@ -58,13 +94,6 @@ class MockPlayerPlugin(MediaPlayerPlugin):
     'track_title': 'C**o',
     'artist_name': 'Jason Derulo, Puri & Jhorrmountain',
     'album_title': 'C**o - Single',
-    'track_start': 0,
-    'track_finish': 221
-  }, {
-    # Test track with super long title
-    'track_title': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack]',
-    'artist_name': 'Diplo, French Montana & Lil Pump',
-    'album_title': 'Welcome to the Party (feat. Zhavia Ward) [From the "Deadpool 2" Original Motion Picture Soundtrack] - Single',
     'track_start': 0,
     'track_finish': 221
   }, {

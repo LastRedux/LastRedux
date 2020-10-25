@@ -21,7 +21,7 @@ class Artist:
   lastfm_tags: List[Tag] = field(default_factory=list)
   lastfm_similar_artists: List[SimilarArtist] = field(default_factory=list)
 
-  def load_lastfm_artist_data(self, lastfm_artist) -> None:
+  def load_lastfm_artist_object(self, lastfm_artist) -> None:
     self.lastfm_url = lastfm_artist['url']
     self.lastfm_global_listeners = int(lastfm_artist['stats']['listeners'])
     self.lastfm_global_plays = int(lastfm_artist['stats']['playcount'])

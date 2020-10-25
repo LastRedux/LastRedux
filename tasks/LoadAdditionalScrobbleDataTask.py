@@ -21,7 +21,4 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
       self.scrobble.load_lastfm_data()
       self.emit_scrobble_ui_update_signals.emit(self.scrobble)
 
-    # Get artist image and album art from Spotify
-    self.scrobble.load_spotify_data()
-    self.emit_scrobble_ui_update_signals.emit(self.scrobble)
     self.finished.emit()

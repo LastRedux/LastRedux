@@ -25,26 +25,35 @@ def search_tracks(query):
     'Authorization': f'Bearer {token}'
   }).json()
 
-def get_images(track_title, artist_name, album_title=''):
+def get_images(track_title, artist_name, album_title):
   global token
 
-  stripped_track_title = re.sub(r'[^A-Za-z0-9 -]+', '', track_title.lower())
+  stripped_track_title = track_title.lower()
+  stripped_track_title = re.sub(r'\[.+\]', '', stripped_track_title)
+  stripped_track_title = re.sub(r'[^A-Za-z0-9 -]+', '', stripped_track_title)
   stripped_track_title = stripped_track_title.replace('feat', '')
-  stripped_artist_name = artist_name.lower().replace('&', '')
-  query = f'{stripped_track_title} {stripped_artist_name}'
 
+  stripped_artist_name = artist_name.lower()
+  stripped_artist_name = stripped_artist_name.replace('&', '').replace(',', '')
+
+  stripped_album_title = ''
+  
+  if album_title:
+    stripped_album_title = album_title.lower()
+    stripped_album_title = album_title.lower()
+    stripped_album_title = re.sub(r'[^A-Za-z0-9 -]+', '', stripped_album_title)
+    stripped_album_title = stripped_album_title.replace(' - single', '').replace(' - ep', '').replace('edition', '').replace('feat', '')
+
+  query = f'{stripped_track_title} {stripped_artist_name} {stripped_album_title}'
+  # logger.trace(f'Searching Spotify: {query}')
   search_results = search_tracks(query)
 
-  if 'error' in search_results:
-    if search_results['error']['message'] == 'The access token expired':
-      logger.trace('Refreshed Spotify access token')
-      token = get_token()
-      search_results = search_tracks(query)
-
-  track = None
+  if 'error' in search_results and search_results['error']['message'] == 'The access token expired':
+    logger.trace('Refreshed Spotify access token')
+    token = get_token()
+    search_results = search_tracks(query)
 
   if not search_results.get('tracks').get('items'):
-    logger.warning(f'No Spotify search results for: {query} (originally {artist_name} - {track_title})')
     return
 
   track = sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)[0]
@@ -53,20 +62,23 @@ def get_images(track_title, artist_name, album_title=''):
   album_image_small = track['album']['images'][-1]['url']
   artists = []
 
-  for artist in track['artists']:
-    artist_resp = requests.get(f'https://api.spotify.com/v1/artists/{artist["id"]}', headers={
-      'Accept': 'application/json',
-      'Authorization': f'Bearer {token}'
-    })
+  artists_resp = requests.get('https://api.spotify.com/v1/artists/', params={
+    'ids': ','.join([artist['id'] for artist in track['artists']])
+  },
+  headers={
+    'Accept': 'application/json',
+    'Authorization': f'Bearer {token}'
+  })
 
-    artist_json = artist_resp.json()
+  artists_json = artists_resp.json()
 
-    artist_image = artist_json['images'][0]['url'] if artist_json['images'] else ''
+  for artist in artists_json['artists']:
+    artist_image = artist['images'][-1]['url'] if artist['images'] else ''
     
     artists.append(
       SpotifyArtist(
-        name=artist_json['name'], 
-        spotify_url=artist_json['external_urls']['spotify'], 
+        name=artist['name'], 
+        spotify_url=artist['external_urls']['spotify'], 
         image_url=artist_image
       )
     )

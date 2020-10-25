@@ -12,5 +12,5 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
   def run(self):
     '''Return recent Last.fm scrobbles'''
 
-    recent_lastfm_scrobbles = self.lastfm_instance.get_recent_scrobbles()['recenttracks']['track']
-    self.finished.emit(recent_lastfm_scrobbles)
+    recent_scrobbles = self.lastfm_instance.get_recent_scrobbles()
+    self.finished.emit(recent_scrobbles['recenttracks']['track'])
