@@ -26,7 +26,7 @@ class HistoryViewModel(QtCore.QObject):
   is_in_mini_mode_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
-  is_loading_changed = QtCore.Signal()
+  should_show_loading_indicator_changed = QtCore.Signal()
   
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
@@ -54,7 +54,7 @@ class HistoryViewModel(QtCore.QObject):
     self.scrobble_history = []
 
     # Keep track of whether the history view is loading data
-    self.__is_loading = False
+    self.__should_show_loading_indicator = False
 
     # Keep track of how many scrobbles have their additional data loaded from Last.fm and Spotify
     self.__scrobbles_with_additional_data_count = 0
@@ -84,8 +84,8 @@ class HistoryViewModel(QtCore.QObject):
 
     # Load in recent scrobbles from Last.fm and process them
     if not os.environ.get('NO_HISTORY'):
-      self.__is_loading = True
-      self.is_loading_changed.emit()
+      self.__should_show_loading_indicator = True
+      self.should_show_loading_indicator_changed.emit()
 
       fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance, self.__INITIAL_SCROBBLE_HISTORY_COUNT)
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
@@ -447,8 +447,8 @@ class HistoryViewModel(QtCore.QObject):
     self.__scrobbles_with_additional_data_count += 1
 
     if self.__scrobbles_with_additional_data_count == self.__INITIAL_SCROBBLE_HISTORY_COUNT:
-      self.__is_loading = False
-      self.is_loading_changed.emit()
+      self.__should_show_loading_indicator = False
+      self.should_show_loading_indicator_changed.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble):
     # Update scrobble data in details pane view if it's currently showing (when the selected scrobble is the one being updated)
@@ -483,4 +483,4 @@ class HistoryViewModel(QtCore.QObject):
   # TODO: Move this to an ApplicationViewModel
   miniMode = QtCore.Property(bool, get_is_in_mini_mode, notify=is_in_mini_mode_changed)
 
-  isLoading = QtCore.Property(bool, lambda self: self.__is_loading, notify=is_loading_changed)
+  shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)

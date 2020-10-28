@@ -55,9 +55,11 @@ Window {
     if (active) {
       switch (currentTabIndex) {
       case 1:
-        profileViewModel.loadProfileAndTopArtists()
+        profileViewModel.loadProfileAndTopArtists(true)
+        break
       case 2:
-        friendsViewModel.loadFriends()
+        friendsViewModel.loadFriends(true)
+        break
       }
     }
   }
@@ -278,7 +280,7 @@ Window {
 
           TabBarItem {
             iconName: 'history'
-            isLoading: historyViewModel.isLoading
+            shouldShowLoadingIndicator: historyViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 0
 
             onClicked: switchToTab(0)
@@ -286,7 +288,7 @@ Window {
 
           TabBarItem {
             iconName: 'profile'
-            isLoading: profileViewModel.isLoading
+            shouldShowLoadingIndicator: profileViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 1
 
             onClicked: switchToTab(1)
@@ -294,7 +296,7 @@ Window {
 
           TabBarItem {
             iconName: 'friends'
-            isLoading: friendsViewModel.isLoading
+            shouldShowLoadingIndicator: friendsViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 2
 
             onClicked: switchToTab(2)
