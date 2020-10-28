@@ -134,6 +134,10 @@ class HistoryViewModel(QtCore.QObject):
     return self.__selected_scrobble_index
   
   def set_selected_scrobble_index(self, new_index):
+    # Prevent setting an illegal index when going back/forward with keyboard
+    if new_index == len(self.scrobble_history) or new_index == -2:
+      return
+    
     self.__selected_scrobble_index = new_index
 
     # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index

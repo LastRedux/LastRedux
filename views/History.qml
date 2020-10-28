@@ -101,6 +101,7 @@ Item {
     // index is an argument passed through when the signal is triggered
     onSelect: viewModel.selectedScrobbleIndex = index
     onToggleLastfmIsLoved: viewModel.toggleLastfmIsLoved(index)
+    onReloadHistory: viewModel.reloadHistory()
 
     anchors {
       top: currentScrobble.visible ? currentScrobble.bottom : currentScrobble.top
@@ -111,5 +112,17 @@ Item {
       // When current scrobble is collapsed, remove margin so spacing isn't duplicated
       topMargin: currentScrobble.visible ? 15 : 0
     }
+  }
+
+  Shortcut {
+    sequence: 'Ctrl+]'
+    context: Qt.ApplicationShortcut
+    onActivated: viewModel.selectedScrobbleIndex++
+  }
+
+  Shortcut {
+    sequence: 'Ctrl+['
+    context: Qt.ApplicationShortcut
+    onActivated: viewModel.selectedScrobbleIndex--
   }
 }
