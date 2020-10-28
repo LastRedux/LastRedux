@@ -63,7 +63,6 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
   artists = []
 
   if not no_artists:
-    print('got spotify artists')
     artists_resp = requests.get('https://api.spotify.com/v1/artists/', params={
       'ids': ','.join([artist['id'] for artist in track['artists']])
     },
