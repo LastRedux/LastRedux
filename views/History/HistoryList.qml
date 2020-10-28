@@ -13,6 +13,7 @@ Item {
 
   signal select(int index)
   signal toggleLastfmIsLoved(int index)
+  signal reloadHistory
 
   // --- Header ---
 
@@ -23,6 +24,38 @@ Item {
     text: 'History'
 
     x: 15
+  }
+
+  Item {
+    opacity: mouseArea.containsPress ? 0.5 : 1
+
+    width: 14
+    height: 16
+
+    anchors {
+      right: parent.right
+      verticalCenter: title.verticalCenter
+
+      rightMargin: 15
+    }
+
+    Image {
+      source: `../../shared/resources/icons/small/reload.png`
+      
+      anchors {
+        fill: parent
+
+        margins: -8
+      }
+    }
+
+    MouseArea {
+      id: mouseArea
+      
+      onClicked: root.reloadHistory()
+
+      anchors.fill: parent
+    }
   }
 
   // --- List ---

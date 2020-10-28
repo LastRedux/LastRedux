@@ -84,12 +84,7 @@ class HistoryViewModel(QtCore.QObject):
 
     # Load in recent scrobbles from Last.fm and process them
     if not os.environ.get('NO_HISTORY'):
-      self.__should_show_loading_indicator = True
-      self.should_show_loading_indicator_changed.emit()
-
-      fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance, self.__INITIAL_SCROBBLE_HISTORY_COUNT)
-      fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
-      QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
+      self.reloadHistory()
 
     if os.environ.get('SUBMIT_SCROBBLES'):
       logger.info('Scrobble submission is enabled')
@@ -157,7 +152,28 @@ class HistoryViewModel(QtCore.QObject):
     self.selected_scrobble_changed.emit()
 
   # --- Slots ---
-  
+
+  @QtCore.Slot()
+  def reloadHistory(self):
+    '''Reload recent scrobbles from Last.fm'''
+
+    logger.trace('Reloading scrobble history from Last.fm')
+
+    # Update loading indicator
+    self.__should_show_loading_indicator = True
+    self.should_show_loading_indicator_changed.emit()
+
+    # Reset scrobble history list
+    self.begin_refresh_history.emit()
+    self.scrobble_history = []
+    self.end_refresh_history.emit()
+    self.__scrobbles_with_additional_data_count = 0
+
+    # Fetch and load recent scrobbles
+    fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance, self.__INITIAL_SCROBBLE_HISTORY_COUNT)
+    fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
+    QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
+    
   @QtCore.Slot(int)
   def toggleLastfmIsLoved(self, index):
     scrobble = None
