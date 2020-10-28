@@ -67,7 +67,11 @@ class Track:
     self.has_requested_lastfm_data = True
 
     if 'error' in track_response:
-      logger.warning(f'{self.title}: Last.fm track.getInfo returned an error `{track_response}``')
+      if track_response['message'] == 'Track not found':
+        logger.warning(f'{self.title}: Track not found on Last.fm')
+      else:
+        logger.error(f'{self.title}: Last.fm track.getInfo returned an error `{track_response}`')
+  
       return
 
     try:
@@ -79,12 +83,23 @@ class Track:
 
       # Retry requesting track data from Last.fm, usually if there's a missing key, retrying the request will resolve the issue
       self.fetch_and_load_lastfm_track_data()
+  
+    # Return the track response because we may use it later
+    return track_response
 
   def fetch_and_load_lastfm_artist_data(self):
     '''Fetch and load track data from a Last.fm artist.getInfo response'''
 
     artist_response = Track.lastfm_instance.get_artist_info(self)
     logger.trace(f'{self.title}: Fetched Last.fm artist data for `{self.artist.name}`')
+
+    if 'error' in artist_response:
+      if artist_response['message'] == 'The artist you supplied could not be found':
+        logger.warning(f'{self.title}: Artist not found on Last.fm')
+      else:
+        logger.error(f'{self.title}: Last.fm artist.getInfo for `{self.artist.name}` returned an error {artist_response}')
+  
+      return
 
     try:
       self.artist.load_lastfm_artist_object(artist_response['artist'])
@@ -103,10 +118,12 @@ class Track:
 
     if 'error' in album_response:
       # Don't log error if a fallback album (with ` - Single ` removed) doesn't exist on Last.fm
-      if is_fallback and album_response['message'] == 'Album not found':
-        return
+      if album_response['message'] == 'Album not found':
+        if not is_fallback:
+          logger.warning(f'{self.title}: Album not found on Last.fm')    
+      else:
+        logger.error(f'{self.title}: Last.fm album.getInfo for `{album_title}` returned an error {album_response}')
 
-      logger.warning(f'{self.title}: Last.fm album.getInfo for `{album_title}` returned an error {album_response}')
       return
 
     try:
@@ -162,7 +179,7 @@ class Track:
 
     # Load track and artist info if there isn't already some loaded (ie. Friends page)
     if not self.lastfm_url:
-      self.fetch_and_load_lastfm_track_data()
+      track_response = self.fetch_and_load_lastfm_track_data()
       self.fetch_and_load_lastfm_artist_data()
 
     # Load album info from Last.fm if the track has an album
@@ -196,6 +213,7 @@ class Track:
   
     self.has_lastfm_data = True
 
+  def load_spotify_itunes_store_data(self):
     # Fetch Spotify data
     if self.album.title:
       self.fetch_and_load_spotify_data()

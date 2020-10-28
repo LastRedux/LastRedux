@@ -20,5 +20,8 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
     if not self.scrobble.has_lastfm_data:
       self.scrobble.load_lastfm_data()
       self.emit_scrobble_ui_update_signals.emit(self.scrobble)
+    
+    self.scrobble.load_spotify_itunes_store_data()
+    self.emit_scrobble_ui_update_signals.emit(self.scrobble)
 
     self.finished.emit()

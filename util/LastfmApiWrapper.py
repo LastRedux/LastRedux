@@ -74,8 +74,6 @@ class LastfmApiWrapper:
       logger.error(f'Error decoding Last.fm response: {resp.text}')
 
     # TODO: Handle rate limit condition
-    if 'error' in resp_json and not resp_json['message'] in ['Track not found', 'Album not found']:
-      logger.error(f'Last.fm response error: {resp_json["message"]}')
 
     return resp_json
 
@@ -164,7 +162,7 @@ class LastfmApiWrapper:
       'username': self.__username
     })
 
-  def get_recent_scrobbles(self, username=None, period=None, limit=30):
+  def get_recent_scrobbles(self, count, username=None):
     '''Get the user's 30 most recent scrobbles'''
 
     # Default parameters cannot refer to self
@@ -178,7 +176,7 @@ class LastfmApiWrapper:
       'method': 'user.getRecentTracks',
       'user': username,
       'extended': 1, # Include artist data in response
-      'limit': limit
+      'limit': count
     })
 
   def get_total_scrobbles_today(self):

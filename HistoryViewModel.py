@@ -16,7 +16,8 @@ from tasks.UpdateNowPlayingTask import UpdateNowPlayingTask
 import util.LastfmApiWrapper as lastfm
 
 class HistoryViewModel(QtCore.QObject):
-  showNotification = QtCore.Signal(str, str)
+  # Constants
+  __INITIAL_SCROBBLE_HISTORY_COUNT = 30
 
   # Qt Property changed signals
   current_scrobble_data_changed = QtCore.Signal()
@@ -34,6 +35,8 @@ class HistoryViewModel(QtCore.QObject):
   scrobble_lastfm_is_loved_changed = QtCore.Signal(int)
   begin_refresh_history = QtCore.Signal()
   end_refresh_history = QtCore.Signal()
+
+  showNotification = QtCore.Signal(str, str)
 
   def __init__(self):
     QtCore.QObject.__init__(self)
@@ -84,7 +87,7 @@ class HistoryViewModel(QtCore.QObject):
       self.__is_loading = True
       self.is_loading_changed.emit()
 
-      fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance)
+      fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance, self.__INITIAL_SCROBBLE_HISTORY_COUNT)
       fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
       QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
 
@@ -316,8 +319,8 @@ class HistoryViewModel(QtCore.QObject):
           if self.__cached_media_player_data['ticks_since_track_changed'] < 3:
             if new_media_player_state.track_title == self.__current_scrobble.title:
               logger.debug('Skipping potentially bad media player data:')
-              logger.debug(f'New track: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
-              logger.debug(f'Current track: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title} | {new_media_player_state.album_title}')
+              logger.debug(f'New track: {new_media_player_state.artist_name} - {new_media_player_state.track_title}')
+              logger.debug(f'Current track: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title}')
               self.__cached_media_player_data['ticks_since_track_changed'] += 1
               return
 
@@ -380,7 +383,7 @@ class HistoryViewModel(QtCore.QObject):
     if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
       # TODO: Only submit when the song changes or the app is closed
       self.__should_submit_current_scrobble = True
-      logger.debug(f'Ready for submission: {self.__current_scrobble.artist.name} - {self.__current_scrobble.title} | {self.__current_scrobble.album.title}')
+      logger.debug(f'{self.__current_scrobble.title}: Ready for submission to Last.fm')
 
     return scrobble_percentage
 
@@ -444,7 +447,7 @@ class HistoryViewModel(QtCore.QObject):
   def __recent_scrobbles_done_loading(self):
     self.__scrobbles_with_additional_data_count += 1
 
-    if self.__scrobbles_with_additional_data_count == 30:
+    if self.__scrobbles_with_additional_data_count == self.__INITIAL_SCROBBLE_HISTORY_COUNT:
       self.__is_loading = False
       self.is_loading_changed.emit()
 

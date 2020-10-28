@@ -16,7 +16,10 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
     '''Return a list of the user's Last.fm friends and what they are/were listening to'''
 
     def lastfm_friend_to_friend(lastfm_friend):
-      recent_track = self.lastfm_instance.get_recent_scrobbles(username=lastfm_friend['name'], limit=1)['recenttracks']['track'][0]
+      recent_track_response = self.lastfm_instance.get_recent_scrobbles(username=lastfm_friend['name'], count=1)
+
+      recent_track = recent_track_response['recenttracks']['track'][0]
+      
       return Friend.build_from_lastfm_friend_and_recent_track(lastfm_friend, recent_track)
 
     friends = list(map(lastfm_friend_to_friend, self.lastfm_instance.get_friends()['friends']['user']))
