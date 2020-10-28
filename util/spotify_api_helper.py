@@ -25,7 +25,7 @@ def search_tracks(query):
     'Authorization': f'Bearer {token}'
   }).json()
 
-def get_images(track_title, artist_name, album_title):
+def get_images(track_title, artist_name, album_title, no_artists=False):
   global token
 
   stripped_track_title = track_title.lower()
@@ -62,26 +62,28 @@ def get_images(track_title, artist_name, album_title):
   album_image_small = track['album']['images'][-1]['url']
   artists = []
 
-  artists_resp = requests.get('https://api.spotify.com/v1/artists/', params={
-    'ids': ','.join([artist['id'] for artist in track['artists']])
-  },
-  headers={
-    'Accept': 'application/json',
-    'Authorization': f'Bearer {token}'
-  })
+  if not no_artists:
+    print('got spotify artists')
+    artists_resp = requests.get('https://api.spotify.com/v1/artists/', params={
+      'ids': ','.join([artist['id'] for artist in track['artists']])
+    },
+    headers={
+      'Accept': 'application/json',
+      'Authorization': f'Bearer {token}'
+    })
 
-  artists_json = artists_resp.json()
+    artists_json = artists_resp.json()
 
-  for artist in artists_json['artists']:
-    artist_image = artist['images'][-1]['url'] if artist['images'] else ''
-    
-    artists.append(
-      SpotifyArtist(
-        name=artist['name'], 
-        spotify_url=artist['external_urls']['spotify'], 
-        image_url=artist_image
+    for artist in artists_json['artists']:
+      artist_image = artist['images'][-1]['url'] if artist['images'] else ''
+      
+      artists.append(
+        SpotifyArtist(
+          name=artist['name'], 
+          spotify_url=artist['external_urls']['spotify'], 
+          image_url=artist_image
+        )
       )
-    )
 
   return artists, album_image, album_image_small
 

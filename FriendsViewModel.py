@@ -33,9 +33,10 @@ class FriendsViewModel(QtCore.QObject):
       self.end_refresh_friends.emit()
 
       for row, friend in enumerate(self.friends):
-        load_additional_friend_track_data = LoadAdditionalFriendTrackDataTask(friend.track, row)
-        load_additional_friend_track_data.finished.connect(lambda row_in_friends_list: self.album_image_url_changed.emit(row_in_friends_list))
-        QtCore.QThreadPool.globalInstance().start(load_additional_friend_track_data)
+        if friend.is_track_playing:
+          load_additional_friend_track_data = LoadAdditionalFriendTrackDataTask(friend.track, row)
+          load_additional_friend_track_data.finished.connect(lambda row_in_friends_list: self.album_image_url_changed.emit(row_in_friends_list))
+          QtCore.QThreadPool.globalInstance().start(load_additional_friend_track_data)
       
       # Update loading indicator on tab bar
       self.__is_loading = False

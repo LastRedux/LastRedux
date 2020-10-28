@@ -151,8 +151,7 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble = self.scrobble_history[new_index]
 
       # Load additional scrobble data if it isn't already present
-      if not self.selected_scrobble.has_lastfm_data or not self.selected_scrobble.has_spotify_data:
-        self.__load_additional_scrobble_data(self.selected_scrobble)
+      self.__load_additional_scrobble_data(self.selected_scrobble)
     
     # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
     self.selected_scrobble_changed.emit()

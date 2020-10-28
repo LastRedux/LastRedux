@@ -36,7 +36,6 @@ class Track:
   # Loading state
   has_requested_lastfm_data: bool = False
   has_lastfm_data: bool = False
-  has_spotify_data: bool = False
 
   def load_lastfm_track_object(self, lastfm_track) -> None:
     '''Load a Last.fm track.getInfo response into the Track schema'''
@@ -135,15 +134,15 @@ class Track:
       # Retry requesting album data from Last.fm, usually if there's a missing key, retrying the request will resolve the issue
       self.fetch_and_load_lastfm_album_data(album_title)
   
-  def fetch_and_load_spotify_data(self, include_album=True) -> bool:
+  def fetch_and_load_spotify_data(self, search_without_album=False, no_artists=False) -> bool:
     spotify_images = None
     
-    if include_album:
-      spotify_images = spotify_api_helper.get_images(self.title, self.artist.name, self.album.title)
-      logger.trace(f'{self.title}: Fetched Spotify search data')
-    else:
-      spotify_images = spotify_api_helper.get_images(self.title, self.artist.name, '')
+    if search_without_album:
+      spotify_images = spotify_api_helper.get_images(self.title, self.artist.name, '', no_artists=no_artists)
       logger.trace(f'{self.title}: Fetched Spotify search data (album title excluded)')
+    else:
+      spotify_images = spotify_api_helper.get_images(self.title, self.artist.name, self.album.title, no_artists=no_artists)
+      logger.trace(f'{self.title}: Fetched Spotify search data')
 
     if spotify_images:
       artists, album_image, album_image_small = spotify_images
@@ -172,13 +171,13 @@ class Track:
       self.album.image_url_small = album_image_small
       logger.debug(f'{self.title}: Album art found on iTunes search')
 
-  def load_lastfm_data(self):
+  def load_lastfm_data(self, no_artists=False):
     '''Fill in data about the track, album, and artist from Last.fm'''
 
     track_response = None
 
-    # Load track and artist info if there isn't already some loaded (ie. Friends page)
-    if not self.lastfm_url:
+    # Load track and artist info unless there is already some loaded (ie. Friends page)
+    if not no_artists:
       track_response = self.fetch_and_load_lastfm_track_data()
       self.fetch_and_load_lastfm_artist_data()
 
@@ -213,25 +212,23 @@ class Track:
   
     self.has_lastfm_data = True
 
-  def load_spotify_itunes_store_data(self):
-    # Fetch Spotify data
+  def load_spotify_data(self, no_artists=False):
     if self.album.title:
-      self.fetch_and_load_spotify_data()
+      self.fetch_and_load_spotify_data(no_artists=no_artists)
       
       # Retry Spotify search without album title if search failed
       if not len(self.spotify_artists):
         if self.album.title:
           # Try again without the album (better chance of a match)
-          spotify_images_loaded = self.fetch_and_load_spotify_data(include_album=False)
+          spotify_images_loaded = self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)
 
           if spotify_images_loaded:
             logger.debug(f'{self.title}: Album art found on Spotify (album title excluded from search)')
     else:
       # Always search without album if there isn't one associated with the scrobble
-      self.fetch_and_load_spotify_data(include_album=False)
+      self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)
 
-    self.has_spotify_data = True
-
+  def load_itunes_store_images(self):
     # Try getting album art from iTunes as a last resort
     if not self.album.image_url:
       self.fetch_and_load_itunes_store_images()

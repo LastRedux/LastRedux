@@ -16,12 +16,17 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
   def run(self):
     '''Fetch and attach information from Last.fm and Spotify to the passed Scrobble object and emit signals to update that specific scrobble in the UI'''
 
-    # Refresh details view with Last.fm details if it doesn't exist
-    if not self.scrobble.has_lastfm_data:
-      self.scrobble.load_lastfm_data()
-      self.emit_scrobble_ui_update_signals.emit(self.scrobble)
-    
-    self.scrobble.load_spotify_itunes_store_data()
+    # Load Last.fm data
+    self.scrobble.load_lastfm_data()
     self.emit_scrobble_ui_update_signals.emit(self.scrobble)
+    
+    # Load Spotify data
+    self.scrobble.load_spotify_data()
+    self.emit_scrobble_ui_update_signals.emit(self.scrobble)
+
+    # Load iTunes images if needed
+    if not self.scrobble.album.image_url:
+      self.scrobble.fetch_and_load_itunes_store_images()
+      self.emit_scrobble_ui_update_signals.emit(self.scrobble)
 
     self.finished.emit()
