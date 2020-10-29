@@ -30,7 +30,7 @@ Item {
     opacity: mouseArea.containsPress ? 0.5 : 1
 
     width: 14
-    height: 16
+    height: 15
 
     anchors {
       right: parent.right
