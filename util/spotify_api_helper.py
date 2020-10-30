@@ -25,27 +25,53 @@ def search_tracks(query):
     'Authorization': f'Bearer {token}'
   }).json()
 
+def simplify_title(title, is_album=False):
+  '''Simplify track and album titles to improve matching on Spotify'''
+
+  # Lowercase to make regex cleaner (Spotify doesn't care about case)
+  title = title.lower()
+
+  if is_album:
+    # Remove platform specific words for albums
+    title = title.replace(' - single', '').replace(' - ep', '').replace('edition', '')
+  
+  # Remove any text inside brackets (meant to get rid of movie soundtrack labels)
+  title = re.sub(r'\[.+\]', '', title)
+
+  # Only allow alphanumeric chars, spaces, asterisks (for censored tracks), and hyphens
+  title = re.sub(r'[^A-Za-z0-9\-\* ]+', ' ', title)
+
+  # Remove the world feat
+  title = title.replace('feat', '')
+
+  # Cut off censored words at the censor mark for better results (`f**k` turns into `f`)
+  title = re.sub('\*+\w+', '', title)
+
+  return title
+
+def simplify_artist_name(artist_name):
+  '''Simplify artist name to improve matching on Spotify'''
+
+  # Lowercase artist name to be consistent between platforms (Apple Music doesn't always use correct capitalization for example)
+  artist_name = artist_name.lower()
+
+  # Remove ampersands and commas to separate collaborators
+  artist_name = artist_name.replace('&', '').replace(',', '')
+
+  return artist_name
+
 def get_images(track_title, artist_name, album_title, no_artists=False):
   global token
 
-  stripped_track_title = track_title.lower()
-  stripped_track_title = re.sub(r'\[.+\]', '', stripped_track_title)
-  stripped_track_title = re.sub(r'[^A-Za-z0-9 -]+', '', stripped_track_title)
-  stripped_track_title = stripped_track_title.replace('feat', '')
-
-  stripped_artist_name = artist_name.lower()
-  stripped_artist_name = stripped_artist_name.replace('&', '').replace(',', '')
-
-  stripped_album_title = ''
+  simplified_track_title = simplify_title(track_title)
+  simplified_artist_name = simplify_artist_name(artist_name)
+  simplified_album_title = '' # Not all tracks have albums
   
   if album_title:
-    stripped_album_title = album_title.lower()
-    stripped_album_title = album_title.lower()
-    stripped_album_title = re.sub(r'[^A-Za-z0-9 -]+', '', stripped_album_title)
-    stripped_album_title = stripped_album_title.replace(' - single', '').replace(' - ep', '').replace('edition', '').replace('feat', '')
+    simplified_album_title = simplify_title(album_title, is_album=True)
 
-  query = f'{stripped_track_title} {stripped_artist_name} {stripped_album_title}'
-  # logger.trace(f'Searching Spotify: {query}')
+  query = f'{simplified_track_title} {simplified_artist_name} {simplified_album_title}'
+
   search_results = search_tracks(query)
 
   if 'error' in search_results and search_results['error']['message'] == 'The access token expired':
@@ -53,18 +79,39 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
     token = get_token()
     search_results = search_tracks(query)
 
-  if not search_results.get('tracks').get('items'):
+  if not len(search_results['tracks']['items']):
+    # No results
     return
 
-  track = sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)[0]
+  # Sort tracks by popularity
+  sorted_results = sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)
+  track = None
+
+  # Find track with matching
+  for track_result in sorted_results:
+    found = False
+
+    for artist in track_result['artists']:
+      if artist['name'].lower() in simplified_artist_name:
+        track = track_result
+        found = True
+        break
+    
+    if found:
+      break
+
+  # Don't search for artists or art if there were no close enough matches
+  if not track:
+    return
 
   album_image = track['album']['images'][0]['url']
   album_image_small = track['album']['images'][-1]['url']
   artists = []
 
   if not no_artists:
+    # Make one requests to fetch data for all artists
     artists_resp = requests.get('https://api.spotify.com/v1/artists/', params={
-      'ids': ','.join([artist['id'] for artist in track['artists']])
+      'ids': ','.join([artist['id'] for artist in track['artists']]) # Create comma separated list of Spotify artist ids
     },
     headers={
       'Accept': 'application/json',
