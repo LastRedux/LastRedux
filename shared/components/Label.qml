@@ -21,6 +21,7 @@ Text {
 
   font {
     capitalization: style === kTitleTertiary ? Font.AllUppercase : Font.MixedCase
+    family: fontLoaders.name
     
     letterSpacing: {
       switch (style) {

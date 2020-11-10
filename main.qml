@@ -71,6 +71,10 @@ Window {
     close.accepted = false // close is a hidden parameter to the onClosing function
   }
 
+  FontLoaders {
+    id: fontLoaders
+  }
+
   Window {
     id: onboardingWindow
 
