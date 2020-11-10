@@ -1,4 +1,4 @@
-import QtQuick 2.14
+import QtQuick 2.15
 
 import '../../shared/components'
 
@@ -17,6 +17,8 @@ Item {
 
   HoverHandler {
     id: hoverHandler
+
+    cursorShape: address ? Qt.PointingHandCursor : Qt.ArrowCursor
   }
 
   // TODO: Add context menu

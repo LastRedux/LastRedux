@@ -1,4 +1,4 @@
-import QtQuick 2.14
+import QtQuick 2.15
 import QtGraphicalEffects 1.12
 
 import '../../shared/components'
@@ -83,6 +83,8 @@ Item {
 
     HoverHandler {
       id: userLinkHoverHandler
+
+      cursorShape: Qt.PointingHandCursor
     }
 
     PointHandler {
