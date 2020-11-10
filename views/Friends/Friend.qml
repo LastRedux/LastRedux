@@ -21,7 +21,6 @@ Item {
   height: trackTitle ? trackLink.y + trackLink.height : userLink.height
 
   Picture {
-    fillMode: Image.PreserveAspectCrop
     source: trackImage || ''
     visible: isTrackPlaying
 
@@ -230,8 +229,10 @@ Item {
       id: trackTitleLabel
 
       elide: Text.ElideRight
+      maximumLineCount: 2
       isShadowEnabled: !isTrackPlaying
       text: trackTitle || ''
+      wrapMode: Text.Wrap
 
       anchors {
         top: parent.top
@@ -249,10 +250,12 @@ Item {
       id: trackArtistNameView
 
       elide: Text.ElideRight
+      maximumLineCount: 2
       isShadowEnabled: !isTrackPlaying
       opacity: 0.81
       style: kBodyPrimary
       text: trackArtistName || ''
+      wrapMode: Text.Wrap
 
       anchors {
         top: trackTitleLabel.bottom

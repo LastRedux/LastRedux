@@ -144,12 +144,12 @@ Item {
           id: spotifyArtistImage
 
           type: kArtist
+          shouldBlankOnNewSource: true
           
-          fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
           source: modelData.image_url
 
           width: 52
-          height: width
+          height: 52
         }
 
         Image {
@@ -211,7 +211,6 @@ Item {
 
       type: kArtist
 
-      fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
       source: spotifyArtists.length ? spotifyArtists[0].image_url : ''
 
       width: 139

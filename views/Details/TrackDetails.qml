@@ -38,8 +38,10 @@ PictureBackground {
     id: albumImageView
 
     source: albumImageUrl
+    shouldBlankOnNewSource: true
 
     width: 181
+    height: 181
 
     anchors {
       top: parent.top

@@ -1,16 +1,20 @@
 import QtQuick 2.14
 import QtGraphicalEffects 1.12
 
-Image {
+import Kale 1.0
+
+Item {
   id: root
 
   readonly property int kTrack: 0
   readonly property int kArtist: 1
 
   property int type: kTrack
+  property alias source: networkImage.source
+  property alias shouldBlankOnNewSource: networkImage.shouldBlankOnNewSource
 
   width: 34
-  height: width
+  height: 34
 
   layer {
     enabled: root.width === root.height
@@ -22,10 +26,17 @@ Image {
     }
   }
 
+  NetworkImage {
+    id: networkImage
+
+    shouldBlankOnNewSource: true
+
+    anchors.fill: parent
+  }
+
   Image {
     id: placeholder
 
-    opacity: 1
     source: root.width === root.height ? `../resources/${type === kArtist ? 'artistP' : 'p'}laceholder.png` : ''
     
     anchors.fill: parent
@@ -39,7 +50,7 @@ Image {
 
     states: State {
       name: 'loaded'
-      when: root.status === Image.Ready
+      when: networkImage && networkImage.hasImage
 
       PropertyChanges {
         target: placeholder

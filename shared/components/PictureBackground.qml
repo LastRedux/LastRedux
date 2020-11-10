@@ -1,6 +1,8 @@
 import QtQuick 2.14
 import QtGraphicalEffects 1.12
 
+import Kale 1.0
+
 Item {
   id: root
 
@@ -11,7 +13,7 @@ Item {
 
   states: State {
     name: 'loaded'
-    when: image.status === Image.Ready
+    when: image && image.hasImage
 
     // After image is loaded, fade out image overlay and fade in reflection
     PropertyChanges {
@@ -69,7 +71,7 @@ Item {
     
     visible: false // This will then be masked, so render off screen at first
 
-    height: image.height
+    height: image ? image.height : 0
 
     anchors {
       top: parent.bottom
@@ -100,7 +102,7 @@ Item {
       matrix: Qt.matrix4x4( 1, 0, 0, 0, 0, -1, 0, reflection.height, 0, 0, 1, 0, 0, 0, 0, 1)
     }
     
-    height: image.height
+    height: image ? image.height : 0
 
     anchors {
       top: parent.bottom
@@ -115,7 +117,7 @@ Item {
 
     visible: false
 
-    height: image.height
+    height: image ? image.height : 0
 
     anchors {
       bottom: reflectionSource.top
@@ -169,10 +171,10 @@ Item {
   // --- Image ---
 
   // Invisible image that will be blurred and then reflected
-  Image {
+  NetworkImage {
     id: image
 
-    fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
+    shouldBlankOnNewSource: true
     visible: !isBlurEnabled
 
     anchors.fill: parent

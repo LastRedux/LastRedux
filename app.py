@@ -3,7 +3,7 @@ import signal
 import sys
 
 from loguru import logger
-from PySide2 import QtCore, QtGui, QtQml
+from PySide2 import QtCore, QtGui, QtQml, QtNetwork
 import loguru
 
 from platform_integrations.WindowStyle import WindowStyle
@@ -13,6 +13,7 @@ from ProfileViewModel import ProfileViewModel
 from FriendsViewModel import FriendsViewModel
 from FriendsListModel import FriendsListModel
 from DetailsViewModel import DetailsViewModel
+from shared.components.NetworkImage import NetworkImage
 
 # Get the built application path
 if getattr(sys, 'frozen', False):
@@ -38,6 +39,7 @@ if __name__ == '__main__':
   QtQml.qmlRegisterType(FriendsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsViewModel')
   QtQml.qmlRegisterType(FriendsListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsListModel')
   QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
+  QtQml.qmlRegisterType(NetworkImage, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'NetworkImage')
 
   # Enable retina support
   QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
@@ -47,6 +49,10 @@ if __name__ == '__main__':
 
   # Create system app
   app = QtGui.QGuiApplication(sys.argv)
+
+  # Create network access manager for custom network image view to use to request image URLs
+  network_manager = QtNetwork.QNetworkAccessManager()
+  NetworkImage.NETWORK_MANAGER = network_manager
 
   # Initialize QML rendering engine
   engine = QtQml.QQmlApplicationEngine(parent=app)

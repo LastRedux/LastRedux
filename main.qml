@@ -16,11 +16,11 @@ Window {
   property bool isInMiniMode: {
     if (historyViewModel) {
       if (historyViewModel.miniMode) {
-        return 755
+        return true
       }
-
-      return 0
     }
+
+    return false
   }
 
   property alias isInMiniMode: details.isInMiniMode
@@ -280,7 +280,7 @@ Window {
 
           TabBarItem {
             iconName: 'history'
-            shouldShowLoadingIndicator: historyViewModel.shouldShowLoadingIndicator
+            shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 0
 
             onClicked: switchToTab(0)
@@ -288,7 +288,7 @@ Window {
 
           TabBarItem {
             iconName: 'profile'
-            shouldShowLoadingIndicator: profileViewModel.shouldShowLoadingIndicator
+            shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 1
 
             onClicked: switchToTab(1)
@@ -296,7 +296,7 @@ Window {
 
           TabBarItem {
             iconName: 'friends'
-            shouldShowLoadingIndicator: friendsViewModel.shouldShowLoadingIndicator
+            shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 2
 
             onClicked: switchToTab(2)
