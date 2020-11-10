@@ -72,23 +72,28 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
 
   query = f'{simplified_track_title} {simplified_artist_name} {simplified_album_title}'
 
-  search_results = search_tracks(query)
+  search_resp = search_tracks(query)
 
-  if 'error' in search_results and search_results['error']['message'] == 'The access token expired':
-    logger.trace('Refreshed Spotify access token')
-    token = get_token()
-    search_results = search_tracks(query)
+  if 'error' in search_resp:
+    if search_resp['error']['message'] == 'The access token expired':
+      logger.trace('Refreshed Spotify access token')
+      token = get_token()
+      search_resp = search_tracks(query)
+    else:
+      logger.error(f'Spotify search error: {search_resp}')
 
-  if not len(search_results['tracks']['items']):
+  track_results = search_resp['tracks']['items']
+
+  if not len(track_results):
     # No results
     return
 
   # Sort tracks by popularity
-  sorted_results = sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)
+  #sorted_results = search_results##sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)
   track = None
 
   # Find track with matching
-  for track_result in sorted_results:
+  for track_result in track_results:
     found = False
 
     for artist in track_result['artists']:
@@ -106,7 +111,7 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
 
   album_image = track['album']['images'][0]['url']
   album_image_small = track['album']['images'][-1]['url']
-  artists = []
+  artist_objects = []
 
   if not no_artists:
     # Make one requests to fetch data for all artists
@@ -118,12 +123,22 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
       'Authorization': f'Bearer {token}'
     })
 
-    artists_json = artists_resp.json()
+    artists = artists_resp.json()['artists']
 
-    for artist in artists_json['artists']:
-      artist_image = artist['images'][-1]['url'] if artist['images'] else ''
+    for artist in artists:      
+      images = artist['images']
+      artist_image = ''
       
-      artists.append(
+      # Some Spotify artists don't have an image
+      if images:
+        if len(artists) > 1:
+          # Get small size if there is more than one artist
+          artist_image = images[-1]['url']
+        else:
+          # Get large size if there is only one artist
+          artist_image = images[-2]['url']
+      
+      artist_objects.append(
         SpotifyArtist(
           name=artist['name'], 
           spotify_url=artist['external_urls']['spotify'], 
@@ -131,7 +146,7 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
         )
       )
 
-  return artists, album_image, album_image_small
+  return artist_objects, album_image, album_image_small
 
 if not token:
   token = get_token()

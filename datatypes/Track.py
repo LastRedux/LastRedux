@@ -32,10 +32,12 @@ class Track:
 
   # Spotify data
   spotify_artists: List[SpotifyArtist] = field(default_factory=list)
-
-  # Loading state
-  has_requested_lastfm_data: bool = False
-  has_lastfm_data: bool = False
+  
+  # Possible values:
+  # - INITIALIZED: Just media player data
+  # - LASTFM_TRACK_LOADED: Has loaded info from Last.fm
+  # - LASTFM_TRACK_NOT_FOUND: Track isn't on Last.fm
+  loading_state: str = 'INITIALIZED'
 
   def load_lastfm_track_object(self, lastfm_track) -> None:
     '''Load a Last.fm track.getInfo response into the Track schema'''
@@ -51,10 +53,19 @@ class Track:
   def build_from_lastfm_recent_track(lastfm_recent_track) -> Track:
     '''Build a Track from a user scrobble event (does NOT contain user plays nor global stats)'''
 
+    album_title = lastfm_recent_track.get('album').get('#text')
+
     return Track(
-      lastfm_recent_track['name'], 
-      Artist(lastfm_recent_track['artist']['name'], lastfm_url=lastfm_recent_track['artist']['url']), 
-      Album(lastfm_recent_track.get('album').get('#text'), lastfm_url=lastfm_recent_track.get('album').get('url')), # Some Last.fm tracks don't have albums associated with them
+      lastfm_recent_track['name'],
+      Artist(
+        lastfm_recent_track['artist']['name'],
+        lastfm_url=lastfm_recent_track['artist']['url']
+      ),
+      # Some Last.fm tracks don't have albums associated with them
+      album_title and Album(
+        album_title,
+        lastfm_url=lastfm_recent_track.get('album').get('url')
+      ),
       lastfm_url=lastfm_recent_track['url']
     )
   
@@ -68,6 +79,7 @@ class Track:
     if 'error' in track_response:
       if track_response['message'] == 'Track not found':
         logger.warning(f'{self.title}: Track not found on Last.fm')
+        self.loading_state = 'LASTFM_TRACK_NOT_FOUND'
       else:
         logger.error(f'{self.title}: Last.fm track.getInfo returned an error `{track_response}`')
   
@@ -149,7 +161,7 @@ class Track:
       self.spotify_artists = artists
 
       # Use Spotify album art if Last.fm didn't provide it
-      if not self.album.image_url:
+      if self.album.title and not self.album.image_url:
         self.album.image_url = album_image
         self.album.image_url_small = album_image_small
         logger.debug(f'{self.title}: Album art found on Spotify')
@@ -195,22 +207,27 @@ class Track:
         if self.album.image_url:
           logger.debug(f'{self.title}: Album art found on Last.fm (album with single label removed)')
 
-    # Use track art instead (usually a 'single' album art ie. `Aamon - Single`)
+      # Use track art instead (usually a 'single' album art ie. `Aamon - Single`)
+      # One of the following could result in this case: 
     # One of the following could result in this case: 
-    # - The track has no album data
-    # - The album doesn't exist on Last.fm
-    # - The album on Last.fm has no image
-    if not self.album.image_url:
-      # Request a track.getInfo response if we didn't already (Such as on the friends page where additional track and artist info isn't needed)
-      if not track_response:
-        track_response = Track.lastfm_instance.get_track_info(self)
+      # One of the following could result in this case: 
+    # One of the following could result in this case: 
+      # One of the following could result in this case: 
+      # - The track has no album data
+      # - The album doesn't exist on Last.fm
+      # - The album on Last.fm has no image
+      if not self.album.image_url:
+        # Request a track.getInfo response if we didn't already (Such as on the friends page where additional track and artist info isn't needed)
+        if not track_response:
+          track_response = Track.lastfm_instance.get_track_info(self)
 
-      # Not all tracks have an image associated with them
-      if 'image' in track_response:
-        self.album.load_lastfm_track_images(track_response['image'])
-        logger.debug(f'{self.title}: Album art found on Last.fm (track image)')
+        # Not all tracks have an image associated with them
+        if 'image' in track_response:
+          self.album.load_lastfm_track_images(track_response['image'])
+          logger.debug(f'{self.title}: Album art found on Last.fm (track image)')
   
-    self.has_lastfm_data = True
+    if not self.loading_state == 'LASTFM_TRACK_NOT_FOUND':
+      self.loading_state = 'LASTFM_TRACK_LOADED'
 
   def load_spotify_data(self, no_artists=False):
     if self.album.title:
@@ -218,12 +235,11 @@ class Track:
       
       # Retry Spotify search without album title if search failed
       if not len(self.spotify_artists):
-        if self.album.title:
-          # Try again without the album (better chance of a match)
-          spotify_images_loaded = self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)
+        # Try again without the album (better chance of a match)
+        spotify_images_loaded = self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)
 
-          if spotify_images_loaded:
-            logger.debug(f'{self.title}: Album art found on Spotify (album title excluded from search)')
+        if spotify_images_loaded:
+          logger.debug(f'{self.title}: Album art found on Spotify (album title excluded from search)')
     else:
       # Always search without album if there isn't one associated with the scrobble
       self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)
@@ -239,11 +255,15 @@ class Track:
     if not other_track:
       return
 
-    if self.has_lastfm_data and other_track.has_lastfm_data:
+    if self.loading_state == 'LASTFM_LOADED' and other_track.loading_state == 'LASTFM_LOADED':
       return self.lastfm_url == other_track.lastfm_url
     
+    # Default to a blank string if there are no album titles
+    album_title = self.album.title or ''
+    other_album_title = other_track.album.title or ''
+
     return (
       self.title.lower() == other_track.title.lower()
       and self.artist.name.lower() == other_track.artist.name.lower()
-      and self.album.title.lower() == other_track.album.title.lower()
+      and album_title.lower() == other_album_title.lower()
     )

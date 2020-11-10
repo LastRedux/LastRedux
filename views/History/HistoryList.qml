@@ -122,8 +122,10 @@ Item {
       trackTitle: model.trackTitle
       artistName: model.artistName
       timestamp: model.timestamp
-      imageSource: model.hasLastfmData ? model.albumImageUrl : ''
-      lastfmIsLoved: model.hasLastfmData ? model.lastfmIsLoved : false
+
+      // Not all tracks have Last.fm data
+      imageSource: model.albumImageUrl || ''
+      lastfmIsLoved: model.lastfmIsLoved || false
       canLove: model.hasLastfmData
 
       onSelect: root.select(model.index)

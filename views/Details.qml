@@ -10,17 +10,12 @@ Item {
   property DetailsViewModel viewModel
   property alias isInMiniMode: trackDetails.isInMiniMode
 
-  property bool canDisplayScrobble: {
-    // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
-    if (viewModel && viewModel.scrobbleTrackData) {
-      return true
-    }
-
-    return false
-  }
+  // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
+  property bool canDisplayScrobble: (viewModel && viewModel.scrobbleTrackData) ? true : false
 
   // Check if all remote scrobble data from Last.fm has loaded
-  property bool canDisplayEntireScrobble: canDisplayScrobble && viewModel.scrobbleTrackData.has_lastfm_data
+  property bool hasLastfmData: canDisplayScrobble && viewModel.scrobbleTrackData.loading_state === 'LASTFM_TRACK_LOADED'
+  property bool isTrackNotFound: canDisplayScrobble && viewModel.scrobbleTrackData.loading_state === 'LASTFM_TRACK_NOT_FOUND'
 
   // --- No Scrobble Selected Page ---
 
@@ -59,57 +54,79 @@ Item {
         id: column
 
         width: scrollArea.width
+        
+        // --- First time scrobble banner ---
+  
+        Image {
+          visible: isTrackNotFound
+
+          fillMode: Image.TileHorizontally
+          source: '../shared/resources/effects/bannerGradient.png'
+
+          width: parent.width
+          height: 30
+
+          Label {
+            text: 'This track isn’t in Last.fm\'s database yet'
+            isShadowEnabled: false
+            color: 'black'
+            style: kTitleSecondary
+            elide: Text.ElideRight
+
+            anchors {
+              right: parent.right
+              left: parent.left
+
+              verticalCenter: parent.verticalCenter
+
+              leftMargin: 15
+              rightMargin: 15
+            }
+          }
+        }
 
         TrackDetails {
           id: trackDetails
 
-          property bool hasAlbum: canDisplayEntireScrobble ? !!viewModel.scrobbleTrackData.album.title : false
+          property bool hasAlbum: canDisplayScrobble && !!viewModel.scrobbleTrackData.album.title
 
           isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble
-          title: canDisplayScrobble ? viewModel.scrobbleTrackData.title : ''
-          lastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_url : ''
-          lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_listeners : undefined
-          lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_global_plays : undefined
-          lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_plays : undefined
-          lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.lastfm_tags : []
+          title: canDisplayScrobble && viewModel.scrobbleTrackData.title
+          lastfmUrl: hasLastfmData && viewModel.scrobbleTrackData.lastfm_url
+          lastfmGlobalListeners: hasLastfmData && viewModel.scrobbleTrackData.lastfm_global_listeners
+          lastfmGlobalPlays: hasLastfmData && viewModel.scrobbleTrackData.lastfm_global_plays
+          lastfmPlays: hasLastfmData && viewModel.scrobbleTrackData.lastfm_plays
+          lastfmTags: hasLastfmData ? viewModel.scrobbleTrackData.lastfm_tags : []
 
           artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          artistLastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_url : ''
+          artistLastfmUrl: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_url
 
-          albumName: hasAlbum ? viewModel.scrobbleTrackData.album.title : ''
-          albumLastfmUrl: (hasAlbum && canDisplayEntireScrobble) ? viewModel.scrobbleTrackData.album.lastfm_url : ''
+          albumTitle: hasAlbum ? viewModel.scrobbleTrackData.album.title : '' // Use blank string as fallback because the Text element used to render the album title won't accept undefined
+          albumLastfmUrl: hasAlbum && hasLastfmData && viewModel.scrobbleTrackData.album.lastfm_url
 
           // Album image is still used to display track art even if there isn't an associated album
-          albumImageUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.album.image_url : ''
+          albumImageUrl: hasLastfmData ? viewModel.scrobbleTrackData.album.image_url : ''
+          isTrackNotFound: isTrackNotFound
 
           width: column.width
         }
 
         ArtistDetails {
-          name: canDisplayScrobble ? viewModel.scrobbleTrackData.artist.name : ''
-          lastfmUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_url : ''
-          bio: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_bio : 'Loading artist bio...'
-          isReadMoreLinkVisible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_bio
-          lastfmGlobalListeners: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_listeners : undefined
-          lastfmGlobalPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_global_plays : undefined
-          lastfmPlays: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_plays : undefined
-          lastfmTags: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
-          imageUrl: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.image_url : ''
-          spotifyArtists: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.spotify_artists : []
+          visible: !isTrackNotFound
 
-          isNotInLastfmDatabase: {
-            // Assume the track is in the database if a scrobble isn't loaded
-            if (!canDisplayScrobble) {
-              return false
-            }
-
-            // Return false in order to show the "Loading bio..." text if the Last.fm data request isn't finished
-            if (!viewModel.scrobbleTrackData.has_requested_lastfm_data) {
-              return false
-            }
-
-            return viewModel.scrobbleTrackData.has_requested_lastfm_data && !viewModel.scrobbleTrackData.has_lastfm_data
-          }
+          name: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
+          bio: hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_bio : '---'
+          imageUrl: hasLastfmData ? viewModel.scrobbleTrackData.artist.image_url : ''
+          
+          lastfmUrl: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_url
+          lastfmGlobalListeners: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_listeners
+          lastfmGlobalPlays: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_plays
+          lastfmPlays: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_plays
+          lastfmTags: hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
+          
+          spotifyArtists: hasLastfmData ? viewModel.scrobbleTrackData.spotify_artists : []
+          
+          isReadMoreLinkVisible: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_bio
 
           width: column.width
         }
@@ -117,7 +134,7 @@ Item {
         // --- Similar Artists ---
 
         Item {
-          visible: canDisplayEntireScrobble && viewModel.scrobbleTrackData.artist.lastfm_similar_artists.length
+          visible: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_similar_artists.length
 
           width: column.width
           height: similarArtists.y + similarArtists.height + 30
@@ -170,7 +187,7 @@ Item {
             }
 
             Repeater {
-              model: canDisplayEntireScrobble ? viewModel.scrobbleTrackData.artist.lastfm_similar_artists : []
+              model: hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_similar_artists : []
 
               delegate: Tag {
                 name: modelData.name

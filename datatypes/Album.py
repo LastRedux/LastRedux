@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Album:
+  # An album can have empty data but still hold an image
+  # TODO: Make it more clear when an album is just a shell to hold an image rather than actual album data
   title: str = ''
   image_url: str = ''
   image_url_small: str = ''

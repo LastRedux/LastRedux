@@ -4,7 +4,7 @@ import Qt.labs.platform 1.0
 Label {
   id: root
 
-  property string address
+  property var address
   
   signal clicked
 

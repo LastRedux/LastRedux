@@ -103,7 +103,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
         elif role == self.__TIMESTAMP_ROLE:
           return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
         elif role == self.__HAS_LASTFM_DATA:
-          return scrobble.has_lastfm_data
+          return scrobble.loading_state == 'LASTFM_TRACK_LOADED'
 
     # Return no data if we don't have a reference to the scrobble history view model
     return None

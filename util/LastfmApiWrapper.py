@@ -62,6 +62,7 @@ class LastfmApiWrapper:
     resp_json = None
 
     if http_method == 'GET':
+      # TODO: Handle connection errors
       resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
     elif http_method == 'POST':
       resp = requests.post('https://ws.audioscrobbler.com/2.0/', headers=headers, data=payload)

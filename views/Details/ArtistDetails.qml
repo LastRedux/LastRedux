@@ -7,21 +7,22 @@ Item {
 
   property url imageUrl
   property string name
-  property string lastfmUrl
-  property string bio
   property bool isReadMoreLinkVisible
-  property bool isNotInLastfmDatabase
 
   // var to support undefined
+  property var lastfmUrl
   property var lastfmGlobalListeners
   property var lastfmGlobalPlays
   property var lastfmPlays
   property var spotifyArtists
+  property var bio
+
+  property bool hasMultipleArtists: spotifyArtists.length > 1
 
   // var to support lists
   property var lastfmTags
 
-  height: Math.max(column.y + column.height + 30, artistImageView.y + artistImageView.height + 30)
+  height: hasMultipleArtists ? Math.max(column.y + column.height + 30, multipleArtistImagesView.y + multipleArtistImagesView.height + 30) : Math.max(column.y + column.height + 30, singularArtistImageView.y + singularArtistImageView.height + 30)
   
   Column {
     id: column
@@ -29,13 +30,13 @@ Item {
     spacing: 15
 
     anchors {
-      top: artistImageView.top
-      right: artistImageView.left
-      left: parent.left
+      top: hasMultipleArtists ? multipleArtistImagesView.top : singularArtistImageView.top
+      right: hasMultipleArtists ? multipleArtistImagesView.left : parent.right
+      left: spotifyArtists.length ? (hasMultipleArtists ? parent.left : singularArtistImageView.right) : parent.left
 
-      topMargin: 10
-      rightMargin: 30
-      leftMargin: 30
+      topMargin: spotifyArtists.length ? (hasMultipleArtists ? 0 : 10) : 0
+      leftMargin: spotifyArtists.length ? (hasMultipleArtists ? 30 : 20) : 30
+      rightMargin: hasMultipleArtists ? 20 : 30
     }
 
     // --- Name ---
@@ -55,23 +56,22 @@ Item {
       id: statistics
       
       spacing: 20
-      visible: lastfmPlays !== undefined
-
       width: parent.width
       
       Statistic {
         title: 'Listeners'
-        value: lastfmGlobalListeners
+        value: lastfmGlobalListeners === 0 ? 0 : (lastfmGlobalListeners || '---')
       }
 
       Statistic {
         title: 'Plays'
-        value: lastfmGlobalPlays
+        value: lastfmGlobalPlays === 0 ? 0 : (lastfmGlobalPlays || '---')
       }
 
       Statistic {
         title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
-        value: lastfmPlays
+        value: lastfmPlays === 0 ? 0 : (lastfmPlays || '---')
+        
         shouldAbbreviate: false
       }
     }
@@ -95,25 +95,13 @@ Item {
 
     // --- Bio ---
 
-    Rectangle {
-      color: '#ffff00'
-      width: parent.width
-      height: 25
-      visible: isNotInLastfmDatabase
-      
-      Text {
-        text: 'This is the first time anybody has scrobbled this track!'
-      }
-    }
-
     Column {
       spacing: 5
-      visible: !isNotInLastfmDatabase
 
       width: parent.width
 
       SelectableText {
-        text: bio
+        text: bio || 'No bio available'
 
         width: parent.width
       }
@@ -129,10 +117,11 @@ Item {
     }
   }
 
-  // --- Artist Image ---
+  // --- Multiple Artist Images ---
 
   Column {
-    id: artistImageView
+    id: multipleArtistImagesView
+    visible: hasMultipleArtists
 
     width: 220
     spacing: 15
@@ -199,6 +188,72 @@ Item {
           } 
         }
       }
+    }
+  }
+
+  // --- Singular Artist Image ---
+
+  Item {
+    id: singularArtistImageView
+    visible: spotifyArtists.length && !hasMultipleArtists
+    width: singularArtistImage.width
+    height: spotifyName.y + spotifyName.height
+
+    anchors {
+      top: parent.top
+      left: parent.left
+
+      margins: 30
+    }
+
+    Picture {
+      id: singularArtistImage
+
+      type: kArtist
+
+      fillMode: Image.PreserveAspectCrop // Fill image instead of stretch
+      source: spotifyArtists.length ? spotifyArtists[0].image_url : ''
+
+      width: 139
+      height: width
+
+      anchors {
+        top: parent.top
+      }
+    }
+
+    Image {
+      id: spotifyIcon
+      
+      source: '../../shared/resources/spotifyIconGreen.png'
+      
+      width: 21
+      height: width
+
+      anchors {
+      top: singularArtistImage.bottom
+        topMargin: 15
+
+        left: parent.left
+      }
+    }
+
+    Link {
+      id: spotifyName
+
+      text: spotifyArtists.length ? spotifyArtists[0].name : ''
+      address: spotifyArtists.length ? spotifyArtists[0].spotify_url : ''
+    
+      wrapMode: Text.Wrap
+
+      anchors {
+        top: spotifyIcon.top
+        right: parent.right
+        left: spotifyIcon.right
+        
+        topMargin: 3
+        leftMargin: 8
+      } 
     }
   }
 }

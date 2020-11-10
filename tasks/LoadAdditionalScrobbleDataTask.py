@@ -25,7 +25,7 @@ class LoadAdditionalScrobbleDataTask(QtCore.QObject, QtCore.QRunnable):
     self.emit_scrobble_ui_update_signals.emit(self.scrobble)
 
     # Load iTunes images if needed
-    if not self.scrobble.album.image_url:
+    if self.scrobble.album and not self.scrobble.album.image_url:
       self.scrobble.fetch_and_load_itunes_store_images()
       self.emit_scrobble_ui_update_signals.emit(self.scrobble)
 

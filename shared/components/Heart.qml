@@ -8,7 +8,7 @@ Item {
 
   signal clicked
 
-  opacity: !isEnabled || mouseArea.containsPress ? 0.5 : 1
+  opacity: isEnabled ? (mouseArea.containsPress ? 0.5 : 1) : 0.365
 
   width: 14
   height: 13

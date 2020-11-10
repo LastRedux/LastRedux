@@ -17,7 +17,7 @@ import util.LastfmApiWrapper as lastfm
 
 class HistoryViewModel(QtCore.QObject):
   # Constants
-  __INITIAL_SCROBBLE_HISTORY_COUNT = 30
+  __INITIAL_SCROBBLE_HISTORY_COUNT = int(os.environ.get('INITIAL_HISTORY_ITEMS', 30)) # 30 is the default but can be configured
 
   # Qt Property changed signals
   current_scrobble_data_changed = QtCore.Signal()
@@ -83,7 +83,7 @@ class HistoryViewModel(QtCore.QObject):
     }
 
     # Load in recent scrobbles from Last.fm and process them
-    if not os.environ.get('NO_HISTORY'):
+    if self.__INITIAL_SCROBBLE_HISTORY_COUNT > 0:
       self.reloadHistory()
 
     if os.environ.get('SUBMIT_SCROBBLES'):
@@ -105,7 +105,7 @@ class HistoryViewModel(QtCore.QObject):
     
     if self.__current_scrobble:
       return {
-        'hasLastfmData': self.__current_scrobble.has_lastfm_data,
+        'hasLastfmData': self.__current_scrobble.loading_state == 'LASTFM_TRACK_LOADED',
         'trackTitle': self.__current_scrobble.title,
         'artistName': self.__current_scrobble.artist.name,
         'lastfmIsLoved': self.__current_scrobble.lastfm_is_loved,
@@ -188,7 +188,7 @@ class HistoryViewModel(QtCore.QObject):
     else:
       scrobble = self.scrobble_history[index]
 
-    if not scrobble.has_lastfm_data:
+    if scrobble.loading_state == 'LASTFM_TRACK_NOT_FOUND':
       return
     
     new_is_loved = not scrobble.lastfm_is_loved
@@ -267,7 +267,7 @@ class HistoryViewModel(QtCore.QObject):
       QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
-    if scrobble.has_lastfm_data:
+    if scrobble.loading_state == 'LASTFM_TRACK_LOADED':
       scrobble.lastfm_plays += 1
       scrobble.artist.lastfm_plays += 1
 
@@ -422,7 +422,7 @@ class HistoryViewModel(QtCore.QObject):
     self.current_scrobble_data_changed.emit()
 
     # Tell Last.fm to update the user's now playing status
-    if not os.environ.get('MOCK'):
+    if not os.environ.get('DONT_UPDATE_NOW_PLAYING'):
       update_now_playing_task = UpdateNowPlayingTask(self.lastfm_instance, self.__current_scrobble)
       QtCore.QThreadPool.globalInstance().start(update_now_playing_task)
 

@@ -9,8 +9,9 @@ PictureBackground {
 
   property bool isInMiniMode
   property bool isCurrentlyScrobbling
+  property bool isTrackNotFound
   property string title
-  property string lastfmUrl
+  property var lastfmUrl
   
   // var to support undefined
   property var lastfmGlobalListeners 
@@ -21,10 +22,10 @@ PictureBackground {
   property var lastfmTags
 
   property string artistName
-  property string artistLastfmUrl
+  property var artistLastfmUrl
 
-  property string albumName
-  property string albumLastfmUrl
+  property var albumTitle
+  property var albumLastfmUrl
   property url albumImageUrl
 
   source: albumImageUrl
@@ -69,6 +70,9 @@ PictureBackground {
     id: trackNameView
     
     elide: Text.ElideRight
+    maximumLineCount: 2
+    wrapMode: Text.Wrap
+
     isShadowEnabled: false
     style: kTitlePrimary
     text: title
@@ -107,9 +111,9 @@ PictureBackground {
   
   Item {
     id: albumView
-    visible: !!albumName
+    visible: !!albumTitle
 
-    height: albumNameLeadingText.height
+    height: albumTitleLeadingText.height
 
     anchors {
       top: artistNameView.bottom
@@ -120,7 +124,7 @@ PictureBackground {
     }
 
     Label {
-      id: albumNameLeadingText
+      id: albumTitleLeadingText
 
       style: kBodyPrimary
       isShadowEnabled: false
@@ -132,17 +136,17 @@ PictureBackground {
     }
 
     Link {
-      id: albumNameView
+      id: albumTitleView
 
       elide: Text.ElideRight
       isShadowEnabled: false
-      text: albumName
+      text: albumTitle
       address: albumLastfmUrl
 
       // Position to the right of leading text
       anchors {
         right: parent.right
-        left: albumNameLeadingText.right
+        left: albumTitleLeadingText.right
         
         leftMargin: 3
       }
@@ -155,7 +159,7 @@ PictureBackground {
     id: statistics
     
     spacing: 20
-    visible: lastfmPlays !== undefined
+    visible: !isTrackNotFound
 
     anchors {
       top: albumView.visible ? albumView.bottom : artistNameView.bottom
@@ -168,19 +172,20 @@ PictureBackground {
     Statistic {
       isShadowEnabled: false
       title: 'Listeners'
-      value: lastfmGlobalListeners
+      value: lastfmGlobalListeners === 0 ? 0 : (lastfmGlobalListeners || '---')
     }
 
     Statistic {
       isShadowEnabled: false
       title: 'Plays'
-      value: lastfmGlobalPlays
+      value: lastfmGlobalPlays === 0 ? 0 : (lastfmGlobalPlays || '---')
     }
 
     Statistic {
       isShadowEnabled: false
       title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
-      value: lastfmPlays
+      value: lastfmPlays === 0 ? 0 : (lastfmPlays || '---')
+      
       shouldAbbreviate: false
     }
   }

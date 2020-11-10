@@ -71,13 +71,7 @@ Item {
     canLove: canDisplayCurrentScrobble && viewModel.currentScrobbleData.hasLastfmData
     visible: canDisplayCurrentScrobble
 
-    imageSource: {
-      if (canDisplayCurrentScrobble && viewModel.currentScrobbleData.hasLastfmData) {
-        return viewModel.currentScrobbleData.albumImageUrl
-      }
-      
-      return ''
-    }
+    imageSource: canDisplayCurrentScrobble && viewModel.currentScrobbleData.albumImageUrl || ''
 
     // -1 represents the currently selected item in the scrobble history
     onSelect: viewModel.selectedScrobbleIndex = -1
