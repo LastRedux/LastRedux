@@ -1,5 +1,6 @@
 import re
 
+from unidecode import unidecode
 from loguru import logger
 import requests
 
@@ -28,8 +29,8 @@ def search_tracks(query):
 def simplify_title(title, is_album=False):
   '''Simplify track and album titles to improve matching on Spotify'''
 
-  # Lowercase to make regex cleaner (Spotify doesn't care about case)
-  title = title.lower()
+  # Lowercase title and remove diacriticals to make regex cleaner (Spotify doesn't care about case)
+  title = unidecode(title.lower())
 
   if is_album:
     # Remove platform specific words for albums
@@ -71,6 +72,7 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
     simplified_album_title = simplify_title(album_title, is_album=True)
 
   query = f'{simplified_track_title} {simplified_artist_name} {simplified_album_title}'
+  print(query)
 
   search_resp = search_tracks(query)
 

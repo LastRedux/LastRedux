@@ -3,6 +3,13 @@ from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
 class MockPlayerPlugin(MediaPlayerPlugin):
   MOCK_LASTFM_TRACKS = [{
+    # Test song with diacriticals in the title
+    'track_title': 'Do You Mean (feat. Ty Dolla $ign & bülow)',
+    'artist_name': 'The Chainsmokers',
+    'album_title': 'World War Joy',
+    'track_start': 0,
+    'track_finish': 100
+  }, {
     # Test song with album on Last.fm that doesn't match Apple Music album
     'track_title': 'Don\'t Stop',
     'artist_name': 'Kuuro',
