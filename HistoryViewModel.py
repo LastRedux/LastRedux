@@ -254,7 +254,7 @@ class HistoryViewModel(QtCore.QObject):
     # Shift down the selected scrobble index if new scrobble has been added to the top
     # This is because if the user has a scrobble in the history selected and a new scrobble is submitted, it will display the wrong data if the index isn't updated
     # Change __selected_scrobble_index instead of calling set___selected_scrobble_index because the selected scrobble shouldn't be redundantly set to itself and still emit selected_scrobble_changed (wasting resources)
-    if self.__selected_scrobble_index and self.__selected_scrobble_index != -1:
+    if self.__selected_scrobble_index > -1: # > -1 is the same as not -2 (no scrobble selected) and not -1
       # Shift down the selected scrobble index by 1
       self.__selected_scrobble_index += 1
 
