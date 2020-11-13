@@ -42,15 +42,24 @@ Window {
 
       switch (tabIndex) {
       case 0:
-        stackView.replace(historyPage)
+        if (!isSameTab) {
+          stackView.replace(historyPage)
+        }
+        
         break
       case 1:
-        stackView.replace(profilePage)
+        if (!isSameTab) {
+          stackView.replace(profilePage)
+        }
+
         profileViewModel.loadProfileAndTopArtists(shouldShowProfileLoadingIndicator)
         shouldShowProfileLoadingIndicator = false
         break
       case 2:
-        stackView.replace(friendsPage)
+        if (!isSameTab) {
+          stackView.replace(friendsPage)
+        }
+        
         friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
         shouldShowFriendsLoadingIndicator = false
       }
