@@ -62,7 +62,7 @@ class Track:
         lastfm_url=lastfm_recent_track['artist']['url']
       ),
       # Some Last.fm tracks don't have albums associated with them
-      album_title and Album(
+      Album(
         album_title,
         lastfm_url=lastfm_recent_track.get('album').get('url')
       ),
