@@ -12,6 +12,8 @@ Window {
   id: application
 
   property int currentTabIndex: 0
+  property bool shouldShowProfileLoadingIndicator: true
+  property bool shouldShowFriendsLoadingIndicator: true
 
   property bool isInMiniMode: {
     if (historyViewModel) {
@@ -34,8 +36,8 @@ Window {
   width: 957
   height: 600
 
-  function switchToTab(tabIndex) {
-    if (currentTabIndex !== tabIndex) {
+  function switchToTab(tabIndex, isSameTab) {
+    if (currentTabIndex !== tabIndex || isSameTab) {
       currentTabIndex = tabIndex
 
       switch (tabIndex) {
@@ -44,23 +46,22 @@ Window {
         break
       case 1:
         stackView.replace(profilePage)
+        profileViewModel.loadProfileAndTopArtists(shouldShowProfileLoadingIndicator)
+        shouldShowProfileLoadingIndicator = false
         break
       case 2:
         stackView.replace(friendsPage)
+        friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
+        shouldShowFriendsLoadingIndicator = false
       }
     }
   }
 
   onActiveChanged: {
     if (active) {
-      switch (currentTabIndex) {
-      case 1:
-        profileViewModel.loadProfileAndTopArtists(true)
-        break
-      case 2:
-        friendsViewModel.loadFriends(true)
-        break
-      }
+      shouldShowProfileLoadingIndicator = true
+      shouldShowFriendsLoadingIndicator = true
+      switchToTab(currentTabIndex, true)
     }
   }
 

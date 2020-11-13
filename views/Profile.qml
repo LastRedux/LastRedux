@@ -18,13 +18,6 @@ Item {
     return false
   }
 
-  // When the StackView switches to this tab, request data for the profile default view
-  Component.onCompleted: {
-    if (viewModel) {
-      viewModel.loadProfileAndTopArtists()
-    }
-  }
-
   // --- Profile Statistics ---
 
   Column {

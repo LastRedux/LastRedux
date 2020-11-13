@@ -11,12 +11,6 @@ Item {
   property FriendsListModel listModel
   property FriendsViewModel viewModel
 
-  Component.onCompleted: {
-    if (viewModel) {
-      viewModel.loadFriends()
-    }
-  }
-
   ListView {
     id: listView
 
