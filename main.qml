@@ -309,4 +309,22 @@ Window {
       }
     }
   }
+
+  Shortcut {
+    sequence: 'Ctrl+1'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(0)
+  }
+
+  Shortcut {
+    sequence: 'Ctrl+2'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(1)
+  }
+
+  Shortcut {
+    sequence: 'Ctrl+3'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(2)
+  }
 }
