@@ -90,11 +90,11 @@ class FriendsListModel(QtCore.QAbstractListModel):
         elif role == self.__TRACK_LASTFM_URL_ROLE:
           return friend.track.lastfm_url
         elif role == self.__TRACK_ARTIST_NAME_ROLE:
-          return friend.track.artist.name
+          return friend.track.artist.name if friend.track.artist else ''
         elif role == self.__TRACK_ARTIST_LASTFM_URL_ROLE:
-          return friend.track.artist.lastfm_url
+          return friend.track.artist.lastfm_url if friend.track.artist else ''
         elif role == self.__TRACK_ALBUM_IMAGE_URL_ROLE:
-          return friend.track.album.image_url
+          return friend.track.album.image_url if friend.track.album else ''
         elif role == self.__IS_TRACK_PLAYING_ROLE:
           return friend.is_track_playing
 

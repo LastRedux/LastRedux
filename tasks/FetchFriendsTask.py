@@ -1,7 +1,6 @@
 from PySide2 import QtCore
 
 from datatypes.Friend import Friend
-from datatypes.Track import Track
 
 class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(list)
@@ -18,9 +17,10 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
     def lastfm_friend_to_friend(lastfm_friend):
       recent_track_response = self.lastfm_instance.get_recent_scrobbles(username=lastfm_friend['name'], count=1)
 
-      recent_track = recent_track_response['recenttracks']['track'][0]
-      
-      return Friend.build_from_lastfm_friend_and_recent_track(lastfm_friend, recent_track)
+      recent_tracks = recent_track_response['recenttracks']['track']
+      track = recent_tracks[0] if recent_tracks else None
+
+      return Friend.build_from_lastfm_friend_and_recent_track(lastfm_friend, track)
 
     friends = list(map(lastfm_friend_to_friend, self.lastfm_instance.get_friends()['friends']['user']))
     

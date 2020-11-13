@@ -30,6 +30,16 @@ class FriendsViewModel(QtCore.QObject):
   def loadFriends(self, force_loading_indicator=False):
     def __load_friends(new_friends):
       logger.trace(f'Fetched Last.fm friend data for friends view')
+      
+      # Sort friends alphabetically by username
+      new_friends = sorted(new_friends, key=lambda friend: friend.username.lower())
+
+      # Move friends currently playing music to the top
+      new_friends = sorted(new_friends, key=lambda friend: friend.is_track_playing, reverse=True)
+
+      # Move friends with no track to the bottom
+      new_friends = sorted(new_friends, key=lambda friend: bool(friend.track.title), reverse=True)
+
       self.begin_refresh_friends.emit()
       self.friends = new_friends.copy()
       self.end_refresh_friends.emit()
