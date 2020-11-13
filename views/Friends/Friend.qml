@@ -108,7 +108,7 @@ Item {
     Picture {
       id: userImageView
 
-      type: kArtist // TODO: Add user type
+      type: kUser
 
       anchors {
         top: parent.top

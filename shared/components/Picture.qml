@@ -8,6 +8,7 @@ Item {
 
   readonly property int kTrack: 0
   readonly property int kArtist: 1
+  readonly property int kUser: 2
 
   property int type: kTrack
   property alias source: networkImage.source
@@ -37,7 +38,22 @@ Item {
   Image {
     id: placeholder
 
-    source: root.width === root.height ? `../resources/${type === kArtist ? 'artistP' : 'p'}laceholder.png` : ''
+    source: {
+      if (root.width !== root.height) {
+        return ''
+      }
+
+      const prefix = '../resources/'
+
+      switch (type) {
+      case kTrack:
+        return `${prefix}placeholder.png`
+      case kArtist:
+        return `${prefix}artistPlaceholder.png`
+      case kUser:
+        return `${prefix}userPlaceholder.png`
+      }
+    }
     
     anchors.fill: parent
 

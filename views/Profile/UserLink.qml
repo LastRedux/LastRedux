@@ -51,7 +51,7 @@ Item {
     id: avatar
 
     opacity: contentOpacity
-    type: kArtist // TODO: Add user type
+    type: kUser
     source: imageSource
 
     anchors {
