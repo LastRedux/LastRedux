@@ -72,7 +72,7 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
     simplified_album_title = simplify_title(album_title, is_album=True)
 
   query = f'{simplified_track_title} {simplified_artist_name} {simplified_album_title}'
-  print(query)
+  # print(query)
 
   search_resp = search_tracks(query)
 
