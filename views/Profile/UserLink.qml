@@ -106,8 +106,8 @@ Item {
     Label {
       id: realNameLabel
 
+      color: Qt.rgba(1, 1, 1, 0.81)
       elide: Text.ElideRight
-      opacity: 0.81
       style: kBodyPrimary
       visible: fullName
 

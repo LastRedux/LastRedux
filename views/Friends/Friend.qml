@@ -147,9 +147,9 @@ Item {
       Label {
         id: userRealNameLabel
 
+        color: Qt.rgba(1, 1, 1, 0.81)
         elide: Text.ElideRight
         isShadowEnabled: !isTrackPlaying
-        opacity: 0.81
         visible: text
 
         width: parent.width
