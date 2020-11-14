@@ -17,6 +17,8 @@ Item {
   property bool hasLastfmData: canDisplayScrobble && viewModel.scrobbleTrackData.loading_state === 'LASTFM_TRACK_LOADED'
   property bool isTrackNotFound: canDisplayScrobble && viewModel.scrobbleTrackData.loading_state === 'LASTFM_TRACK_NOT_FOUND'
 
+  signal switchToCurrentScrobble
+
   // --- No Scrobble Selected Page ---
 
   Item {
@@ -205,5 +207,11 @@ Item {
 
       anchors.fill: scrollArea
     }
+  }
+
+  Shortcut {
+    sequence: 'Ctrl+J'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToCurrentScrobble()
   }
 }

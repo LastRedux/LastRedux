@@ -158,6 +158,7 @@ Window {
     id: details
 
     viewModel: detailsViewModel
+    onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
 
     anchors {
       top: parent.top
