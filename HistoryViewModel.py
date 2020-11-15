@@ -201,6 +201,10 @@ class HistoryViewModel(QtCore.QObject):
     for history_item in self.scrobble_history:
       if scrobble.equals(history_item):
         history_item.lastfm_is_loved = new_is_loved
+    
+    # If hearting song in history, also update current scrobble state
+    if index != -1 and scrobble.equals(self.__current_scrobble):
+      self.__current_scrobble.lastfm_is_loved = new_is_loved
 
     self.__emit_scrobble_ui_update_signals(scrobble)
     
