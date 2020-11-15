@@ -50,12 +50,17 @@ class NetworkImage(QtQuick.QQuickItem):
       # Make the texture node (which is a child of the main node) fill the full component bounds
       texture_node.setRect(bounding_rect)
 
-      # Calculate portion of texture to use to correct for container's aspect ratio
-      slice_height = (bounding_rect.height() / bounding_rect.width()) * texture_size.width()
-      slice_y = (texture_size.height() / 2) - (slice_height / 2)
+      if (texture_size.width() > texture_size.height()): # Account for Spotify images that are wider than their container
+        # Calculate portion of texture to use to correct for container's aspect ratio
+        slice_width = (bounding_rect.width() / bounding_rect.height()) * texture_size.height()
+        slice_x = (texture_size.width() / 2) - (slice_width / 2)
 
-      # Use calculated slice as area of texture to apply to the texture node
-      texture_node.setSourceRect(0, slice_y, texture_size.width(), slice_height)
+        # Use calculated slice as area of texture to apply to the texture node
+        texture_node.setSourceRect(slice_x, 0, slice_width, texture_size.height())
+      else: # Account for album images being applied to a wider container
+        slice_height = (bounding_rect.height() / bounding_rect.width()) * texture_size.width()
+        slice_y = (texture_size.height() / 2) - (slice_height / 2)
+        texture_node.setSourceRect(0, slice_y, texture_size.width(), slice_height)
     
     return self._node
 
