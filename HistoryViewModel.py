@@ -161,22 +161,23 @@ class HistoryViewModel(QtCore.QObject):
   def reloadHistory(self):
     '''Reload recent scrobbles from Last.fm'''
 
-    logger.trace('Reloading scrobble history from Last.fm')
+    if not self.__should_show_loading_indicator:
+      logger.trace('Reloading scrobble history from Last.fm')
 
-    # Update loading indicator
-    self.__should_show_loading_indicator = True
-    self.should_show_loading_indicator_changed.emit()
+      # Update loading indicator
+      self.__should_show_loading_indicator = True
+      self.should_show_loading_indicator_changed.emit()
 
-    # Reset scrobble history list
-    self.begin_refresh_history.emit()
-    self.scrobble_history = []
-    self.end_refresh_history.emit()
-    self.__scrobbles_with_additional_data_count = 0
+      # Reset scrobble history list
+      self.begin_refresh_history.emit()
+      self.scrobble_history = []
+      self.end_refresh_history.emit()
+      self.__scrobbles_with_additional_data_count = 0
 
-    # Fetch and load recent scrobbles
-    fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance, self.__INITIAL_SCROBBLE_HISTORY_COUNT)
-    fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
-    QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
+      # Fetch and load recent scrobbles
+      fetch_recent_scrobbles_task = FetchRecentScrobblesTask(self.lastfm_instance, self.__INITIAL_SCROBBLE_HISTORY_COUNT)
+      fetch_recent_scrobbles_task.finished.connect(self.__process_fetched_recent_scrobbles)
+      QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
     
   @QtCore.Slot(int)
   def toggleLastfmIsLoved(self, index):

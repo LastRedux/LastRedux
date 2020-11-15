@@ -6,6 +6,7 @@ Item {
   id: root
 
   property var address
+  property string backgroundImageSource
   property string imageSource
   property alias username: usernameLabel.text
   property alias fullName: realNameLabel.text
@@ -40,7 +41,7 @@ Item {
 
   PictureBackground {
     isBlurEnabled: false
-    source: imageSource
+    source: backgroundImageSource
 
     anchors.fill: parent
   }

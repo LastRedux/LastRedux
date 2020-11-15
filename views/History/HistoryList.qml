@@ -8,6 +8,7 @@ Item {
   readonly property int transitionDuration: 450
   readonly property int transitionEasing: Easing.OutQuint
 
+  property bool canReload
   property alias model: list.model
   property int selectedScrobbleIndex
 
@@ -26,8 +27,10 @@ Item {
     x: 15
   }
 
+  // --- Reload Button ---
+  
   Item {
-    opacity: mouseArea.containsPress ? 0.5 : 1
+    opacity: canReload ? (mouseArea.containsPress ? 0.5 : 1) : 0.375
 
     width: 14
     height: 15
@@ -52,7 +55,7 @@ Item {
     MouseArea {
       id: mouseArea
       
-      onClicked: root.reloadHistory()
+      onClicked: if (canReload) { root.reloadHistory() }
 
       anchors.fill: parent
     }

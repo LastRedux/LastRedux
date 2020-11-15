@@ -89,6 +89,7 @@ Item {
   // --- History List ---
 
   HistoryList {
+    canReload: !viewModel.shouldShowLoadingIndicator
     model: listModel
     selectedScrobbleIndex: viewModel ? viewModel.selectedScrobbleIndex : -2
 

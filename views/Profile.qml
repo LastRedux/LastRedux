@@ -104,6 +104,7 @@ Item {
     
     address: isProfileLoaded && viewModel.accountDetails.lastfm_url
     imageSource: isProfileLoaded ? viewModel.accountDetails.image_url : ''
+    backgroundImageSource: isProfileLoaded ? viewModel.accountDetails.large_image_url : ''
     username: isProfileLoaded ? viewModel.accountDetails.username : ''
     fullName: isProfileLoaded ? viewModel.accountDetails.real_name : ''
 
