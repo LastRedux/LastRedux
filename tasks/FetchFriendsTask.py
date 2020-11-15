@@ -12,16 +12,15 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self):
-    '''Return a list of the user's Last.fm friends and what they are/were listening to'''
+    '''Fetch the user's Last.fm friends'''
+    
+    friends_response = self.lastfm_instance.get_friends()
+    lastfm_friends = friends_response['friends']['user']
 
-    def lastfm_friend_to_friend(lastfm_friend):
-      recent_track_response = self.lastfm_instance.get_recent_scrobbles(username=lastfm_friend['name'], count=1)
+    # Build Friend objects
+    friends = map(Friend.build_from_lastfm_friend, lastfm_friends)
 
-      recent_tracks = recent_track_response['recenttracks']['track']
-      track = recent_tracks[0] if recent_tracks else None
-
-      return Friend.build_from_lastfm_friend_and_recent_track(lastfm_friend, track)
-
-    friends = list(map(lastfm_friend_to_friend, self.lastfm_instance.get_friends()['friends']['user']))
+    # Sort friends alphabetically by username
+    friends = sorted(friends, key=lambda friend: friend.username.lower())
     
     self.finished.emit(friends)

@@ -86,7 +86,7 @@ for friend in friends:
   friend_username = friend["name"]
   friend_real_name = friend.get('realname')
 
-  friends_track = lastfm_instance.get_recent_scrobbles(username=friend_username, count=1)['recenttracks']['track'][0]
+  friends_track = lastfm_instance.get_recent_scrobbles(friend_username, 1)['recenttracks']['track'][0]
   now_playing = friends_track.get('@attr', {}).get('nowplaying') == 'true'
   track_string = f'{friends_track["artist"]["name"]} - {friends_track["name"]}'
   

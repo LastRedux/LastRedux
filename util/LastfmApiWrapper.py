@@ -163,7 +163,7 @@ class LastfmApiWrapper:
       'username': self.__username
     })
 
-  def get_recent_scrobbles(self, count, username=None):
+  def get_recent_scrobbles(self, username=None, count=None):
     '''Get the user's 30 most recent scrobbles'''
 
     # Default parameters cannot refer to self

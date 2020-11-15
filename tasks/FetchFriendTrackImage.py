@@ -2,7 +2,7 @@ from PySide2 import QtCore
 
 from datatypes.Track import Track
 
-class LoadAdditionalFriendTrackDataTask(QtCore.QObject, QtCore.QRunnable):
+class FetchFriendTrackImage(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(int)
 
   def __init__(self, track: Track, row_in_friends_list: int):

@@ -76,6 +76,9 @@ class FriendsListModel(QtCore.QAbstractListModel):
       if index.isValid():
         # Get the data at the index for the ListModel to display
         friend = self.__friends_reference.friends[index.row()] # index is an object with row and column methods
+        track = friend.track
+        artist = track.artist if track else False
+        album = track.album if track else False
 
         if role == self.__USERNAME_ROLE:
           return friend.username
@@ -86,17 +89,17 @@ class FriendsListModel(QtCore.QAbstractListModel):
         elif role == self.__LASTFM_URL_ROLE:
           return friend.lastfm_url
         elif role == self.__TRACK_TITLE_ROLE:
-          return friend.track.title
+          return track.title if track else '----------'
         elif role == self.__TRACK_LASTFM_URL_ROLE:
-          return friend.track.lastfm_url
+          return track.lastfm_url if track else ''
         elif role == self.__TRACK_ARTIST_NAME_ROLE:
-          return friend.track.artist.name if friend.track.artist else ''
+          return artist.name if artist else '-----'
         elif role == self.__TRACK_ARTIST_LASTFM_URL_ROLE:
-          return friend.track.artist.lastfm_url if friend.track.artist else ''
+          return artist.lastfm_url if artist else ''
         elif role == self.__TRACK_ALBUM_IMAGE_URL_ROLE:
-          return friend.track.album.image_url if friend.track.album else ''
+          return album.image_url if album else ''
         elif role == self.__IS_TRACK_PLAYING_ROLE:
-          return friend.is_track_playing
+          return friend.is_track_playing if track else False
 
     # This is for DisplayRole or if the friends reference doesn't exist
     return None 

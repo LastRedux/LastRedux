@@ -39,8 +39,6 @@ class FetchProfileAndTopArtistsTask(QtCore.QObject, QtCore.QRunnable):
     total_scrobbles = int(account_details['playcount'])
     average_daily_scrobbles = round(total_scrobbles / total_days_registered)
 
-    print(account_details['image'][-1]['#text'].replace('300', '500'))
-
     self.finished.emit({
       'account_details': {
         'username': account_details['name'],
