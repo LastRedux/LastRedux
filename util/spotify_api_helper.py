@@ -37,7 +37,7 @@ def simplify_title(title, is_album=False):
     title = title.replace(' - single', '').replace(' - ep', '').replace('edition', '')
   
   # Remove any text inside brackets (meant to get rid of movie soundtrack labels)
-  title = re.sub(r'\[.+\]', '', title)
+  # title = re.sub(r'\[.+\]', '', title)
 
   # Only allow alphanumeric chars, spaces, asterisks (for censored tracks), and hyphens
   title = re.sub(r'[^A-Za-z0-9\-\* ]+', ' ', title)
