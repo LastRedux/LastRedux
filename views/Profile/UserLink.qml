@@ -74,9 +74,7 @@ Item {
 
     // --- Username Placeholder ---
 
-    Rectangle {
-      opacity: 0.2
-      radius: 4
+    Placeholder {
       visible: !username
 
       width: 81

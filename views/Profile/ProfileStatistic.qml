@@ -54,11 +54,9 @@ Item {
     }
   }
 
-  // --- Placeholder Box ---
+  // --- Placeholder ---
 
-  Rectangle {
-    opacity: 0.2
-    radius: 4
+  Placeholder {
     visible: !value
 
     width: link.contentWidth + 15

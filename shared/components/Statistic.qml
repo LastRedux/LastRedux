@@ -19,12 +19,24 @@ Item {
     
     spacing: 3
 
+    Placeholder {
+      id: valuePlaceholder
+
+      visible: root.value === null
+
+      width: 40 + Math.ceil(Math.random() * 30)
+      height: 25
+    }
+
     Label {
+      id: valueLabel
+
       isShadowEnabled: root.isShadowEnabled
       style: kNumber
+      visible: root.value !== null
       
       text: {
-        if (value === undefined) {
+        if (value === undefined || value === null) {
           return ''
         }
 
