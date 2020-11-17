@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from PySide2 import QtCore
+from loguru import logger
 
 from util.LastfmApiWrapper import LastfmApiWrapper
 from datatypes.Track import Track
@@ -33,6 +34,9 @@ class LoadFriendsTracks(QtCore.QObject, QtCore.QRunnable):
         friend.track = Track('', None, None)
         friend.is_track_playing = False
         continue
+      except KeyError as err:
+        # Bad response
+        logger.error(f'Error fetching scrobbles for friend `{friend.username}`: {err}')
       
       is_currently_playing = last_scrobble.get('@attr', {}).get('nowplaying') == 'true'
       friend.is_track_playing = is_currently_playing

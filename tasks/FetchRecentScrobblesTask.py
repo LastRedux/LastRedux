@@ -1,12 +1,13 @@
 import os
 from PySide2 import QtCore
 
+from util.LastfmApiWrapper import LastfmApiWrapper
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 
 class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(list)
 
-  def __init__(self, lastfm_instance, count):
+  def __init__(self, lastfm_instance: LastfmApiWrapper, count):
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
     self.lastfm_instance = lastfm_instance
