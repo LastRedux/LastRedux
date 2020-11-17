@@ -21,26 +21,7 @@ class FriendsViewModel(QtCore.QObject):
     self.friends = []
     self.__is_loading = False
 
-  # --- Qt Property Getters and Setters ---
-
-  def get_friends(self):
-    return self.friends
-
   # --- Private Methods ---
-
-  def __load_friends(self, lastfm_friends):
-    logger.trace(f'Fetched Last.fm friend data for friends view')
-
-    # Load list of friends (without tracks)
-    self.begin_refresh_friends.emit()
-    self.friends = lastfm_friends.copy()
-    self.end_refresh_friends.emit()
-
-    # Load each friend's most recent/currently playing track
-    self.begin_refresh_friends.emit()
-    load_friends_tracks_task = LoadFriendsTracks(self.lastfm_instance, self.friends)
-    load_friends_tracks_task.finished.connect(self.__handle_fetch_friends_tracks_finished)
-    QtCore.QThreadPool.globalInstance().start(load_friends_tracks_task)
 
   def __handle_fetch_friends_tracks_finished(self):
     ''''''
@@ -67,6 +48,23 @@ class FriendsViewModel(QtCore.QObject):
       fetch_track_image_task.finished.connect(lambda row_in_list: self.album_image_url_changed.emit(row_in_list))
       QtCore.QThreadPool.globalInstance().start(fetch_track_image_task)
   
+  def __load_friends(self, new_friends):
+    logger.trace(f'Fetched Last.fm friend data for friends view')
+
+    # Refresh list of friends (the friends themselves, not the tracks) on first load and also if a new friend is added
+    # To check for new friends, check if the set of unique usernames is different from the current set
+    # We are using a set because we don't want to have to sort the two lists (they are both already sorted but differently)
+    if not self.friends or set([friend.username for friend in self.friends]) != set([friend.username for friend in new_friends]):
+      self.begin_refresh_friends.emit()
+      self.friends = new_friends.copy()
+      self.end_refresh_friends.emit()
+
+    # Load each friend's most recent/currently playing track
+    self.begin_refresh_friends.emit()
+    load_friends_tracks_task = LoadFriendsTracks(self.lastfm_instance, self.friends)
+    load_friends_tracks_task.finished.connect(self.__handle_fetch_friends_tracks_finished)
+    QtCore.QThreadPool.globalInstance().start(load_friends_tracks_task)
+
   # --- Slots ---
 
   @QtCore.Slot()

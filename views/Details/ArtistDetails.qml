@@ -101,14 +101,14 @@ Item {
       width: parent.width
 
       SelectableText {
-        text: bio || 'No bio available'
+        text: bio || 'No bio available.'
 
         width: parent.width
       }
 
       Link {
         elide: Text.ElideRight
-        text: 'Read more on Last.fm'
+        text: 'Read more on Last.fm...'
         address: lastfmUrl
         visible: isReadMoreLinkVisible // Only show if bio exists
 

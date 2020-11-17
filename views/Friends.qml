@@ -13,6 +13,7 @@ Item {
 
   ListView {
     id: listView
+    visible: count > 0
 
     clip: true // Prevent content from appearing outside the list's bounding box
     model: listModel
@@ -32,6 +33,29 @@ Item {
       isTrackPlaying: model.isTrackPlaying
 
       width: listView.width
+    }
+  }
+
+  Item {
+    visible: listView.count == 0 && !viewModel.shouldShowLoadingIndicator
+
+    anchors.fill: parent
+
+    Label {
+      opacity: 0.5
+      
+      text: 'You haven\'t added any friends on Last.fm yet.'
+      wrapMode: Text.Wrap
+      horizontalAlignment: Qt.AlignHCenter
+
+      anchors {
+        verticalCenter: parent.verticalCenter
+        
+        left: parent.left
+        right: parent.right
+
+        margins: 24
+      }
     }
   }
 

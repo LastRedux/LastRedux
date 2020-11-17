@@ -128,7 +128,6 @@ PictureBackground {
     Label {
       id: albumTitleLeadingText
 
-      style: kBodyPrimary
       isShadowEnabled: false
       text: 'from'
 
