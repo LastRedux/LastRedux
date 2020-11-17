@@ -8,8 +8,8 @@ Item {
 
   property var userLastfmUrl
   property alias userImage: userImageView.source
-  property alias username: usernameLabel.text
-  property alias userRealName: userRealNameLabel.text
+  property string username
+  property string userRealName
 
   property string trackImage
   property string trackTitle
@@ -74,33 +74,27 @@ Item {
   Item {
     id: userLink
 
-    opacity: userLinkHoverHandler.hovered && userLinkPointHandler.active ? 0.5 : 1
+    opacity: pointerHandlers.containsPress ? 0.5 : 1
 
     width: parent.width
     height: userImageView.height + 20
 
-    // --- User Link Handlers ---
+    // --- User Link Pointer Handlers ---
 
-    HoverHandler {
-      id: userLinkHoverHandler
+    LinkPointerHandlers {
+      id: pointerHandlers
 
-      cursorShape: Qt.PointingHandCursor
-    }
+      address: userLastfmUrl
 
-    PointHandler {
-      id: userLinkPointHandler
-
-      enabled: !!userLastfmUrl
-    }
-
-    TapHandler {
-      acceptedButtons: Qt.LeftButton
-
-      onTapped: {
-        if (userLastfmUrl) {
-          Qt.openUrlExternally(userLastfmUrl)
+      text: {
+        if (root.userRealName) {
+          return `${root.username} (${root.userRealName})`
         }
+
+        return root.username
       }
+
+      anchors.fill: parent
     }
 
     // --- User Image ---
@@ -139,6 +133,7 @@ Item {
 
         elide: Text.ElideRight
         isShadowEnabled: !isTrackPlaying
+        text: root.username
         style: kTitleSecondary
 
         width: parent.width
@@ -150,6 +145,7 @@ Item {
         color: Qt.rgba(1, 1, 1, 0.81)
         elide: Text.ElideRight
         isShadowEnabled: !isTrackPlaying
+        text: root.userRealName
         visible: text
 
         width: parent.width

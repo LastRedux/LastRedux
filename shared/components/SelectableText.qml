@@ -13,7 +13,7 @@ TextEdit {
   // Match style of standard label
   font {
     letterSpacing: 0.25
-    weight: Font.Medium
+    weight: Font.Normal
   }
 
   HoverHandler {

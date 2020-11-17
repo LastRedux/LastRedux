@@ -8,35 +8,28 @@ Item {
   property var address
   property string backgroundImageSource
   property string imageSource
-  property alias username: usernameLabel.text
-  property alias fullName: realNameLabel.text
+  property string username
+  property string fullName
 
   // Apply opacity to all content
-  property real contentOpacity: hoverHandler.hovered && pointHandler.active ? 0.5 : 1
+  property real contentOpacity: pointerHandlers.containsPress ? 0.5 : 1
 
   height: avatar.y + avatar.height + 10
 
-  HoverHandler {
-    id: hoverHandler
+  LinkPointerHandlers {
+    id: pointerHandlers
 
-    cursorShape: address ? Qt.PointingHandCursor : Qt.ArrowCursor
-  }
+    address: root.address
 
-  // TODO: Add context menu
-  PointHandler {
-    id: pointHandler
-
-    enabled: !!address
-  }
-  
-  TapHandler {
-    acceptedButtons: Qt.LeftButton
-
-    onTapped: {
-      if (root.address) {
-        Qt.openUrlExternally(root.address)
+    text: {
+      if (root.fullName) {
+        return `${root.username} (${root.fullName})`
       }
+
+      return root.username
     }
+
+    anchors.fill: parent
   }
 
   PictureBackground {
@@ -97,6 +90,7 @@ Item {
 
       elide: Text.ElideRight
       style: kTitleSecondary
+      text: root.username
       visible: username
 
       width: parent.width
@@ -110,6 +104,7 @@ Item {
       color: Qt.rgba(1, 1, 1, 0.81)
       elide: Text.ElideRight
       style: kBodyPrimary
+      text: root.fullName
       visible: fullName
 
       width: parent.width
