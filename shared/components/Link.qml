@@ -18,6 +18,8 @@ Label {
     address: root.address
     text: root.text
 
+    onClicked: root.clicked()
+
     // Limit area of pointer handlers to visible text
     width: root.contentWidth
     height: root.contentHeight

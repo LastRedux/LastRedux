@@ -10,6 +10,8 @@ Item {
   property bool containsPress: hoverHandler.hovered && leftPointHandler.active
   property alias hovered: hoverHandler.hovered
 
+  signal clicked
+
   // Invisible text input to interface with system clipboard
   TextInput {
     id: textInput
