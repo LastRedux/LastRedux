@@ -60,17 +60,17 @@ Item {
       
       Statistic {
         title: 'Listeners'
-        value: lastfmGlobalListeners === 0 ? 0 : (lastfmGlobalListeners || '---')
+        value: lastfmGlobalListeners === 0 ? 0 : (lastfmGlobalListeners || null)
       }
 
       Statistic {
         title: 'Plays'
-        value: lastfmGlobalPlays === 0 ? 0 : (lastfmGlobalPlays || '---')
+        value: lastfmGlobalPlays === 0 ? 0 : (lastfmGlobalPlays || null)
       }
 
       Statistic {
         title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
-        value: lastfmPlays === 0 ? 0 : (lastfmPlays || '---')
+        value: lastfmPlays === 0 ? 0 : (lastfmPlays || null)
         
         shouldAbbreviate: false
       }

@@ -173,19 +173,19 @@ PictureBackground {
     Statistic {
       isShadowEnabled: false
       title: 'Listeners'
-      value: lastfmGlobalListeners === 0 ? 0 : (lastfmGlobalListeners || '---')
+      value: lastfmGlobalListeners === 0 ? 0 : (lastfmGlobalListeners || null)
     }
 
     Statistic {
       isShadowEnabled: false
       title: 'Plays'
-      value: lastfmGlobalPlays === 0 ? 0 : (lastfmGlobalPlays || '---')
+      value: lastfmGlobalPlays === 0 ? 0 : (lastfmGlobalPlays || null)
     }
 
     Statistic {
       isShadowEnabled: false
       title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
-      value: lastfmPlays === 0 ? 0 : (lastfmPlays || '---')
+      value: lastfmPlays === 0 ? 0 : (lastfmPlays || null)
       
       shouldAbbreviate: false
     }
