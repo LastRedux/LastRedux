@@ -14,6 +14,7 @@ Label {
 
   LinkPointerHandlers {
     id: pointerHandlers
+    visible: !!root.address
     
     address: root.address
     text: root.text
