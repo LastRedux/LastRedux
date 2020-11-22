@@ -282,6 +282,7 @@ Item {
                   imageSource: modelData.image_url
                   lastfmUrl: modelData.lastfm_url
                   title: modelData.title
+                subtitle: modelData.subtitle
                   plays: modelData.plays
                   playsPercentage: modelData.plays_percentage
 
@@ -319,6 +320,7 @@ Item {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
+                subtitle: modelData.subtitle
                 plays: modelData.plays
                 playsPercentage: modelData.plays_percentage
 
@@ -360,6 +362,7 @@ Item {
                   imageSource: modelData.image_url
                   lastfmUrl: modelData.lastfm_url
                   title: modelData.title
+                subtitle: modelData.subtitle
                   plays: modelData.plays
                   playsPercentage: modelData.plays_percentage
 
@@ -397,6 +400,7 @@ Item {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
+                subtitle: modelData.subtitle
                 plays: modelData.plays
                 playsPercentage: modelData.plays_percentage
 
