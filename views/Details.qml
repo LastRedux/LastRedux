@@ -6,6 +6,8 @@ import 'Details'
 import '../shared/components'
 
 Item {
+  id: root
+  
   // Store reference to view model counterpart that can be set from main.qml
   property DetailsViewModel viewModel
   property alias isInMiniMode: trackDetails.isInMiniMode
@@ -72,7 +74,6 @@ Item {
             text: 'This track isn’t in Last.fm\'s database yet'
             isShadowEnabled: false
             color: 'black'
-            style: kTitleSecondary
             elide: Text.ElideRight
 
             anchors {
@@ -108,7 +109,7 @@ Item {
 
           // Album image is still used to display track art even if there isn't an associated album
           albumImageUrl: hasLastfmData ? viewModel.scrobbleTrackData.album.image_url : ''
-          isTrackNotFound: isTrackNotFound
+          isTrackNotFound: root.isTrackNotFound
 
           width: column.width
         }

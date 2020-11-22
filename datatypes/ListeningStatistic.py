@@ -4,21 +4,39 @@ from dataclasses import dataclass
 @dataclass
 class ListeningStatistic:
   title: str
-  subtitle: str
-  percentage: float
-  lastfm_plays: int
+  plays: int
   lastfm_url: str
   image_url: str
   has_image: bool
+  subtitle: str = None
+  plays_percentage: float = None
 
   @staticmethod
-  def build_from_artist(lastfm_artist) -> Artist:
+  def build_from_artist(lastfm_artist):
     return ListeningStatistic(
       title=lastfm_artist['name'],
-      subtitle='',
-      percentage=0.0,
-      lastfm_plays=int(lastfm_artist['playcount']),
+      plays=int(lastfm_artist['playcount']),
       lastfm_url=lastfm_artist['url'],
-      image_url='',
-      has_image=False
+      image_url=lastfm_artist['image'][2]['#text'],
+      has_image=True#False
+    )
+
+  @staticmethod
+  def build_from_track(lastfm_track):
+    return ListeningStatistic(
+      title=lastfm_track['name'],
+      plays=int(lastfm_track['playcount']),
+      lastfm_url=lastfm_track['url'],
+      image_url=lastfm_track['image'][2]['#text'], # Get medium size
+      has_image=True
+    )
+
+  @staticmethod
+  def build_from_album(lastfm_album):
+    return ListeningStatistic(
+      title=lastfm_album['name'],
+      plays=int(lastfm_album['playcount']),
+      lastfm_url=lastfm_album['url'],
+      image_url=lastfm_album['image'][2]['#text'], # Get medium size
+      has_image=True
     )

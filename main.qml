@@ -52,7 +52,7 @@ Window {
           stackView.replace(profilePage)
         }
 
-        profileViewModel.loadProfileAndTopArtists(shouldShowProfileLoadingIndicator)
+        profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
         shouldShowProfileLoadingIndicator = false
         break
       case 2:

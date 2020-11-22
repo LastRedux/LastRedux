@@ -3,13 +3,17 @@ import json
 from loguru import logger
 from PySide2 import QtCore
 
-from tasks.FetchProfileAndTopArtistsTask import FetchProfileAndTopArtistsTask
+from tasks.FetchTopTracksTask import FetchTopTracksTask
+from tasks.FetchTopAlbumsTask import FetchTopAlbumsTask
+from tasks.FetchOverallStatsAndTopArtists import FetchOverallAndArtistStatistics
 import util.LastfmApiWrapper as lastfm
 
 class ProfileViewModel(QtCore.QObject):
   account_details_changed = QtCore.Signal()
-  profile_statistics_changed = QtCore.Signal()
+  overall_statistics_changed = QtCore.Signal()
   top_artists_changed = QtCore.Signal()
+  top_tracks_changed = QtCore.Signal()
+  top_albums_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
 
   def __init__(self):
@@ -20,47 +24,73 @@ class ProfileViewModel(QtCore.QObject):
 
     self.__should_show_loading_indicator = False
     self.__account_details = None
-    self.__profile_statistics = None
+    self.__overall_statistics = None
     self.__top_artists = None
+    self.__top_tracks = None
+    self.__top_albums = None
     self.__is_loading = False
+  
+  # --- Private Methods ---
+  
+  def __process_new_profile_and_artist_statistics(self, new_overall_and_artist_statistics):
+    logger.trace(f'Fetched Last.fm profile data and top artists for profile view')
+    self.__account_details = new_overall_and_artist_statistics['account_details']
+    self.__overall_statistics = new_overall_and_artist_statistics['overall_statistics']
+    self.__top_artists = new_overall_and_artist_statistics['top_artists']
+    
+    self.account_details_changed.emit()
+    self.overall_statistics_changed.emit()
+    self.top_artists_changed.emit()
+
+    # Update loading indicator on tab bar if needed
+    # if self.__should_show_loading_indicator:
+    #   self.__should_show_loading_indicator = False
+    #   self.should_show_loading_indicator_changed.emit()
+
+    #   self.__is_loading = False
+
+  def __process_new_top_albums(self, new_album_statistics):
+    self.__top_albums = new_album_statistics
+    self.top_albums_changed.emit()
+
+  def __process_new_top_tracks(self, new_track_statistics):
+    self.__top_tracks = new_track_statistics
+    self.top_tracks_changed.emit()
 
   # --- Slots ---
   
   @QtCore.Slot()
   @QtCore.Slot(bool)
-  def loadProfileAndTopArtists(self, force_loading_indicator=False):
-    def __process_new_profile_and_top_artists(new_profile_statistics_and_top_artists):
-      logger.trace(f'Fetched Last.fm profile data and top artists for profile view')
-      self.__account_details = new_profile_statistics_and_top_artists['account_details']
-      self.__profile_statistics = new_profile_statistics_and_top_artists['profile_statistics']
-      self.__top_artists = new_profile_statistics_and_top_artists['top_artists']
-      
-      self.account_details_changed.emit()
-      self.profile_statistics_changed.emit()
-      self.top_artists_changed.emit()
-
-      # Update loading indicator on tab bar if needed
-      if self.__should_show_loading_indicator:
-        self.__should_show_loading_indicator = False
-        self.should_show_loading_indicator_changed.emit()
-
-      self.__is_loading = False
-
+  def loadProfileData(self, force_loading_indicator=False):
     # Enable loading indicator if initial load or window reactivated
-    if not self.__profile_statistics or force_loading_indicator:
+    if not self.__overall_statistics or force_loading_indicator:
       self.__should_show_loading_indicator = True
       self.should_show_loading_indicator_changed.emit()
 
     if not self.__is_loading:
       self.__is_loading = True
       
-      fetch_profile_and_top_artists_task = FetchProfileAndTopArtistsTask(self.lastfm_instance)
-      fetch_profile_and_top_artists_task.finished.connect(__process_new_profile_and_top_artists)
-      QtCore.QThreadPool.globalInstance().start(fetch_profile_and_top_artists_task)
+      # Load overall statistics and top artists
+      fetch_overall_and_artist_statistics_task = FetchOverallAndArtistStatistics(self.lastfm_instance)
+      fetch_overall_and_artist_statistics_task.finished.connect(self.__process_new_profile_and_artist_statistics)
+      QtCore.QThreadPool.globalInstance().start(fetch_overall_and_artist_statistics_task)
+
+      fetch_top_tracks_task = FetchTopTracksTask(self.lastfm_instance)
+      fetch_top_tracks_task.finished.connect(self.__process_new_top_tracks)
+      QtCore.QThreadPool.globalInstance().start(fetch_top_tracks_task)
+      
+      fetch_top_albums_task = FetchTopAlbumsTask(self.lastfm_instance)
+      fetch_top_albums_task.finished.connect(self.__process_new_top_albums)
+      QtCore.QThreadPool.globalInstance().start(fetch_top_albums_task)
 
   # --- Qt Properties ---
 
+  # TODO: Simplify these account, profile, top artists to one property since they all load together
   accountDetails = QtCore.Property('QVariant', lambda self: self.__account_details, notify=account_details_changed)
-  profileStatistics = QtCore.Property('QVariant', lambda self: self.__profile_statistics, notify=profile_statistics_changed)
+  profileStatistics = QtCore.Property('QVariant', lambda self: self.__overall_statistics, notify=overall_statistics_changed)
   topArtists = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_artists, default=lambda o: o.__dict__)), notify=top_artists_changed)
+
+  topTracks = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_tracks, default=lambda o: o.__dict__)), notify=top_tracks_changed)
+  topAlbums = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_albums, default=lambda o: o.__dict__)), notify=top_albums_changed)
+
   shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)

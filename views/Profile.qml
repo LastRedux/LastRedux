@@ -177,6 +177,8 @@ Item {
           
           topMargin: 10
         }
+
+        // --- Top Artists This Week ---
         
         Column {
           spacing: 8
@@ -196,21 +198,23 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.topArtists && viewModel.topArtists.last_7_days
+              model: viewModel.topArtists && viewModel.topArtists.seven_days
 
               delegate: ListeningStatistic {
                 hasImage: modelData.has_image
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
-                scrobbleCount: modelData.lastfm_plays
-                scrobbleCountPercentage: modelData.percentage
+                plays: modelData.plays
+                playsPercentage: modelData.plays_percentage
 
                 width: flickable.width
               }
             }
           }
         }
+
+        // --- Top Artists Overall ---
 
         Column {
           spacing: 8
@@ -237,8 +241,164 @@ Item {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
-                scrobbleCount: modelData.lastfm_plays
-                scrobbleCountPercentage: modelData.percentage
+                plays: modelData.plays
+                playsPercentage: modelData.plays_percentage
+
+                width: flickable.width
+              }
+            }
+          }
+        }
+
+        // --- Top Albums This Week ---
+
+        Column {
+          spacing: 8
+
+          width: parent.width
+
+          Label {
+            text: 'Top Albums This Week'
+            style: kTitleTertiary
+
+            x: 15
+          }
+
+          Column {
+            spacing: 10
+
+            width: parent.width
+
+            Column {
+              spacing: 10
+
+              width: parent.width
+
+              Repeater {
+                model: viewModel.topAlbums && viewModel.topAlbums.seven_days
+
+                delegate: ListeningStatistic {
+                  hasImage: modelData.has_image
+                  imageSource: modelData.image_url
+                  lastfmUrl: modelData.lastfm_url
+                  title: modelData.title
+                  plays: modelData.plays
+                  playsPercentage: modelData.plays_percentage
+
+                  width: flickable.width
+                }
+              }
+            }
+          }
+        }
+
+        // --- Top Albums Overall ---
+
+        Column {
+          spacing: 8
+
+          width: parent.width
+
+          Label {
+            text: 'Top Albums Overall'
+            style: kTitleTertiary
+
+            x: 15
+          }
+
+          Column {
+            spacing: 10
+
+            width: parent.width
+
+            Repeater {
+              model: viewModel.topAlbums && viewModel.topAlbums.all_time
+
+              delegate: ListeningStatistic {
+                hasImage: modelData.has_image
+                imageSource: modelData.image_url
+                lastfmUrl: modelData.lastfm_url
+                title: modelData.title
+                plays: modelData.plays
+                playsPercentage: modelData.plays_percentage
+
+                width: flickable.width
+              }
+            }
+          }
+        }
+
+        // --- Top Tracks This Week ---
+
+        Column {
+          spacing: 8
+
+          width: parent.width
+
+          Label {
+            text: 'Top Tracks This Week'
+            style: kTitleTertiary
+
+            x: 15
+          }
+
+          Column {
+            spacing: 10
+
+            width: parent.width
+
+            Column {
+              spacing: 10
+
+              width: parent.width
+
+              Repeater {
+                model: viewModel.topTracks && viewModel.topTracks.seven_days
+
+                delegate: ListeningStatistic {
+                  hasImage: modelData.has_image
+                  imageSource: modelData.image_url
+                  lastfmUrl: modelData.lastfm_url
+                  title: modelData.title
+                  plays: modelData.plays
+                  playsPercentage: modelData.plays_percentage
+
+                  width: flickable.width
+                }
+              }
+            }
+          }
+        }
+
+        // --- Top Tracks Overall ---
+
+        Column {
+          spacing: 8
+
+          width: parent.width
+
+          Label {
+            text: 'Top Tracks Overall'
+            style: kTitleTertiary
+
+            x: 15
+          }
+
+          Column {
+            spacing: 10
+
+            width: parent.width
+
+            Repeater {
+              model: viewModel.topTracks && viewModel.topTracks.all_time
+
+              delegate: ListeningStatistic {
+                hasImage: modelData.has_image
+                imageSource: modelData.image_url
+                lastfmUrl: modelData.lastfm_url
+                title: modelData.title
+                plays: modelData.plays
+                playsPercentage: modelData.plays_percentage
 
                 width: flickable.width
               }

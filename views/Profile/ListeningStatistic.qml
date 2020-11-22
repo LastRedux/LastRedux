@@ -8,10 +8,10 @@ Item {
   property alias lastfmUrl: titleLink.address
   property alias title: titleLink.text
   property alias subtitle: subtitleLabel.text
-  property string scrobbleCount
-  property alias scrobbleCountPercentage: scrobbleCountProgressBar.percentage
+  property string plays
+  property alias playsPercentage: playsProgressBar.percentage
 
-  height: Math.max(picture.height, scrobbleCountLabel.y + scrobbleCountLabel.height)
+  height: Math.max(picture.height, playsLabel.y + playsLabel.height)
 
   // --- Picture ---
 
@@ -72,7 +72,7 @@ Item {
   // --- Scrobble Count ---
 
   ProgressBar {
-    id: scrobbleCountProgressBar
+    id: playsProgressBar
 
     percentage: 1
 
@@ -87,7 +87,7 @@ Item {
     }
 
     anchors {
-      right: scrobbleCountLabel.left
+      right: playsLabel.left
       left: titleLink.left
 
       rightMargin: hasImage ? 8 : 15
@@ -95,16 +95,16 @@ Item {
   }
 
   Label {
-    id: scrobbleCountLabel
+    id: playsLabel
 
     horizontalAlignment: Qt.AlignRight
     style: kTitleTertiary
-    text: `${scrobbleCount} plays`
+    text: `${plays} plays`
 
     width: 62
 
     anchors {
-      verticalCenter: scrobbleCountProgressBar.verticalCenter
+      verticalCenter: playsProgressBar.verticalCenter
 
       right: titleLink.right
     }

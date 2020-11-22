@@ -196,7 +196,7 @@ class LastfmApiWrapper:
       'limit': 1
     })
 
-    return resp['recenttracks']['@attr']['total']
+    return int(resp['recenttracks']['@attr']['total'])
 
   def get_account_details(self):
     '''Get information about the user (total scrobbles, image, registered date, url, etc.)'''
@@ -260,7 +260,7 @@ class LastfmApiWrapper:
       'limit': 1 # We don't actually want any loved tracks
     })
     
-    return resp_json['lovedtracks']['@attr']['total']
+    return int(resp_json['lovedtracks']['@attr']['total'])
 
   # POST requests
   def submit_scrobble(self, scrobble):
