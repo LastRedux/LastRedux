@@ -60,7 +60,6 @@ Item {
     visible: !value
 
     width: link.contentWidth + 15
-    height: 16
 
     anchors {
       verticalCenter: link.verticalCenter

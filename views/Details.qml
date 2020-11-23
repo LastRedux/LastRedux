@@ -109,7 +109,7 @@ Item {
 
           // Album image is still used to display track art even if there isn't an associated album
           albumImageUrl: hasLastfmData ? viewModel.scrobbleTrackData.album.image_url : ''
-          isTrackNotFound: root.isTrackNotFound
+          isTrackNotFound: isTrackNotFound
 
           width: column.width
         }
@@ -118,18 +118,19 @@ Item {
           visible: !isTrackNotFound
 
           name: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          bio: hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_bio : '---'
-          imageUrl: hasLastfmData ? viewModel.scrobbleTrackData.artist.image_url : ''
+          bio: root.hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_bio : null
+          imageUrl: root.hasLastfmData ? viewModel.scrobbleTrackData.artist.image_url : ''
           
-          lastfmUrl: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_url
-          lastfmGlobalListeners: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_listeners
-          lastfmGlobalPlays: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_plays
-          lastfmPlays: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_plays
-          lastfmTags: hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
+          lastfmUrl: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_url
+          lastfmGlobalListeners: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_listeners
+          lastfmGlobalPlays: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_plays
+          lastfmPlays: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_plays
+          lastfmTags: root.hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
           
-          spotifyArtists: hasLastfmData ? viewModel.scrobbleTrackData.spotify_artists : []
+          spotifyArtists: root.hasLastfmData ? viewModel.scrobbleTrackData.spotify_artists : []
           
-          isReadMoreLinkVisible: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_bio
+          isReadMoreLinkVisible: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_bio
+          hasLastfmData: root.hasLastfmData
 
           width: column.width
         }

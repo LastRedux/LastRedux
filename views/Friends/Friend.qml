@@ -12,13 +12,16 @@ Item {
   property string userRealName
 
   property string trackImage
-  property string trackTitle
-  property string trackArtistName
+  property var trackTitle
+  property var trackArtistName
   property alias trackLastfmUrl: trackTitleLabel.address
   property alias trackArtistLastfmUrl: trackArtistNameView.address
   property bool isTrackPlaying
+  property bool hasAdditionalData
 
-  height: trackTitle ? trackLink.y + trackLink.height : userLink.height
+  property bool shouldShowTrackSection: !hasAdditionalData || (hasAdditionalData && trackTitle)
+
+  height: shouldShowTrackSection ? trackLink.y + trackLink.height : userLink.height
 
   Picture {
     source: trackImage || ''
@@ -172,11 +175,11 @@ Item {
   Item {
     id: trackLink
 
-    visible: trackTitle
+    visible: shouldShowTrackSection
     
     y: userLink.height
     width: parent.width
-    height: trackTitle ? trackArtistNameView.y + trackArtistNameView.height + 10 : 0
+    height: shouldShowTrackSection ? trackArtistNameView.y + trackArtistNameView.height + 10 : 0
 
     // --- Track Playback Status - Not Currently Playing ---
 
@@ -229,8 +232,9 @@ Item {
       elide: Text.ElideRight
       maximumLineCount: 2
       isShadowEnabled: !isTrackPlaying
-      text: trackTitle || ''
+      text: trackTitle
       wrapMode: Text.Wrap
+      visible: hasAdditionalData
 
       anchors {
         top: parent.top
@@ -239,6 +243,19 @@ Item {
 
         rightMargin: 15
         leftMargin: 10
+      }
+    }
+
+    Placeholder {
+      id: trackTitlePlaceholder
+
+      visible: !hasAdditionalData
+
+      width: 60 + Math.ceil(Math.random() * 70)
+
+      anchors {
+        top: trackTitleLabel.top
+        left: trackTitleLabel.left
       }
     }
 
@@ -252,12 +269,26 @@ Item {
       isShadowEnabled: !isTrackPlaying
       opacity: 0.81
       style: kBodyPrimary
-      text: trackArtistName || ''
+      text: trackArtistName
       wrapMode: Text.Wrap
+      visible: hasAdditionalData
 
       anchors {
         top: trackTitleLabel.bottom
         right: trackTitleLabel.right
+        left: trackTitleLabel.left
+
+        topMargin: 1
+      }
+    }
+
+    Placeholder {
+      visible: !hasAdditionalData
+      
+      width: 40 + Math.ceil(Math.random() * 70)
+
+      anchors {
+        top: trackTitlePlaceholder.bottom
         left: trackTitleLabel.left
 
         topMargin: 1

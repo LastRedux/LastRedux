@@ -8,6 +8,7 @@ Item {
   property url imageUrl
   property string name
   property bool isReadMoreLinkVisible
+  property bool hasLastfmData
 
   // var to support undefined
   property var lastfmUrl
@@ -102,6 +103,7 @@ Item {
 
       SelectableText {
         text: bio || 'No bio available.'
+        visible: hasLastfmData
 
         width: parent.width
       }
@@ -113,6 +115,39 @@ Item {
         visible: isReadMoreLinkVisible // Only show if bio exists
 
         width: parent.width
+      }
+
+      // --- Bio Placeholder ---
+
+      Column {
+        spacing: 2
+        visible: !hasLastfmData
+
+        width: parent.width
+
+        Placeholder {
+          width: parent.width
+        }
+
+        Placeholder {
+          width: parent.width - 40
+        }
+        
+        Placeholder {
+          width: parent.width
+        }
+
+        Placeholder {
+          width: parent.width - 20
+        }
+
+        Placeholder {
+          width: parent.width
+        }
+
+        Placeholder {
+          width: Math.floor(parent.width / 4)
+        }
       }
     }
   }
