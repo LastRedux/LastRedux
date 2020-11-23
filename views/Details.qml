@@ -109,7 +109,7 @@ Item {
 
           // Album image is still used to display track art even if there isn't an associated album
           albumImageUrl: hasLastfmData ? viewModel.scrobbleTrackData.album.image_url : ''
-          isTrackNotFound: isTrackNotFound
+          isTrackNotFound: root.isTrackNotFound
 
           width: column.width
         }
