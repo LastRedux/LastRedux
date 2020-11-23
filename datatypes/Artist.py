@@ -1,4 +1,3 @@
-from __future__ import annotations # For self-referential return type
 from dataclasses import dataclass, field
 
 from typing import List

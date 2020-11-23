@@ -6,8 +6,9 @@ Item {
   property bool hasImage: true
   property alias imageSource: picture.source
   property alias lastfmUrl: titleLink.address
+  property var secondaryLastfmUrl
   property alias title: titleLink.text
-  property alias subtitle: subtitleLabel.text
+  property alias subtitle: subtitleLink.text
   property string plays
   property alias playsPercentage: playsProgressBar.percentage
 
@@ -46,20 +47,23 @@ Item {
       right: parent.right
       left: hasImage ? picture.right : parent.left
 
-      rightMargin: 15
+      rightMargin: 15 
       leftMargin: hasImage ? 10 : 15
     }
   }
 
   // --- Subtitle ---
 
-  Label {
-    id: subtitleLabel
+  Link {
+    id: subtitleLink
     
     elide: Text.ElideRight
     maximumLineCount: 2
     visible: text
     wrapMode: Text.Wrap
+    style: kBodyPrimary
+    
+    address: secondaryLastfmUrl || null
 
     y: titleLink.y + titleLink.height + 1
 
@@ -79,8 +83,8 @@ Item {
     y: {
       let topMargin = 6
 
-      if (subtitleLabel.visible) {
-        return subtitleLabel.y + subtitleLabel.height + topMargin
+      if (subtitleLink.visible) {
+        return subtitleLink.y + subtitleLink.height + topMargin
       }
 
       return titleLink.y + titleLink.height + topMargin
