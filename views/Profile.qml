@@ -322,6 +322,7 @@ Item {
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
                 subtitle: modelData.subtitle
+                secondaryLastfmUrl: modelData.secondary_lastfm_url
                 plays: modelData.plays
                 playsPercentage: modelData.plays_percentage
 
