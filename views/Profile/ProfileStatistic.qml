@@ -10,6 +10,7 @@ Item {
   property string iconName
   property var value
   property string caption
+  property bool hasValue: value !== undefined // Allow zero values for statistics
   
   height: iconContainer.height
 
@@ -41,8 +42,8 @@ Item {
     address: root.address || ''
     elide: Text.ElideRight
     style: kCaption
-    text: value ? `${Helpers.numberWithCommas(value)} ${caption}` : caption
-    visible: value
+    text: hasValue ? `${Helpers.numberWithCommas(value)} ${caption}` : caption
+    visible: hasValue
 
     anchors {
       verticalCenter: iconContainer.verticalCenter
@@ -57,7 +58,7 @@ Item {
   // --- Placeholder ---
 
   Placeholder {
-    visible: !value
+    visible: !hasValue
 
     width: link.contentWidth + 15
 

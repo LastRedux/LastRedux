@@ -40,7 +40,7 @@ Item {
     ProfileStatistic {
       address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library`
       iconName: 'scrobble'
-      value: isProfileLoaded && viewModel.profileStatistics.total_scrobbles
+      value: isProfileLoaded ? viewModel.profileStatistics.total_scrobbles : undefined
       caption: 'scrobbles'
 
       width: parent.width
@@ -56,7 +56,7 @@ Item {
 
       address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library?from=${currentDate}&to=${currentDate}`
       iconName: 'clock'
-      value: isProfileLoaded && viewModel.profileStatistics.total_scrobbles_today
+      value: isProfileLoaded ? viewModel.profileStatistics.total_scrobbles_today : undefined
       caption: 'plays today'
 
       width: parent.width
@@ -67,7 +67,7 @@ Item {
     ProfileStatistic {
       address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library`
       iconName: 'calendar'
-      value: isProfileLoaded && viewModel.profileStatistics.average_daily_scrobbles
+      value: isProfileLoaded ? viewModel.profileStatistics.average_daily_scrobbles : undefined
       caption: 'plays per day'
 
       width: parent.width
@@ -78,7 +78,7 @@ Item {
     ProfileStatistic {
       address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library/artists`
       iconName: 'artist'
-      value: isProfileLoaded && viewModel.profileStatistics.total_artists
+      value: isProfileLoaded ? viewModel.profileStatistics.total_artists : undefined
       caption: 'artists in library'
 
       width: parent.width
@@ -89,7 +89,7 @@ Item {
     ProfileStatistic {
       address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/loved`
       iconName: 'heart'
-      value: isProfileLoaded && viewModel.profileStatistics.total_loved_tracks
+      value: isProfileLoaded ? viewModel.profileStatistics.total_loved_tracks : undefined
       caption: 'loved tracks'
 
       width: parent.width
