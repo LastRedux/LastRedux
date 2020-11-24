@@ -321,6 +321,14 @@ Window {
     }
   }
 
+  MacNotificationObserver {
+    id: observer
+  }
+
+  Component.onCompleted: {
+    observer.makeConnections()
+  }
+
   Shortcut {
     sequence: 'Ctrl+1'
     context: Qt.ApplicationShortcut

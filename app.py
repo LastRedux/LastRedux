@@ -7,6 +7,7 @@ from PySide2 import QtCore, QtGui, QtQml, QtNetwork
 import loguru
 
 from platform_integrations.WindowStyle import WindowStyle
+from platform_integrations.MacNotificationObserver import MacNotificationObserver
 from HistoryViewModel import HistoryViewModel
 from HistoryListModel import HistoryListModel
 from ProfileViewModel import ProfileViewModel
@@ -40,6 +41,7 @@ if __name__ == '__main__':
   QtQml.qmlRegisterType(FriendsListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsListModel')
   QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
   QtQml.qmlRegisterType(NetworkImage, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'NetworkImage')
+  QtQml.qmlRegisterType(MacNotificationObserver, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'MacNotificationObserver')
 
   # Enable retina support
   QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
