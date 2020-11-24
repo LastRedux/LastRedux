@@ -31,6 +31,11 @@ class ProfileViewModel(QtCore.QObject):
     self.__is_loading = False
   
   # --- Private Methods ---
+
+  def __handle_loading_done(self):
+    self.__should_show_loading_indicator = False
+    self.should_show_loading_indicator_changed.emit()
+    self.__is_loading = False
   
   def __process_new_profile_and_artist_statistics(self, new_overall_and_artist_statistics):
     logger.trace(f'Fetched Last.fm profile data and top artists for profile view')
@@ -44,10 +49,7 @@ class ProfileViewModel(QtCore.QObject):
 
     # Update loading indicator on tab bar if it's showing and everythiing is loaded
     if self.__should_show_loading_indicator and self.__top_tracks and self.__top_albums:
-      self.__should_show_loading_indicator = False
-      self.should_show_loading_indicator_changed.emit()
-
-      self.__is_loading = False
+      self.__handle_loading_done()
 
   def __process_new_top_albums(self, new_album_statistics):
     self.__top_albums = new_album_statistics
@@ -55,17 +57,15 @@ class ProfileViewModel(QtCore.QObject):
 
     # Update loading indicator on tab bar if it's showing and everythiing is loaded
     if self.__should_show_loading_indicator and self.__top_tracks and self.__top_artists:
-      self.__should_show_loading_indicator = False
-      self.should_show_loading_indicator_changed.emit()
+      self.__handle_loading_done()
 
   def __process_new_top_tracks(self, new_track_statistics):
     self.__top_tracks = new_track_statistics
     self.top_tracks_changed.emit()
 
     # Update loading indicator on tab bar if it's showing and everythiing is loaded
-    if self.__should_show_loading_indicator and self.__top_tracks and self.__top_artists:
-      self.__should_show_loading_indicator = False
-      self.should_show_loading_indicator_changed.emit()
+    if self.__should_show_loading_indicator and self.__top_albums and self.__top_artists:
+      self.__handle_loading_done()
 
   # --- Slots ---
   
@@ -79,6 +79,11 @@ class ProfileViewModel(QtCore.QObject):
 
     if not self.__is_loading:
       self.__is_loading = True
+
+      # Clear data but don't update UI so that we can check later which parts have reloaded
+      self.__top_artists = []
+      self.__top_tracks = []
+      self.__top_albums = []
       
       # Load overall statistics and top artists
       fetch_overall_and_artist_statistics_task = FetchOverallAndArtistStatistics(self.lastfm_instance)
