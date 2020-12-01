@@ -1,12 +1,9 @@
 import Foundation
-import ctypes
-import objc
 from PySide2 import QtCore
 
 class MacNotificationObserver(QtCore.QObject):
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
-    objc.setVerbose(1)
 
   def handleNotificationFromMusic_(self, notification):
     user_info = notification.userInfo()
