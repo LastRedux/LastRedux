@@ -1,18 +1,17 @@
+from typing import Dict
+
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 from Foundation import NSDistributedNotificationCenter
 
-from datatypes.NotificationState import NotificationState
-from datatypes.AppleScriptState import AppleScriptState
+from datatypes.MediaPlayerState import MediaPlayerState
+from tasks.FetchAppleMusicTrackCrop import FetchAppleMusicTrackCrop
 
 class AppleMusicPlugin(QtCore.QObject):
   stopped = QtCore.Signal()
+  paused = QtCore.Signal(MediaPlayerState)
+  playing = QtCore.Signal(MediaPlayerState)
   does_not_have_artist_error = QtCore.Signal()
-
-  # From Music.app BridgeSupport enum definitions
-  STOPPED_STATE = 1800426323
-  PAUSED_STATE = 1800426352
-  PLAYING_STATE = 1800426320
 
   def __init__(self):
     QtCore.QObject.__init__(self)
@@ -23,7 +22,10 @@ class AppleMusicPlugin(QtCore.QObject):
     # Set up NSNotificationCenter
     # Using https://lethain.com/how-to-use-selectors-in-pyobjc/ as reference
     self.default_center = NSDistributedNotificationCenter.defaultCenter()
-    observer = self.default_center.addObserver_selector_name_object_(self, 'handleNotificationFromMusic:', 'com.apple.iTunes.playerInfo', None) # TODO: Don't save to variable?
+    observer = self.default_center.addObserver_selector_name_object_(self, 'handleNotificationFromMusic:', 'com.apple.iTunes.playerInfo', None) # TODO: Try not saving to variable?
+    
+    # Store the media player state received by the observer
+    self.current_state: NotificationState = None
   
   # Objective-C function handling play/pause events
   def handleNotificationFromMusic_(self, notification):
@@ -37,7 +39,7 @@ class AppleMusicPlugin(QtCore.QObject):
     track_title = notification_payload['Name']
 
     # Apple Music puts Connecting... state string in the track title field for some reason
-    if track_title == 'Connecting…':
+    if track_title == 'Connecting…': # TODO: Find way to check this that works with other languages
       # Connecting... state should remove track from details pane and deselect it, so we're pretending the player is stopped
       self.stopped.emit()
       return
@@ -47,34 +49,64 @@ class AppleMusicPlugin(QtCore.QObject):
     # Some tracks don't have an artist and can't be scrobbled on Last.fm
     if not artist_name:
       self.does_not_have_artist_error.emit()
+      self.stopped.emit()
+      return
+
+    is_playing = player_state == 'Playing'
+
+    # Detect if paused to emit paused signal without running AppleScript again
+    # Make sure that we have track data first
+    if self.current_state and not is_playing:
+      self.paused.emit(self.current_state)
       return
     
-    album_title = notification_payload['Album']
-    track_duration = notification_payload['Duration']
-    notification_state = NotificationState(track_title, artist_name, track_duration, album_title)
+    album_title = notification_payload['Album'] # Tracks with no album should return an empty string for album title
+    track_duration = notification_payload['Total Time'] / 1000 # Convert from ms to s
     
-    if player_state == 'Playing':
-      self.playing.emit(notification_state)
-    else:
-      self.paused.emit(notification_state)
+    # Emit play signal early and skip AppleScript if the track is the same as the last one (if it exists)
+    if self.current_state:
+      if self.current_state.track_title == track_title and self.current_state.artist_name == artist_name and self.current_state.album_title == album_title:
+        self.playing.emit(self.current_state)
+        return
     
+    # Create new state object to store new track data
+    self.current_state = MediaPlayerState(is_playing, track_title, artist_name, album_title, track_end=track_duration)
+    
+    # Fetch track crop data (start and finish timestamps)
+    # Delay for 100ms to give enough time for AppleScript to update with new current track (Sometimes, AppleScript lags behind the notifications)
     timer = QtCore.QTimer(self)
-    timer.timeout.connect(self.__handle_getting_the_length_after_the_timer)
-    timer.setSingleShot(True)
+    timer.timeout.connect(self.__handle_getting_track_crop_after_the_timer)
+    timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
     timer.start(100)
   
-  def __handle_getting_the_length_after_the_timer(self):
-    print('working')
+  def __handle_getting_track_crop_after_the_timer(self):
+    get_library_track_crop = FetchAppleMusicTrackCrop(self)
+    get_library_track_crop.finished.connect(self.__handle_completion_of_get_track_crop_request)
+    QtCore.QThreadPool.globalInstance().start(get_library_track_crop)
   
-  def get_local_track_length(self) -> AppleScriptState:
-    state = AppleScriptState()
-
-    if self.apple_music.playerState() != self.STOPPED_STATE:
-      current_track = self.apple_music.currentTrack()
-      state.track_start = current_track.start()
-      state.track_finish = current_track.finish()
+  def __handle_completion_of_get_track_crop_request(self, track_crop):
+    # Use AppleScript start and finish values if they were found, otherwise leave the end value as is
+    if track_crop['track_finish'] != 0:
+      self.current_state.track_start = track_crop['track_start'] 
+      self.current_state.track_end = track_crop['track_finish']
     
-    return state
+    # Finally emit play/pause signal
+    if self.current_state.is_playing:
+      self.playing.emit(self.current_state)
+    else:
+      self.paused.emit(self.current_state)
+  
+  def get_library_track_crop(self) -> Dict[float, float]:
+    '''Use AppleScript to fetch the current track's start and finish timestamps (This often fails and returns 0.0 for both)'''
+
+    current_track = self.apple_music.currentTrack()
+
+    return {
+      'track_start': current_track.start(),
+      'track_finish': current_track.finish()
+    }
 
   def get_player_position(self) -> float:
+    '''Use AppleScript to fetch the current Apple Music playback position'''
+
     return self.apple_music.playerPosition()
