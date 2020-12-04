@@ -25,7 +25,7 @@ class AppleMusicPlugin(QtCore.QObject):
     observer = self.default_center.addObserver_selector_name_object_(self, 'handleNotificationFromMusic:', 'com.apple.iTunes.playerInfo', None) # TODO: Try not saving to variable?
     
     # Store the latest media player state received by the observer
-    self.current_state: NotificationState = None
+    self.current_state = None
 
     # Store the latest notification from NSNotificationObserver to access it from multiple methods
     self.notification = None
@@ -97,7 +97,19 @@ class AppleMusicPlugin(QtCore.QObject):
       self.current_state.track_start = track_crop['track_start'] 
       self.current_state.track_finish = track_crop['track_finish']
     else:
-      self.current_state.track_finish = self.notification.userInfo()['Total Time'] / 1000 # Convert from ms to s
+      total_time = self.notification.userInfo().get('Total Time')
+
+      if total_time:
+        self.current_state.track_finish = total_time / 1000 # Convert from ms to s
+      else:
+        # Play, then pause Music so that the next play event will have the full track data
+        self.apple_music.pause()
+
+        timer = QtCore.QTimer(self)
+        timer.timeout.connect(lambda: self.apple_music.playpause())
+        timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
+        timer.start(5)
+        return
     
     # Finally emit play/pause signal
     if self.current_state.is_playing:
@@ -109,10 +121,6 @@ class AppleMusicPlugin(QtCore.QObject):
     '''Use AppleScript to fetch the current track's start and finish timestamps (This often fails and returns 0.0 for both)'''
 
     current_track = self.apple_music.currentTrack()
-
-    print(str(current_track.name()))
-    print(str(current_track.duration()))
-    print(str(current_track.finish()))
 
     return {
       'track_start': current_track.start(),
