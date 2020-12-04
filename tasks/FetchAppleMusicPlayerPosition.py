@@ -1,6 +1,6 @@
 from PySide2 import QtCore
 
-class FetchAppleMusicPlaybackPosition(QtCore.QObject, QtCore.QRunnable):  
+class FetchAppleMusicPlayerPosition(QtCore.QObject, QtCore.QRunnable):  
   finished = QtCore.Signal(dict)
 
   def __init__(self, media_player):

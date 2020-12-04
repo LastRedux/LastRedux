@@ -24,11 +24,15 @@ class AppleMusicPlugin(QtCore.QObject):
     self.default_center = NSDistributedNotificationCenter.defaultCenter()
     observer = self.default_center.addObserver_selector_name_object_(self, 'handleNotificationFromMusic:', 'com.apple.iTunes.playerInfo', None) # TODO: Try not saving to variable?
     
-    # Store the media player state received by the observer
+    # Store the latest media player state received by the observer
     self.current_state: NotificationState = None
+
+    # Store the latest notification from NSNotificationObserver to access it from multiple methods
+    self.notification = None
   
   # Objective-C function handling play/pause events
   def handleNotificationFromMusic_(self, notification):
+    self.notification = notification
     notification_payload = notification.userInfo()
     player_state = notification_payload['Player State']
 
@@ -36,7 +40,11 @@ class AppleMusicPlugin(QtCore.QObject):
       self.stopped.emit()
       return
     
-    track_title = notification_payload['Name']
+    track_title = notification_payload.get('Name')
+
+    # Ignore notification if there's no track title (Usually happens with radio stations)
+    if not track_title:
+      return
 
     # Apple Music puts Connecting... state string in the track title field for some reason
     if track_title == 'Connecting…': # TODO: Find way to check this that works with other languages
@@ -61,23 +69,22 @@ class AppleMusicPlugin(QtCore.QObject):
       return
     
     album_title = notification_payload['Album'] # Tracks with no album should return an empty string for album title
-    track_duration = notification_payload['Total Time'] / 1000 # Convert from ms to s
     
     # Emit play signal early and skip AppleScript if the track is the same as the last one (if it exists)
     if self.current_state:
-      if self.current_state.track_title == track_title and self.current_state.artist_name == artist_name and self.current_state.album_title == album_title:
+      if self.current_state.track_title == track_title and self.current_state.artist_name == artist_name and self.current_state.album_title == album_title and self.current_state.track_finish: # Check for track_finish so playing isn't emitted prematurely if track is play cycled repeatedly before AppleScript request can complete
         self.playing.emit(self.current_state)
         return
     
     # Create new state object to store new track data
-    self.current_state = MediaPlayerState(is_playing, track_title, artist_name, album_title, track_end=track_duration)
+    self.current_state = MediaPlayerState(is_playing, track_title, artist_name, album_title)
     
     # Fetch track crop data (start and finish timestamps)
     # Delay for 100ms to give enough time for AppleScript to update with new current track (Sometimes, AppleScript lags behind the notifications)
     timer = QtCore.QTimer(self)
     timer.timeout.connect(self.__handle_getting_track_crop_after_the_timer)
     timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
-    timer.start(100)
+    timer.start(2500)
   
   def __handle_getting_track_crop_after_the_timer(self):
     get_library_track_crop = FetchAppleMusicTrackCrop(self)
@@ -88,7 +95,9 @@ class AppleMusicPlugin(QtCore.QObject):
     # Use AppleScript start and finish values if they were found, otherwise leave the end value as is
     if track_crop['track_finish'] != 0:
       self.current_state.track_start = track_crop['track_start'] 
-      self.current_state.track_end = track_crop['track_finish']
+      self.current_state.track_finish = track_crop['track_finish']
+    else:
+      self.current_state.track_finish = self.notification.userInfo()['Total Time'] / 1000 # Convert from ms to s
     
     # Finally emit play/pause signal
     if self.current_state.is_playing:
@@ -100,6 +109,10 @@ class AppleMusicPlugin(QtCore.QObject):
     '''Use AppleScript to fetch the current track's start and finish timestamps (This often fails and returns 0.0 for both)'''
 
     current_track = self.apple_music.currentTrack()
+
+    print(str(current_track.name()))
+    print(str(current_track.duration()))
+    print(str(current_track.finish()))
 
     return {
       'track_start': current_track.start(),

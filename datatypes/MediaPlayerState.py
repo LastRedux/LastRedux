@@ -6,5 +6,5 @@ class MediaPlayerState:
   track_title: str
   artist_name: str
   album_title: str
-  track_end: float
   track_start: float = 0.0
+  track_finish: float = None

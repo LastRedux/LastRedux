@@ -11,355 +11,331 @@ import './views'
 Window {
   id: application
 
-  // property int currentTabIndex: 0
-  // property bool shouldShowProfileLoadingIndicator: true
-  // property bool shouldShowFriendsLoadingIndicator: true
+  property int currentTabIndex: 0
+  property bool shouldShowProfileLoadingIndicator: true
+  property bool shouldShowFriendsLoadingIndicator: true
 
-  // property bool isInMiniMode: {
-  //   if (historyViewModel) {
-  //     if (historyViewModel.miniMode) {
-  //       return true
-  //     }
-  //   }
+  property bool isInMiniMode: {
+    if (historyViewModel) {
+      if (historyViewModel.miniMode) {
+        return true
+      }
+    }
 
-  //   return false
-  // }
+    return false
+  }
 
-  // property alias isInMiniMode: details.isInMiniMode
+  property alias isInMiniMode: details.isInMiniMode
 
   color: '#171717'
   title: 'LastRedux'
   visible: true
 
-  // minimumWidth: isInMiniMode ? 0 : 755
-  // minimumHeight: isInMiniMode ? 0 : 470
+  minimumWidth: isInMiniMode ? 0 : 755
+  minimumHeight: isInMiniMode ? 0 : 470
   width: 957
   height: 600
 
-  AppleMusicPlugin {
-    id: a
+  function switchToTab(tabIndex, isSameTab) {
+    if (currentTabIndex !== tabIndex || isSameTab) {
+      currentTabIndex = tabIndex
 
-    onStopped: {
-      console.log('stopped')
-    }
+      switch (tabIndex) {
+      case 0:
+        if (!isSameTab) {
+          stackView.replace(historyPage)
+        }
+        
+        break
+      case 1:
+        if (!isSameTab) {
+          stackView.replace(profilePage)
+        }
 
-    onPaused: {
-      console.log('paused')
-    }
-
-    onPlaying: {
-      console.log('playing')
+        profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
+        shouldShowProfileLoadingIndicator = false
+        break
+      case 2:
+        if (!isSameTab) {
+          stackView.replace(friendsPage)
+        }
+        
+        friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
+        shouldShowFriendsLoadingIndicator = false
+      }
     }
   }
 
-  // function switchToTab(tabIndex, isSameTab) {
-  //   if (currentTabIndex !== tabIndex || isSameTab) {
-  //     currentTabIndex = tabIndex
+  onActiveChanged: {
+    if (active) {
+      shouldShowProfileLoadingIndicator = true
+      shouldShowFriendsLoadingIndicator = true
+      switchToTab(currentTabIndex, true)
+    }
+  }
 
-  //     switch (tabIndex) {
-  //     case 0:
-  //       if (!isSameTab) {
-  //         stackView.replace(historyPage)
-  //       }
-        
-  //       break
-  //     case 1:
-  //       if (!isSameTab) {
-  //         stackView.replace(profilePage)
-  //       }
+  onClosing: { 
+    application.hide()
 
-  //       profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
-  //       shouldShowProfileLoadingIndicator = false
-  //       break
-  //     case 2:
-  //       if (!isSameTab) {
-  //         stackView.replace(friendsPage)
-  //       }
-        
-  //       friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
-  //       shouldShowFriendsLoadingIndicator = false
-  //     }
-  //   }
-  // }
+    // Prevent the window close event from being accepted by the system
+    close.accepted = false // close is a hidden parameter to the onClosing function
+  }
 
-  // onActiveChanged: {
-  //   if (active) {
-  //     shouldShowProfileLoadingIndicator = true
-  //     shouldShowFriendsLoadingIndicator = true
-  //     switchToTab(currentTabIndex, true)
-  //   }
-  // }
+  FontLoaders {
+    id: fontLoaders
+  }
 
-  // onClosing: { 
-  //   application.hide()
+  Window {
+    id: onboardingWindow
 
-  //   // Prevent the window close event from being accepted by the system
-  //   close.accepted = false // close is a hidden parameter to the onClosing function
-  // }
+    color: '#1f1f1f'
+    modality: Qt.WindowModal
 
-  // FontLoaders {
-  //   id: fontLoaders
-  // }
-
-  // Window {
-  //   id: onboardingWindow
-
-  //   color: '#1f1f1f'
-  //   modality: Qt.WindowModal
-
-  //   minimumWidth: 632
-  //   minimumHeight: 427
-  //   maximumWidth: 632
-  //   maximumHeight: 427
+    minimumWidth: 632
+    minimumHeight: 427
+    maximumWidth: 632
+    maximumHeight: 427
     
-  //   Onboarding {
-  //     anchors.fill: parent
-  //   }
-  // }
+    Onboarding {
+      anchors.fill: parent
+    }
+  }
 
-  // SystemTrayIcon {
-  //   id: trayIcon
+  SystemTrayIcon {
+    id: trayIcon
 
-  //   visible: true
-  //   icon.source: 'shared/resources/trayIcon.png'
-  //   icon.mask: true
+    visible: true
+    icon.source: 'shared/resources/trayIcon.png'
+    icon.mask: true
 
-  //   menu: Menu {
-  //     MenuItem {
-  //       text: qsTr('Show Window')
-  //       shortcut: 'Ctrl+Meta+S'
+    menu: Menu {
+      MenuItem {
+        text: qsTr('Show Window')
+        shortcut: 'Ctrl+Meta+S'
 
-  //       onTriggered: {
-  //         application.show()
-  //         application.raise()
-  //         application.requestActivate()
-  //       }
-  //     }
+        onTriggered: {
+          application.show()
+          application.raise()
+          application.requestActivate()
+        }
+      }
 
-  //     MenuItem {
-  //       text: qsTr('Open Onboarding...')
+      MenuItem {
+        text: qsTr('Open Onboarding...')
 
-  //       onTriggered: onboardingWindow.show()
-  //     }
+        onTriggered: onboardingWindow.show()
+      }
 
-  //     MenuItem {
-  //       text: qsTr('Toggle mini mode')
+      MenuItem {
+        text: qsTr('Toggle mini mode')
 
-  //       onTriggered: historyViewModel.toggleMiniMode()
-  //     }
+        onTriggered: historyViewModel.toggleMiniMode()
+      }
       
-  //     MenuItem {
-  //       text: qsTr('Preferences...')
-  //       shortcut: StandardKey.Preferences
+      MenuItem {
+        text: qsTr('Preferences...')
+        shortcut: StandardKey.Preferences
 
-  //       onTriggered: trayIcon.showMessage('', 'If you are seeing this, welcome to the early commit zone :)')
-  //     }
+        onTriggered: trayIcon.showMessage('', 'If you are seeing this, welcome to the early commit zone :)')
+      }
 
-  //     MenuSeparator { }
+      MenuSeparator { }
 
-  //     MenuItem {
-  //       text: qsTr('Quit LastRedux')
-  //       shortcut: StandardKey.Quit
+      MenuItem {
+        text: qsTr('Quit LastRedux')
+        shortcut: StandardKey.Quit
 
-  //       onTriggered: {
-  //         // Close the application window to deallocate its resources before quitting (otherwise PySide crashes)
-  //         application.close()
+        onTriggered: {
+          // Close the application window to deallocate its resources before quitting (otherwise PySide crashes)
+          application.close()
 
-  //         Qt.quit()
-  //       }
-  //     }
-  //   }
-  // }
+          Qt.quit()
+        }
+      }
+    }
+  }
 
-  // // --- Details ---
+  // --- Details ---
   
-  // DetailsViewModel {
-  //   id: detailsViewModel
+  DetailsViewModel {
+    id: detailsViewModel
 
-  //   historyReference: historyViewModel
-  // }
+    historyReference: historyViewModel
+  }
 
-  // Details {
-  //   id: details
+  Details {
+    id: details
 
-  //   viewModel: detailsViewModel
-  //   onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
+    viewModel: detailsViewModel
+    onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
 
-  //   anchors {
-  //     top: parent.top
-  //     right: parent.right
-  //     bottom: parent.bottom
-  //     left: isInMiniMode ? parent.left : sidebar.right
-  //   }
-  // }
+    anchors {
+      top: parent.top
+      right: parent.right
+      bottom: parent.bottom
+      left: isInMiniMode ? parent.left : sidebar.right
+    }
+  }
 
-  // // --- History Page ---
+  // --- History Page ---
 
-  // HistoryViewModel {
-  //   id: historyViewModel
+  HistoryViewModel {
+    id: historyViewModel
 
-  //   onShowNotification: (title, message) => trayIcon.showMessage(title, message)
-  // }
+    onShowNotification: (title, message) => trayIcon.showMessage(title, message)
+  }
 
-  // HistoryListModel {
-  //   id: historyListModel
+  HistoryListModel {
+    id: historyListModel
 
-  //   historyReference: historyViewModel
-  // }
+    historyReference: historyViewModel
+  }
 
-  // Component {
-  //   id: historyPage
+  Component {
+    id: historyPage
 
-  //   History {
-  //     id: history
+    History {
+      id: history
 
-  //     listModel: historyListModel
-  //     viewModel: historyViewModel
-  //   }
-  // }
+      listModel: historyListModel
+      viewModel: historyViewModel
+    }
+  }
 
-  // // --- Profile Page ---
+  // --- Profile Page ---
 
-  // ProfileViewModel {
-  //   id: profileViewModel
-  // }
+  ProfileViewModel {
+    id: profileViewModel
+  }
 
-  // Component {
-  //   id: profilePage
+  Component {
+    id: profilePage
 
-  //   Profile {
-  //     id: profile
+    Profile {
+      id: profile
 
-  //     viewModel: profileViewModel
-  //   }
-  // }
+      viewModel: profileViewModel
+    }
+  }
 
-  // // --- Friends Page ---
+  // --- Friends Page ---
 
-  // FriendsViewModel {
-  //   id: friendsViewModel
-  // }
+  FriendsViewModel {
+    id: friendsViewModel
+  }
 
-  // FriendsListModel {
-  //   id: friendsListModel
+  FriendsListModel {
+    id: friendsListModel
 
-  //   friendsReference: friendsViewModel
-  // }
+    friendsReference: friendsViewModel
+  }
 
-  // Component {
-  //   id: friendsPage
+  Component {
+    id: friendsPage
 
-  //   Friends {
-  //     id: friends
+    Friends {
+      id: friends
 
-  //     listModel: friendsListModel
-  //     viewModel: friendsViewModel
-  //   }
-  // }
+      listModel: friendsListModel
+      viewModel: friendsViewModel
+    }
+  }
 
-  // // --- Sidebar ---
+  // --- Sidebar ---
 
-  // SidebarBackground {
-  //   id: sidebar
+  SidebarBackground {
+    id: sidebar
 
-  //   visible: isInMiniMode ? false : true
+    visible: isInMiniMode ? false : true
 
-  //   anchors {
-  //     top: parent.top
-  //     bottom: parent.bottom
-  //     left: parent.left
-  //   }
+    anchors {
+      top: parent.top
+      bottom: parent.bottom
+      left: parent.left
+    }
 
-  //   Controls.StackView {
-  //     id: stackView
+    Controls.StackView {
+      id: stackView
 
-  //     clip: true
-  //     initialItem: historyPage
-  //     replaceEnter: Transition { }
-  //     replaceExit: Transition { }
+      clip: true
+      initialItem: historyPage
+      replaceEnter: Transition { }
+      replaceExit: Transition { }
 
-  //     anchors {
-  //       top: tabBar.bottom
-  //       right: parent.right
-  //       bottom: parent.bottom
-  //       left: parent.left
-  //     }
-  //   }
+      anchors {
+        top: tabBar.bottom
+        right: parent.right
+        bottom: parent.bottom
+        left: parent.left
+      }
+    }
 
-  //   TabBarBackground {
-  //     id: tabBar
+    TabBarBackground {
+      id: tabBar
 
-  //     anchors {
-  //       top: parent.top
-  //       right: parent.right
-  //       left: parent.left
-  //     }
+      anchors {
+        top: parent.top
+        right: parent.right
+        left: parent.left
+      }
 
-  //     Item {
-  //       clip: true
+      Item {
+        clip: true
 
-  //       anchors {
-  //         fill: parent
+        anchors {
+          fill: parent
 
-  //         topMargin: 22
-  //       }
+          topMargin: 22
+        }
 
-  //       Row {
-  //         spacing: 29
+        Row {
+          spacing: 29
 
-  //         anchors.centerIn: parent
+          anchors.centerIn: parent
 
-  //         TabBarItem {
-  //           iconName: 'history'
-  //           shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
-  //           isSelected: currentTabIndex === 0
+          TabBarItem {
+            iconName: 'history'
+            shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
+            isSelected: currentTabIndex === 0
 
-  //           onClicked: switchToTab(0)
-  //         }
+            onClicked: switchToTab(0)
+          }
 
-  //         TabBarItem {
-  //           iconName: 'profile'
-  //           shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
-  //           isSelected: currentTabIndex === 1
+          TabBarItem {
+            iconName: 'profile'
+            shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
+            isSelected: currentTabIndex === 1
 
-  //           onClicked: switchToTab(1)
-  //         }
+            onClicked: switchToTab(1)
+          }
 
-  //         TabBarItem {
-  //           iconName: 'friends'
-  //           shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
-  //           isSelected: currentTabIndex === 2
+          TabBarItem {
+            iconName: 'friends'
+            shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
+            isSelected: currentTabIndex === 2
 
-  //           onClicked: switchToTab(2)
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+            onClicked: switchToTab(2)
+          }
+        }
+      }
+    }
+  }
 
-  // MacNotificationObserver {
-  //   id: observer
-  // }
+  Shortcut {
+    sequence: 'Ctrl+1'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(0)
+  }
 
-  // Component.onCompleted: {
-  //   observer.makeConnections()
-  // }
+  Shortcut {
+    sequence: 'Ctrl+2'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(1)
+  }
 
-  // Shortcut {
-  //   sequence: 'Ctrl+1'
-  //   context: Qt.ApplicationShortcut
-  //   onActivated: switchToTab(0)
-  // }
-
-  // Shortcut {
-  //   sequence: 'Ctrl+2'
-  //   context: Qt.ApplicationShortcut
-  //   onActivated: switchToTab(1)
-  // }
-
-  // Shortcut {
-  //   sequence: 'Ctrl+3'
-  //   context: Qt.ApplicationShortcut
-  //   onActivated: switchToTab(2)
-  // }
+  Shortcut {
+    sequence: 'Ctrl+3'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(2)
+  }
 }
