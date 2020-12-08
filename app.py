@@ -59,12 +59,12 @@ if __name__ == '__main__':
   engine = QtQml.QQmlApplicationEngine(parent=app)
 
   # Configure loguru
-  # logger.configure(
-  #   handlers=[{
-  #     'sink': sys.stderr,
-  #     'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>'
-  #   }]
-  # )
+  logger.configure(
+    handlers=[{
+      'sink': sys.stderr,
+      'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>'
+    }]
+  )
 
   # Get the main QML file path and load it  
   file = os.path.join(application_path, 'main.qml')
