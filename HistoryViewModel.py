@@ -266,6 +266,9 @@ class HistoryViewModel(QtCore.QObject):
       if self.selected_scrobble == scrobble:
         self.selected_scrobble_changed.emit()
 
+    # Reset flag so new scrobble can later be submitted
+    self.__should_submit_current_scrobble = False
+
   @QtCore.Slot(list)
   def __process_fetched_recent_scrobbles(self, lastfm_recent_scrobbles):
     # Tell the history list model that we are going to change the data it relies on
@@ -325,9 +328,6 @@ class HistoryViewModel(QtCore.QObject):
     self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
 
     logger.trace(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
-
-    # Reset flag so new scrobble can later be submitted
-    self.__should_submit_current_scrobble = False
 
     # Update UI content in current scrobble sidebar item
     self.current_scrobble_data_changed.emit()
@@ -432,6 +432,7 @@ class HistoryViewModel(QtCore.QObject):
 
     # Only handle this case if there was something playing previously
     if self.__current_scrobble:
+      # Submit if the music player stops as well, not just when a new track starts
       if self.__should_submit_current_scrobble:
         self.__submit_scrobble(self.__current_scrobble)
 
