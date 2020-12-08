@@ -2,11 +2,9 @@ from dataclasses import dataclass
 
 @dataclass
 class MediaPlayerState:
-  has_track_loaded: bool = False
-  player_position: str = None
-  track_title: str = None
-  artist_name: str = None
-  album_title: str = None
-  track_start: int = None
-  track_finish: int = None
-  error_message: str = ''
+  is_playing: bool
+  track_title: str
+  artist_name: str
+  album_title: str
+  track_start: float = 0.0
+  track_finish: float = None

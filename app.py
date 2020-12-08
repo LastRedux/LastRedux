@@ -14,6 +14,7 @@ from FriendsViewModel import FriendsViewModel
 from FriendsListModel import FriendsListModel
 from DetailsViewModel import DetailsViewModel
 from shared.components.NetworkImage import NetworkImage
+from plugins.AppleMusicPlugin import AppleMusicPlugin
 
 # Get the built application path
 if getattr(sys, 'frozen', False):

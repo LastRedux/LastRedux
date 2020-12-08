@@ -17,7 +17,7 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
   def run(self):
     '''Return recent Last.fm scrobbles'''
 
-    if os.environ.get('MOCK_HISTORY'):
+    if os.environ.get('MOCK'):
       # Get the first n mock tracks in reverse order since that's how they would be added
       mock_tracks = MockPlayerPlugin.MOCK_TRACKS[0:self.count]
       mock_tracks.reverse()
