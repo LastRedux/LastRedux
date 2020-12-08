@@ -90,14 +90,14 @@ class HistoryViewModel(QtCore.QObject):
     if os.environ.get('SUBMIT_SCROBBLES'):
       logger.info('Scrobble submission is enabled')
 
-    # Start polling interval to check for new media player state
+    # Start polling interval to check for new media player position
     timer = QtCore.QTimer(self)
     timer.timeout.connect(self.__fetch_new_media_player_position)
     polling_interval = 100 if os.environ.get('MOCK') else 1000
     timer.start(polling_interval)
 
   # --- Qt Property Getters and Setters ---
-  
+
   def get_current_scrobble_data(self):
     '''Return data about the currently playing track in the active media player'''
     

@@ -9,6 +9,9 @@ from datatypes.MediaPlayerState import MediaPlayerState
 from tasks.FetchAppleMusicTrackCrop import FetchAppleMusicTrackCrop
 
 class AppleMusicPlugin(QtCore.QObject):
+  # From Music.app BridgeSupport enum definitions
+  PLAYING_STATE = 1800426320
+
   stopped = QtCore.Signal()
   paused = QtCore.Signal(MediaPlayerState)
   playing = QtCore.Signal(MediaPlayerState)
@@ -30,7 +33,14 @@ class AppleMusicPlugin(QtCore.QObject):
 
     # Store the latest notification from NSNotificationObserver to access it from multiple methods
     self.notification_payload = None
-  
+
+    # Pause-play to get a new play notification with player data if something is already playing
+    if self.apple_music.isRunning():
+      # Only pause-play if something is already playing
+      if self.apple_music.playerState() == AppleMusicPlugin.PLAYING_STATE:
+        self.apple_music.pause()
+        self.apple_music.playpause()
+    
   # Objective-C function handling play/pause events
   def handleNotificationFromMusic_(self, notification):
     self.notification_payload = notification.userInfo()
