@@ -457,6 +457,9 @@ class HistoryViewModel(QtCore.QObject):
 
     # Only run this code when the track changes (or the first track is loaded)
     if current_track_changed:
+      with open('._now_playing.txt', 'w+') as f:
+        f.write(f'{new_media_player_state.artist_name} - {new_media_player_state.track_title}')
+
       # Submit the previous track when the current track changes if it hit the scrobbling threshold
       if self.__should_submit_current_scrobble:
         self.__submit_scrobble(self.__current_scrobble)
