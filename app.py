@@ -4,7 +4,14 @@ import sys
 
 from loguru import logger
 from PySide2 import QtCore, QtGui, QtQml, QtNetwork
-import loguru
+
+# Configure loguru
+logger.configure(
+  handlers=[{
+    'sink': sys.stderr,
+    'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>'
+  }]
+)
 
 from platform_integrations.WindowStyle import WindowStyle
 from HistoryViewModel import HistoryViewModel
@@ -14,7 +21,6 @@ from FriendsViewModel import FriendsViewModel
 from FriendsListModel import FriendsListModel
 from DetailsViewModel import DetailsViewModel
 from shared.components.NetworkImage import NetworkImage
-from plugins.AppleMusicPlugin import AppleMusicPlugin
 
 # Get the built application path
 if getattr(sys, 'frozen', False):
@@ -57,14 +63,6 @@ if __name__ == '__main__':
 
   # Initialize QML rendering engine
   engine = QtQml.QQmlApplicationEngine(parent=app)
-
-  # Configure loguru
-  logger.configure(
-    handlers=[{
-      'sink': sys.stderr,
-      'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>'
-    }]
-  )
 
   # Get the main QML file path and load it  
   file = os.path.join(application_path, 'main.qml')
