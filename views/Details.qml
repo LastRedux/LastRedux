@@ -106,7 +106,7 @@ Item {
 
           albumTitle: hasAlbum ? viewModel.scrobbleTrackData.album.title : '' // Use blank string as fallback because the Text element used to render the album title won't accept undefined
           albumLastfmUrl: hasAlbum && hasLastfmData && viewModel.scrobbleTrackData.album.lastfm_url
-          albumImageUrl: viewModel.scrobbleTrackData.album.image_url || ''
+          albumImageUrl: canDisplayScrobble ? (viewModel.scrobbleTrackData.album.image_url || '') : '' // Fall back to empty string if loading or if there is no image_url (Not tied to hasAlbum because we can still show art for tracks that aren't on Last.fm)
           isTrackNotFound: root.isTrackNotFound
 
           width: column.width

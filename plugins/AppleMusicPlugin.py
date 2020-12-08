@@ -23,7 +23,7 @@ class AppleMusicPlugin(QtCore.QObject):
     # Set up NSNotificationCenter
     # Using https://lethain.com/how-to-use-selectors-in-pyobjc/ as reference
     self.default_center = NSDistributedNotificationCenter.defaultCenter()
-    observer = self.default_center.addObserver_selector_name_object_(self, 'handleNotificationFromMusic:', 'com.apple.iTunes.playerInfo', None) # TODO: Try not saving to variable?
+    self.default_center.addObserver_selector_name_object_(self, 'handleNotificationFromMusic:', 'com.apple.iTunes.playerInfo', None)
     
     # Store the latest media player state received by the observer
     self.current_state = None
@@ -97,7 +97,7 @@ class AppleMusicPlugin(QtCore.QObject):
       self.current_state.track_start = track_crop['track_start'] 
       self.current_state.track_finish = track_crop['track_finish']
     else:
-      total_time = self.notification_payload.userInfo().get('Total Time')
+      total_time = self.notification_payload.get('Total Time')
 
       if total_time:
         self.current_state.track_finish = total_time / 1000 # Convert from ms to s
