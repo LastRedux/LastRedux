@@ -11,6 +11,8 @@ import util.db_helper as db_helper
 
 class LastfmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
+  MAX_RETRIES = 3
+  NOT_FOUND_ERRORS = ['Artist not found', 'Track not found', 'Album not found']
 
   def __init__(self, api_key, client_secret):
     # Private attributes
@@ -44,8 +46,27 @@ class LastfmApiWrapper:
     
     return api_sig
 
-  def __lastfm_request(self, payload, http_method='GET'):
-    '''Make an HTTP request to last.fm and attach the needed keys'''
+  def __json_request(self, payload, headers, http_method='GET'):
+    '''Make an HTTP request to Last.fm and parse the JSON response'''
+
+    resp = None
+    resp_json = None
+
+    if http_method == 'GET':
+      # TODO: Handle connection errors
+      resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
+    elif http_method == 'POST':
+      resp = requests.post('https://ws.audioscrobbler.com/2.0/', headers=headers, data=payload)
+
+    try:
+      resp_json = resp.json()
+    except json.decoder.JSONDecodeError:
+      logger.error(f'Error decoding Last.fm response: {resp.text}')
+
+    return resp_json
+
+  def __lastfm_request(self, payload, key_needed=None, http_method='GET'):
+    '''Make an request to Last.fm and attach the needed keys'''
 
     headers = {'user-agent': self.USER_AGENT}
 
@@ -58,22 +79,25 @@ class LastfmApiWrapper:
     # Generate method signature after all other keys are added to the payload
     payload['api_sig'] = self.__generate_method_signature(payload)
 
-    resp = None
     resp_json = None
 
-    if http_method == 'GET':
-      # TODO: Handle connection errors
-      resp = requests.get('https://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
-    elif http_method == 'POST':
-      resp = requests.post('https://ws.audioscrobbler.com/2.0/', headers=headers, data=payload)
+    # Make the request with automatic retries up to a limit
+    for i in range(LastfmApiWrapper.MAX_RETRIES):
+      resp_json = self.__json_request(payload, headers, http_method)
+    
+      # Retry request if the key needed in the response is missing (Last.fm sometimes sends back incomplete responses)
+      if 'error' in resp_json:
+        if resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
+          # Not found errors are OK
+          break
+
+        logger.error(f'Last.fm request failed to fetch {key_needed} from {payload["method"]}: {resp_json}')
+      else:
+        break
     else:
-      raise Exception('Invalid HTTP method') 
-
-    try:
-      resp_json = resp.json()
-    except json.decoder.JSONDecodeError:
-      logger.error(f'Error decoding Last.fm response: {resp.text}')
-
+      # The key was never found (the for loop completed without breaking)
+      logger.error(f'Last.fm fatal failure: Could not fetch {key_needed} from {payload["method"]} after {LastfmApiWrapper.MAX_RETRIES} retries')
+    
     # TODO: Handle rate limit condition
 
     return resp_json
@@ -164,7 +188,7 @@ class LastfmApiWrapper:
     })
 
   def get_recent_scrobbles(self, username=None, count=None):
-    '''Get the user's 30 most recent scrobbles'''
+    '''Get the user's recent scrobbles'''
 
     # Default parameters cannot refer to self
     if not username:
@@ -194,7 +218,7 @@ class LastfmApiWrapper:
       'user': self.__username,
       'from': midnight,
       'limit': 1
-    })
+    }, key_needed='recenttracks')
 
     return int(resp['recenttracks']['@attr']['total'])
 
