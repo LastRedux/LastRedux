@@ -13,7 +13,7 @@ class FriendsListModel(QtCore.QAbstractListModel):
   __TRACK_ARTIST_LASTFM_URL_ROLE = QtCore.Qt.UserRole + 7
   __TRACK_ALBUM_IMAGE_URL_ROLE = QtCore.Qt.UserRole + 8
   __IS_TRACK_PLAYING_ROLE = QtCore.Qt.UserRole + 9
-  __HAS_ADDITIONAL_DATA_ROLE = QtCore.Qt.UserRole + 10
+  __IS_LOADING_ROLE = QtCore.Qt.UserRole + 10
 
   def __int__(self, parent=None):
     QtCore.QAbstractListModel.__init__(self, parent)
@@ -58,7 +58,7 @@ class FriendsListModel(QtCore.QAbstractListModel):
       self.__TRACK_ARTIST_LASTFM_URL_ROLE: b'trackArtistLastfmUrl',
       self.__TRACK_ALBUM_IMAGE_URL_ROLE: b'trackAlbumImageUrl',
       self.__IS_TRACK_PLAYING_ROLE: b'isTrackPlaying',
-      self.__HAS_ADDITIONAL_DATA_ROLE: b'hasAdditionalData'
+      self.__IS_LOADING_ROLE: b'isLoading'
     }
 
   def rowCount(self, parent=QtCore.QModelIndex()):
@@ -90,6 +90,8 @@ class FriendsListModel(QtCore.QAbstractListModel):
           return friend.image_url
         elif role == self.__LASTFM_URL_ROLE:
           return friend.lastfm_url
+        elif role == self.__IS_LOADING_ROLE:
+          return friend.is_loading
         elif role == self.__TRACK_TITLE_ROLE:
           return track.title if track else ''
         elif role == self.__TRACK_LASTFM_URL_ROLE:
@@ -102,8 +104,6 @@ class FriendsListModel(QtCore.QAbstractListModel):
           return album.image_url if album else ''
         elif role == self.__IS_TRACK_PLAYING_ROLE:
           return friend.is_track_playing if track else False
-        elif role == self.__HAS_ADDITIONAL_DATA_ROLE:
-          return True if track else False # Force bool
 
     # This is for DisplayRole or if the friends reference doesn't exist
     return None 

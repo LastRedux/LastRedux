@@ -31,7 +31,7 @@ Item {
       trackArtistName: model.trackArtistName
       trackArtistLastfmUrl: model.trackArtistLastfmUrl
       isTrackPlaying: model.isTrackPlaying
-      hasAdditionalData: model.hasAdditionalData
+      isLoading: model.isLoading
       z: listView.count - model.index // Topmost items should appear highest in the z stack so shadows are not covered by subsequent items
 
       width: listView.width

@@ -17,9 +17,9 @@ Item {
   property alias trackLastfmUrl: trackTitleLabel.address
   property alias trackArtistLastfmUrl: trackArtistNameView.address
   property bool isTrackPlaying
-  property bool hasAdditionalData
+  property bool isLoading
 
-  property bool shouldShowTrackSection: !hasAdditionalData || (hasAdditionalData && trackTitle)
+  property bool shouldShowTrackSection: isLoading || (!isLoading && trackTitle) // Show track section if it's still loading or if it loaded and there's a track
 
   height: shouldShowTrackSection ? trackLink.y + trackLink.height : userLink.height
 
@@ -234,7 +234,7 @@ Item {
       isShadowEnabled: !isTrackPlaying
       text: trackTitle
       wrapMode: Text.Wrap
-      visible: hasAdditionalData
+      visible: !isLoading
 
       anchors {
         top: parent.top
@@ -249,7 +249,7 @@ Item {
     Placeholder {
       id: trackTitlePlaceholder
 
-      visible: !hasAdditionalData
+      visible: isLoading
 
       width: 60 + Math.ceil(Math.random() * 70)
 
@@ -271,7 +271,7 @@ Item {
       style: kBodyPrimary
       text: trackArtistName
       wrapMode: Text.Wrap
-      visible: hasAdditionalData
+      visible: !isLoading
 
       anchors {
         top: trackTitleLabel.bottom
@@ -283,7 +283,7 @@ Item {
     }
 
     Placeholder {
-      visible: !hasAdditionalData
+      visible: isLoading
       
       width: 40 + Math.ceil(Math.random() * 70)
 

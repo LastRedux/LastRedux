@@ -10,6 +10,7 @@ class Friend:
   lastfm_url: str
   track: Track = None
   is_track_playing: bool = None
+  is_loading: bool = True
 
   @staticmethod
   def build_from_lastfm_friend(lastfm_friend):

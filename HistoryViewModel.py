@@ -360,6 +360,8 @@ class HistoryViewModel(QtCore.QObject):
     self.__current_track_start = new_media_player_state.track_start
     self.__current_track_finish = new_media_player_state.track_finish
 
+    logger.trace(f'New media player state: {new_media_player_state}')
+
     self.__load_additional_scrobble_data(self.__current_scrobble)
 
   def __load_additional_scrobble_data(self, scrobble):
