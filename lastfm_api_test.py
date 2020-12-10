@@ -6,7 +6,7 @@ import util.db_helper as db_helper
 lastfm_instance = lastfm.get_static_instance()
 
 # User info
-user_info = lastfm_instance.get_user_info()['user']
+user_info = lastfm_instance.get_account_details()['user']
 
 real_name = user_info['realname']
 username = user_info['name']
@@ -85,19 +85,28 @@ print('\n***** FRIENDS *****\n')
 for friend in friends:
   friend_username = friend["name"]
   friend_real_name = friend.get('realname')
-
-  friends_track = lastfm_instance.get_recent_scrobbles(friend_username, 1)['recenttracks']['track'][0]
-  now_playing = friends_track.get('@attr', {}).get('nowplaying') == 'true'
-  track_string = f'{friends_track["artist"]["name"]} - {friends_track["name"]}'
+  friends_track = None
   
+  try:
+    friends_track = lastfm_instance.get_recent_scrobbles(friend_username, 1)['recenttracks']['track'][0]
+  except IndexError:
+    # No friend track
+    pass
+
   if friend_real_name:
     print(f'{friend_real_name} ({friend_username})')
   else:
     print(f'{friend_username}')
+  
+  if friends_track:
+    now_playing = friends_track.get('@attr', {}).get('nowplaying') == 'true'
+    track_string = f'{friends_track["artist"]["name"]} - {friends_track["name"]}'
 
-  if now_playing:
-    print(f'Now playing: {track_string}')
+    if now_playing:
+      print(f'Now playing: {track_string}')
+    else:
+      print(f'Last listened to: {track_string}')
   else:
-    print(f'Last listened to: {track_string}')
-
+    print('No scrobbles')
+    
   print()
