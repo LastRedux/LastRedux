@@ -47,24 +47,24 @@ class ProfileViewModel(QtCore.QObject):
     self.overall_statistics_changed.emit()
     self.top_artists_changed.emit()
 
-    # Update loading indicator on tab bar if it's showing and everythiing is loaded
-    if self.__should_show_loading_indicator and self.__top_tracks and self.__top_albums:
+    # Update loading indicator on tab bar if it's showing and everything is loaded
+    if self.__is_loading and self.__top_tracks and self.__top_albums:
       self.__handle_loading_done()
 
   def __process_new_top_albums(self, new_album_statistics):
     self.__top_albums = new_album_statistics
     self.top_albums_changed.emit()
 
-    # Update loading indicator on tab bar if it's showing and everythiing is loaded
-    if self.__should_show_loading_indicator and self.__top_tracks and self.__top_artists:
+    # Update loading indicator on tab bar if it's showing and everything is loaded
+    if self.__is_loading and self.__top_tracks and self.__top_artists:
       self.__handle_loading_done()
 
   def __process_new_top_tracks(self, new_track_statistics):
     self.__top_tracks = new_track_statistics
     self.top_tracks_changed.emit()
 
-    # Update loading indicator on tab bar if it's showing and everythiing is loaded
-    if self.__should_show_loading_indicator and self.__top_albums and self.__top_artists:
+    # Update loading indicator on tab bar if it's showing and everything is loaded
+    if self.__is_loading and self.__top_albums and self.__top_artists:
       self.__handle_loading_done()
 
   # --- Slots ---
