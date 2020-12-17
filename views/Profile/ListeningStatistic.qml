@@ -59,6 +59,7 @@ Item {
     
     elide: Text.ElideRight
     maximumLineCount: 2
+    opacity: 0.81
     visible: text
     wrapMode: Text.Wrap
     style: kBodyPrimary

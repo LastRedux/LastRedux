@@ -47,7 +47,7 @@ class ProfileViewModel(QtCore.QObject):
     self.overall_statistics_changed.emit()
     self.top_artists_changed.emit()
 
-    # Update loading indicator on tab bar if it's showing and everything is loaded
+    # Update loading indicator on tab bar if it's showing and everythiing is loaded
     if self.__is_loading and self.__top_tracks and self.__top_albums:
       self.__handle_loading_done()
 
@@ -55,7 +55,7 @@ class ProfileViewModel(QtCore.QObject):
     self.__top_albums = new_album_statistics
     self.top_albums_changed.emit()
 
-    # Update loading indicator on tab bar if it's showing and everything is loaded
+    # Update loading indicator on tab bar if it's showing and everythiing is loaded
     if self.__is_loading and self.__top_tracks and self.__top_artists:
       self.__handle_loading_done()
 
@@ -63,7 +63,7 @@ class ProfileViewModel(QtCore.QObject):
     self.__top_tracks = new_track_statistics
     self.top_tracks_changed.emit()
 
-    # Update loading indicator on tab bar if it's showing and everything is loaded
+    # Update loading indicator on tab bar if it's showing and everythiing is loaded
     if self.__is_loading and self.__top_albums and self.__top_artists:
       self.__handle_loading_done()
 
