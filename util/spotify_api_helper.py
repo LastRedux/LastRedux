@@ -27,31 +27,46 @@ def search_tracks(query):
   }).json()
 
 def simplify_title(title, is_album=False):
-  '''Simplify track and album titles to improve matching on Spotify'''
+  '''
+  Simplify track and album titles to improve matching on Spotify
+  
+  Example:
+  in: 'FRANCHISE (feat. Young Thug & M.I.A.) - Single'
+  out: 'franchise    young thug   m i a '
+  '''
 
   # Lowercase title and remove diacriticals to make regex cleaner (Spotify doesn't care about case)
   title = unidecode(title.lower())
 
-  if is_album:
-    # Remove platform specific words for albums
-    title = title.replace(' - single', '').replace(' - ep', '').replace('edition', '')
+  # Remove special keywords (before regex in case one of the keywords is actually in the name)
+  title = title.replace(' - single', '').replace(' - ep', '').replace('edition', '')
   
   # Remove any text inside brackets (meant to get rid of movie soundtrack labels)
-  # title = re.sub(r'\[.+\]', '', title)
+  title = re.sub(r'\[from.+\]', '', title)
 
   # Only allow alphanumeric chars, spaces, asterisks (for censored tracks), and hyphens
   title = re.sub(r'[^A-Za-z0-9\-\* ]+', ' ', title)
 
-  # Remove the world feat
+  # Remove the world featuring/feat
+  title = title.replace('featuring', '')
   title = title.replace('feat', '')
 
   # Cut off censored words at the censor mark for better results (`f**k` turns into `f`)
   title = re.sub('\*+\w+', '', title)
 
+  # Remove general keywords
+  title = title.replace('album version', '')
+
   return title
 
 def simplify_artist_name(artist_name):
-  '''Simplify artist name to improve matching on Spotify'''
+  '''
+  Simplify artist name to improve matching on Spotify
+  
+  Example:
+  in: 'J Balvin, Dua Lipa, Bad Bunny & Tainy'
+  out: 'j balvin dua lipa bad bunny  tainy'
+  '''
 
   # Lowercase artist name to be consistent between platforms (Apple Music doesn't always use correct capitalization for example)
   artist_name = artist_name.lower()
@@ -60,6 +75,21 @@ def simplify_artist_name(artist_name):
   artist_name = artist_name.replace('&', '').replace(',', '')
 
   return artist_name
+
+def nuke_artist_name(artist_name):
+  '''
+  Totally reduce artist name to check matches between a simplified string and a list of individual artists
+  
+  Example:
+  in: J Balvin, Dua Lipa, Bad Bunny & Tainy
+  out: jbalvindualipabadbunnytainy
+
+  Example:
+  in: J Balvin
+  out: jbalvin (which is in jbalvindualipabadbunnytainy)
+  '''
+
+  return artist_name.lower().replace('.', '').replace(' ', '').replace('-', '').replace('–', '').replace('/', '').replace('\\', '').replace('&', '').replace(',', '')
 
 def get_images(track_title, artist_name, album_title, no_artists=False):
   global token
@@ -72,7 +102,6 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
     simplified_album_title = simplify_title(album_title, is_album=True)
 
   query = f'{simplified_track_title} {simplified_artist_name} {simplified_album_title}'
-  # print(query)
 
   search_resp = search_tracks(query)
 
@@ -90,8 +119,6 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
     # No results
     return
 
-  # Sort tracks by popularity
-  #sorted_results = search_results##sorted(search_results['tracks']['items'], key=lambda k: k['popularity'], reverse=True)
   track = None
 
   # Find track with matching
@@ -99,7 +126,8 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
     found = False
 
     for artist in track_result['artists']:
-      if artist['name'].lower() in simplified_artist_name:
+      # Compare simplified artist names to make sure they match
+      if nuke_artist_name(artist['name']) in nuke_artist_name(simplified_artist_name):
         track = track_result
         found = True
         break

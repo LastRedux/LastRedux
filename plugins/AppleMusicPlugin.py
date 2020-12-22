@@ -29,16 +29,19 @@ class FetchTrackCrop(QtCore.QObject, QtCore.QRunnable):
 class AppleMusicPlugin(QtCore.QObject):
   PLAYING_STATE = 1800426320 # From Music.app BridgeSupport enum definitions
 
+  # Media player signals
   stopped = QtCore.Signal()
   paused = QtCore.Signal(MediaPlayerState)
   playing = QtCore.Signal(MediaPlayerState)
+
+  # Apple Music signals
   does_not_have_artist_error = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
 
     # Store the current media player state
-    self.__state = None
+    self.__state: MediaPlayerState = None
 
     # Store reference to Apple Music app in AppleScript
     self.__applescript_music_app = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
@@ -56,6 +59,8 @@ class AppleMusicPlugin(QtCore.QObject):
       if self.__applescript_music_app.playerState() == AppleMusicPlugin.PLAYING_STATE:
         self.__applescript_music_app.pause()
         self.__applescript_music_app.playpause() # There is no play function for whatever reason
+
+  # --- Media Player Implementation ---
 
   def get_player_position(self) -> float:
     '''Use AppleScript to fetch the current Apple Music playback position'''

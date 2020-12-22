@@ -42,19 +42,35 @@ Item {
       style: kTitleTertiary
       text: 'Mock Player Plugin'
     }
-    
-    LabelButton {
-      isCompact: true
-      title: 'Play next song'
 
-      onClicked: viewModel.MOCK_playNextSong()
-    }
+    Row {
+      LabelButton {
+        isCompact: true
+        title: '⏮'
 
-    LabelButton {
-      isCompact: true
-      title: 'Move song to 75%'
+        onClicked: viewModel.mock_event('previous')
+      }
 
-      onClicked: viewModel.MOCK_moveTo75Percent()
+      LabelButton {
+        isCompact: true
+        title: '⏯'
+
+        onClicked: viewModel.mock_event('playPause')
+      }
+      
+      LabelButton {
+        isCompact: true
+        title: '⏩'
+
+        onClicked: viewModel.mock_event('scrubForward')
+      }
+
+      LabelButton {
+        isCompact: true
+        title: '⏭'
+
+        onClicked: viewModel.mock_event('next')
+      }
     }
   }
 
@@ -112,7 +128,14 @@ Item {
   Shortcut {
     sequence: 'Ctrl+]'
     context: Qt.ApplicationShortcut
-    onActivated: viewModel.selectedScrobbleIndex++
+    onActivated: {
+      if (viewModel.selectedScrobbleIndex == -2 && !viewModel.currentScrobbleData) {
+        // Select first history item if there is scrobble selected and no current scrobble
+        viewModel.selectedScrobbleIndex = 0
+      } else {
+        viewModel.selectedScrobbleIndex++
+      }
+    }
   }
 
   Shortcut {

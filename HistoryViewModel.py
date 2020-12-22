@@ -126,8 +126,12 @@ class HistoryViewModel(QtCore.QObject):
     return self.__selected_scrobble_index
   
   def set_selected_scrobble_index(self, new_index):
-    # Prevent setting an illegal index when going back/forward with keyboard
-    if new_index == len(self.scrobble_history) or new_index == -2:
+    # Prevent setting an illegal index with keyboard shortcuts
+    if (
+      new_index == len(self.scrobble_history) # Prevent navigating past scrobble history
+      or new_index == -2 # Prevent navigating into negative numbers
+      or self.__current_scrobble is None and new_index == -1 # Prevent navigating to current scrobble when there isn't one
+    ):
       return
     
     self.__selected_scrobble_index = new_index
@@ -209,16 +213,9 @@ class HistoryViewModel(QtCore.QObject):
     self.is_in_mini_mode = not self.is_in_mini_mode
     self.is_in_mini_mode_changed.emit()
 
-  # --- Mock Slots ---
-
-  @QtCore.Slot()
-  def MOCK_playNextSong(self):
-    self.media_player.track_index += 1
-    self.media_player.player_position = 0
-
-  @QtCore.Slot()
-  def MOCK_moveTo75Percent(self):
-    self.media_player.player_position = self.__cached_media_player_data['track_finish'] * 0.75
+  @QtCore.Slot(str)
+  def mock_event(self, event_name):
+    self.media_player.mock_event(event_name)
 
   # --- Private Functions ---
 
@@ -321,7 +318,7 @@ class HistoryViewModel(QtCore.QObject):
     # This will set the Scrobble's timestamp to the current date
     self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
 
-    logger.trace(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
+    logger.debug(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
 
     # Update UI content in current scrobble sidebar item
     self.current_scrobble_data_changed.emit()
@@ -373,7 +370,7 @@ class HistoryViewModel(QtCore.QObject):
   def __recent_scrobbles_done_loading(self):
     self.__scrobbles_with_additional_data_count += 1
 
-    if self.__scrobbles_with_additional_data_count == self.__INITIAL_SCROBBLE_HISTORY_COUNT:
+    if self.__scrobbles_with_additional_data_count == len(self.scrobble_history):
       self.__should_show_loading_indicator = False
       self.should_show_loading_indicator_changed.emit()
 

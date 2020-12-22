@@ -12,7 +12,7 @@ import util.db_helper as db_helper
 class LastfmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
   MAX_RETRIES = 3
-  NOT_FOUND_ERRORS = ['Artist not found', 'Track not found', 'Album not found']
+  NOT_FOUND_ERRORS = ['The artist you supplied could not be found', 'Track not found', 'Album not found']
 
   def __init__(self, api_key, client_secret):
     # Private attributes
