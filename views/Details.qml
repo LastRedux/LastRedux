@@ -10,7 +10,6 @@ Item {
   
   // Store reference to view model counterpart that can be set from main.qml
   property DetailsViewModel viewModel
-  property alias isInMiniMode: trackDetails.isInMiniMode
 
   // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
   property bool canDisplayScrobble: (viewModel && viewModel.scrobbleTrackData) ? true : false
@@ -109,6 +108,9 @@ Item {
           albumImageUrl: canDisplayScrobble ? (viewModel.scrobbleTrackData.album.image_url || '') : '' // Fall back to empty string if loading or if there is no image_url (Not tied to hasAlbum because we can still show art for tracks that aren't on Last.fm)
           isTrackNotFound: root.isTrackNotFound
 
+          isPlayerPaused: viewModel.isPlayerPaused
+          isInMiniMode: viewModel.isInMiniMode
+
           width: column.width
         }
 
@@ -129,6 +131,7 @@ Item {
           
           isReadMoreLinkVisible: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_bio
           hasLastfmData: root.hasLastfmData
+          isInMiniMode: viewModel.isInMiniMode
 
           width: column.width
         }
@@ -136,7 +139,7 @@ Item {
         // --- Similar Artists ---
 
         Item {
-          visible: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_similar_artists.length
+          visible: !isInMiniMode && hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_similar_artists.length
 
           width: column.width
           height: similarArtists.y + similarArtists.height + 30

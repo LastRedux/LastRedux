@@ -24,6 +24,7 @@ class HistoryViewModel(QtCore.QObject):
   current_scrobble_percentage_changed = QtCore.Signal()
   is_using_mock_player_plugin_changed = QtCore.Signal()
   is_in_mini_mode_changed = QtCore.Signal()
+  is_player_paused_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
@@ -48,7 +49,9 @@ class HistoryViewModel(QtCore.QObject):
     self.media_player.paused.connect(self.__handle_media_player_paused)
 
     # Track window mode
+    # TODO: Move these properties to an App view model
     self.is_in_mini_mode = False
+    self.is_player_paused = False
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
@@ -112,15 +115,6 @@ class HistoryViewModel(QtCore.QObject):
     
     # Return None if there isn't a curent scrobble (such as when the app is first loaded or if there is no track playing)
     return None
-
-  def get_current_scrobble_percentage(self):
-    return self.__current_scrobble_percentage
-  
-  def get_is_using_mock_player_plugin(self):
-    return isinstance(self.media_player, MockPlayerPlugin)
-
-  def get_is_in_mini_mode(self):
-    return self.is_in_mini_mode
     
   def get_selected_scrobble_index(self):
     '''Make the private selected scrobble index variable available to the UI'''
@@ -455,6 +449,10 @@ class HistoryViewModel(QtCore.QObject):
   def __handle_media_player_playing(self, new_media_player_state):
     '''Handle media player play event'''
 
+    # Update playback indicator
+    self.is_player_paused = False
+    self.is_player_paused_changed.emit()
+
     current_track_changed = not self.__current_scrobble or new_media_player_state.track_title != self.__current_scrobble.title or new_media_player_state.artist_name != self.__current_scrobble.artist.name or new_media_player_state.album_title != self.__current_scrobble.album.title
 
     # Only run this code when the track changes (or the first track is loaded)
@@ -471,13 +469,14 @@ class HistoryViewModel(QtCore.QObject):
   def __handle_media_player_paused(self, new_media_player_state):
     '''Handle media player pause event'''
 
-    pass
+    # Update playback indicator
+    self.is_player_paused = True
+    self.is_player_paused_changed.emit()
 
   # --- Qt Properties ---
   
   currentScrobbleData = QtCore.Property('QVariant', get_current_scrobble_data, notify=current_scrobble_data_changed)
-  currentScrobblePercentage = QtCore.Property(float, get_current_scrobble_percentage, notify=current_scrobble_percentage_changed)
-  isUsingMockPlayerPlugin = QtCore.Property(bool, get_is_using_mock_player_plugin, notify=is_using_mock_player_plugin_changed)
+  currentScrobblePercentage = QtCore.Property(float, lambda self: self.__current_scrobble_percentage, notify=current_scrobble_percentage_changed)
+  isUsingMockPlayerPlugin = QtCore.Property(bool, lambda self: isinstance(self.media_player, MockPlayerPlugin), notify=is_using_mock_player_plugin_changed)
   selectedScrobbleIndex = QtCore.Property(int, get_selected_scrobble_index, set_selected_scrobble_index, notify=selected_scrobble_index_changed)
-  miniMode = QtCore.Property(bool, get_is_in_mini_mode, notify=is_in_mini_mode_changed) # TODO: Change to isInMiniMode
   shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)
