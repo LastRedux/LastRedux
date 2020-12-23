@@ -1,13 +1,15 @@
 import os
 from datetime import datetime
+from plugins.AppleMusicPlugin import AppleMusicPlugin
 
 from loguru import logger
 from PySide2 import QtCore
+from ScriptingBridge import SBApplication
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
-from plugins.AppleMusicPlugin import AppleMusicPlugin
+from plugins.SpotifyPlugin import SpotifyPlugin
 from datatypes.Scrobble import Scrobble
-from tasks.FetchAppleMusicPlayerPosition import FetchAppleMusicPlayerPosition
+from tasks.FetchPlayerPosition import FetchPlayerPosition
 from tasks.LoadAdditionalScrobbleDataTask import LoadAdditionalScrobbleDataTask
 from tasks.SubmitTrackIsLovedChanged import SubmitTrackIsLovedChanged
 from tasks.FetchRecentScrobblesTask import FetchRecentScrobblesTask
@@ -43,7 +45,25 @@ class HistoryViewModel(QtCore.QObject):
     QtCore.QObject.__init__(self)
     
     # Initialize media player plugin
-    self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
+    self.media_player = None
+    
+    if os.environ.get('MOCK'):
+      self.media_player = MockPlayerPlugin()
+    else:
+      use_spotify = False
+      spotify_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
+      
+      # TODO: Use better method to figure out if Spotify is installed without logged error
+      if spotify_app:
+        if spotify_app.isRunning():
+          use_spotify = True
+      
+      if use_spotify:
+        self.media_player = SpotifyPlugin()
+      else:
+        # Use Apple Music plugin in all other cases since every Mac has Music.app
+        self.media_player = AppleMusicPlugin()
+
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
     self.media_player.paused.connect(self.__handle_media_player_paused)
@@ -398,7 +418,7 @@ class HistoryViewModel(QtCore.QObject):
     # Skip fetching if there isn't a track playing
     if self.__current_scrobble:
       # Create thread task with reference to the media player
-      fetch_new_media_player_position = FetchAppleMusicPlayerPosition(self.media_player)
+      fetch_new_media_player_position = FetchPlayerPosition(self.media_player)
 
       # Process the new media player position after the data is returned
       fetch_new_media_player_position.finished.connect(self.__process_new_media_player_position)

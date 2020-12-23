@@ -1,6 +1,6 @@
 from PySide2 import QtCore
 
-class FetchAppleMusicPlayerPosition(QtCore.QObject, QtCore.QRunnable):  
+class FetchPlayerPosition(QtCore.QObject, QtCore.QRunnable):  
   finished = QtCore.Signal(dict)
 
   def __init__(self, media_player):
@@ -10,7 +10,7 @@ class FetchAppleMusicPlayerPosition(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self):
-    '''Fetch current playback position timestamp using Apple Music AppleScript commands'''
+    '''Fetch current playback position timestamp using Apple Music/Spotify AppleScript commands'''
 
     player_position = self.media_player.get_player_position()
     self.finished.emit(player_position)
