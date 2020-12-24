@@ -29,7 +29,7 @@ Item {
       Label {
         horizontalAlignment: Qt.AlignHCenter
         textFormat: Text.StyledText
-        text: 'Connect to Last.fm to track Apple Music listening activity on this Mac.<br>If you don’t have a Last.fm account yet, you can create one <b><a href="https://www.last.fm/join">here</a></b>.'
+        text: 'Connect to Last.fm to track Music app (Apple Music or local library) listening activity on this Mac.<br>If you don’t have a Last.fm account yet, you can create one <b><a href="https://www.last.fm/join">here</a></b>.'
         lineHeight: 1.25
         
         onLinkActivated: Qt.openUrlExternally(link)

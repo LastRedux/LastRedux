@@ -129,6 +129,18 @@ Window {
 
         onTriggered: historyViewModel.toggleMiniMode()
       }
+
+      MenuItem {
+        text: qsTr('Use Music app')
+
+        onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
+      }
+
+      MenuItem {
+        text: qsTr('Use Spotify')
+
+        onTriggered: historyViewModel.switchToMediaPlugin('spotify')
+      }
       
       MenuItem {
         text: qsTr('Preferences...')

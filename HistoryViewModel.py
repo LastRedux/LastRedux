@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from plugins.AppleMusicPlugin import AppleMusicPlugin
+from plugins.MusicAppPlugin import MusicAppPlugin
 
 from loguru import logger
 from PySide2 import QtCore
@@ -44,7 +44,9 @@ class HistoryViewModel(QtCore.QObject):
   def __init__(self):
     QtCore.QObject.__init__(self)
     
-    # Initialize media player plugin
+    # Initialize media player plugins
+    self.__spotify_plugin = SpotifyPlugin()
+    self.__music_app_plugin = MusicAppPlugin()
     self.media_player = None
     
     if os.environ.get('MOCK'):
@@ -59,10 +61,10 @@ class HistoryViewModel(QtCore.QObject):
           use_spotify = True
       
       if use_spotify:
-        self.media_player = SpotifyPlugin()
+        self.media_player = self.__spotify_plugin
       else:
-        # Use Apple Music plugin in all other cases since every Mac has Music.app
-        self.media_player = AppleMusicPlugin()
+        # Use Music app plugin in all other cases since every Mac has it
+        self.media_player = self.__music_app_plugin
 
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
@@ -234,6 +236,28 @@ class HistoryViewModel(QtCore.QObject):
     self.is_in_mini_mode_changed.emit()
 
   @QtCore.Slot(str)
+  def switchToMediaPlugin(self, media_plugin_name):
+    # Fake stopped event to unload the current scrobble
+    self.__handle_media_player_stopped()
+
+    # Disconnect event signals
+    self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
+    self.media_player.playing.disconnect(self.__handle_media_player_playing)
+    self.media_player.paused.disconnect(self.__handle_media_player_paused)
+
+    if media_plugin_name == 'spotify':
+      self.media_player = self.__spotify_plugin
+    elif media_plugin_name == 'musicApp':
+      self.media_player = self.__music_app_plugin
+
+    # Reconnect event signals
+    self.media_player.stopped.connect(self.__handle_media_player_stopped)
+    self.media_player.playing.connect(self.__handle_media_player_playing)
+    self.media_player.paused.connect(self.__handle_media_player_paused)
+
+    self.media_player.load_track_with_applescript()
+
+  @QtCore.Slot(str)
   def mock_event(self, event_name):
     self.media_player.mock_event(event_name)
 
@@ -310,7 +334,7 @@ class HistoryViewModel(QtCore.QObject):
       return 0
 
     # Compensate for custom track start and end times
-    # TODO: Only do this if the media player is Apple Music/iTunes
+    # TODO: Only do this if the media player is the mac Music app
     relative_position = self.__furthest_player_position_reached - self.__current_track_start
     relative_track_length = self.__current_track_finish - self.__current_track_start
     min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database

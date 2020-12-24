@@ -35,27 +35,21 @@ class SpotifyPlugin(QtCore.QObject):
     if self.__applescript_spotify_app.isRunning():
       # Only load if something is already playing
       if self.__applescript_spotify_app.playerState() == SpotifyPlugin.PLAYING_STATE:
-        current_track = self.__applescript_spotify_app.currentTrack()
-
-        self.__state = MediaPlayerState(
-          is_playing=True,
-          track_title=current_track.name(),
-          artist_name=current_track.artist(),
-          album_title=current_track.album(), # TODO: Make sure this isn't going to cause problems without a fallback
-          track_start=0,
-          track_finish=current_track.duration() / 1000 # Convert from ms to s
-        )
-
-        # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
-        timer = QtCore.QTimer(self)
-        timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
-        timer.timeout.connect(lambda: self.playing.emit(self.__state))
-        timer.start(1000)
+        self.load_track_with_applescript()
 
   # --- Media Player Implementation ---
 
   def get_player_position(self) -> float:
     return self.__applescript_spotify_app.playerPosition()
+
+  def load_track_with_applescript(self):
+    self.__state = MediaPlayerState.build_from_applescript_track(self.__applescript_spotify_app.currentTrack())
+
+    # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
+    timer = QtCore.QTimer(self)
+    timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
+    timer.timeout.connect(lambda: self.playing.emit(self.__state))
+    timer.start(1000)
 
   # --- Private Methods ---
 

@@ -10,7 +10,7 @@ class FetchPlayerPosition(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self):
-    '''Fetch current playback position timestamp using Apple Music/Spotify AppleScript commands'''
+    '''Fetch current playback position timestamp using Music.app/Spotify AppleScript commands'''
 
     player_position = self.media_player.get_player_position()
     self.finished.emit(player_position)

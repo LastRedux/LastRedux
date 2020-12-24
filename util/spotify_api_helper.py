@@ -26,7 +26,7 @@ def search_tracks(query):
     'Authorization': f'Bearer {token}'
   }).json()
 
-def simplify_title(title, is_album=False):
+def simplify_title(title):
   '''
   Simplify track and album titles to improve matching on Spotify
   
@@ -99,7 +99,7 @@ def get_images(track_title, artist_name, album_title, no_artists=False):
   simplified_album_title = '' # Not all tracks have albums
   
   if album_title:
-    simplified_album_title = simplify_title(album_title, is_album=True)
+    simplified_album_title = simplify_title(album_title)
 
   query = f'{simplified_track_title} {simplified_artist_name} {simplified_album_title}'
 
