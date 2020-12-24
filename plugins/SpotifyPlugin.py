@@ -32,23 +32,33 @@ class SpotifyPlugin(QtCore.QObject):
     self.__default_center.addObserver_selector_name_object_(self, '__handleNotificationFromSpotify:', 'com.spotify.client.PlaybackStateChanged', None)
 
     # Get current song on launch without waiting for a playing notification (the user is already listening to something)
-    if self.__applescript_spotify_app.isRunning():
+    if self.is_open():
       # Only load if something is already playing
       if self.__applescript_spotify_app.playerState() == SpotifyPlugin.PLAYING_STATE:
         self.load_track_with_applescript()
+
+  def __str__(self):
+    return 'Spotify'
 
   # --- Media Player Implementation ---
 
   def get_player_position(self) -> float:
     return self.__applescript_spotify_app.playerPosition()
 
+  def is_open(self):
+    return self.__applescript_spotify_app.isRunning()
+
   def load_track_with_applescript(self):
-    self.__state = MediaPlayerState.build_from_applescript_track(self.__applescript_spotify_app.currentTrack())
+    # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
+    if not self.__applescript_spotify_app.isRunning():
+      return
+
+    self.__state = MediaPlayerState.build_from_applescript_track(self.__applescript_spotify_app.currentTrack(), self.__applescript_spotify_app.playerState() == SpotifyPlugin.PLAYING_STATE)
 
     # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
     timer = QtCore.QTimer(self)
     timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
-    timer.timeout.connect(lambda: self.playing.emit(self.__state))
+    timer.timeout.connect(lambda: self.playing.emit(self.__state) if self.__state.is_playing else self.paused.emit(self.__state))
     timer.start(1000)
 
   # --- Private Methods ---

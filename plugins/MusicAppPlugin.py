@@ -54,10 +54,13 @@ class MusicAppPlugin(QtCore.QObject):
     self.__cached_notification_payload = None
 
     # Load currently playing song if there is one
-    if self.__applescript_music_app.isRunning():
+    if self.is_open():
       # Only load current track if something is already playing
       if self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE:
         self.load_track_with_applescript()
+
+  def __str__(self):
+    return 'Music'
 
   # --- Media Player Implementation ---
 
@@ -65,6 +68,9 @@ class MusicAppPlugin(QtCore.QObject):
     '''Use AppleScript to fetch the current Music app playback position'''
 
     return self.__applescript_music_app.playerPosition()
+
+  def is_open(self):
+    return self.__applescript_music_app.isRunning()
 
   def load_track_with_applescript(self):
     current_track = self.__applescript_music_app.currentTrack()
@@ -76,12 +82,12 @@ class MusicAppPlugin(QtCore.QObject):
       self.__applescript_music_app.playpause() # There is no play function for whatever reason
       return
 
-    self.__state = MediaPlayerState.build_from_applescript_track(current_track)
+    self.__state = MediaPlayerState.build_from_applescript_track(current_track, self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE)
     
     # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
     timer = QtCore.QTimer(self)
     timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
-    timer.timeout.connect(lambda: self.playing.emit(self.__state))
+    timer.timeout.connect(lambda: self.playing.emit(self.__state) if self.__state.is_playing else self.paused.emit(self.__state))
     timer.start(1000)
 
   # --- Private Methods ---

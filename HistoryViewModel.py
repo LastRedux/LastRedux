@@ -30,6 +30,7 @@ class HistoryViewModel(QtCore.QObject):
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
+  media_player_name_changed = QtCore.Signal()
   
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
@@ -255,7 +256,13 @@ class HistoryViewModel(QtCore.QObject):
     self.media_player.playing.connect(self.__handle_media_player_playing)
     self.media_player.paused.connect(self.__handle_media_player_paused)
 
-    self.media_player.load_track_with_applescript()
+    # Load initial track from newly selected media player without a notification
+    if self.media_player.is_open():
+      # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
+      self.media_player.load_track_with_applescript()
+    
+    # Update 'Listening on X'  text in history view for current scrobble
+    self.media_player_name_changed.emit()
 
   @QtCore.Slot(str)
   def mock_event(self, event_name):
@@ -469,7 +476,7 @@ class HistoryViewModel(QtCore.QObject):
 
     # Only handle this case if there was something playing previously
     if self.__current_scrobble:
-      # Submit if the music player stops as well, not just when a new track starts
+      # Submit if the media player stops as well, not just when a new track starts
       if self.__should_submit_current_scrobble:
         self.__submit_scrobble(self.__current_scrobble)
 
@@ -521,3 +528,4 @@ class HistoryViewModel(QtCore.QObject):
   isUsingMockPlayerPlugin = QtCore.Property(bool, lambda self: isinstance(self.media_player, MockPlayerPlugin), notify=is_using_mock_player_plugin_changed)
   selectedScrobbleIndex = QtCore.Property(int, get_selected_scrobble_index, set_selected_scrobble_index, notify=selected_scrobble_index_changed)
   shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)
+  mediaPlayerName = QtCore.Property(str, lambda self: self.media_player.__str__(), notify=media_player_name_changed)

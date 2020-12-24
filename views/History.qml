@@ -79,6 +79,7 @@ Item {
   CurrentScrobble {
     id: currentScrobble
 
+    mediaPlayerName: viewModel ? viewModel.mediaPlayerName : ''
     percentage: viewModel ? viewModel.currentScrobblePercentage : 0
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
     trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobbleData.trackTitle

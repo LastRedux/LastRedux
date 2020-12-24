@@ -10,9 +10,9 @@ class MediaPlayerState:
   track_finish: float = None
 
   @staticmethod
-  def build_from_applescript_track(track):
+  def build_from_applescript_track(track, is_playing):
     return MediaPlayerState(
-      is_playing=True,
+      is_playing=is_playing,
       track_title=track.name(),
       artist_name=track.artist(),
       album_title=track.album(), # TODO: Make sure this isn't going to cause problems without a fallback
