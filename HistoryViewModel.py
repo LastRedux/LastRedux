@@ -1,15 +1,19 @@
 import os
 from datetime import datetime
+from plugins.MusicAppPlugin import MusicAppPlugin
 
 from loguru import logger
 from PySide2 import QtCore
+from ScriptingBridge import SBApplication
+
+from ApplicationViewModel import ApplicationViewModel
 
 from ApplicationViewModel import ApplicationViewModel
 
 from plugins.MockPlayerPlugin import MockPlayerPlugin
-from plugins.AppleMusicPlugin import AppleMusicPlugin
+from plugins.SpotifyPlugin import SpotifyPlugin
 from datatypes.Scrobble import Scrobble
-from tasks.FetchAppleMusicPlayerPosition import FetchAppleMusicPlayerPosition
+from tasks.FetchPlayerPosition import FetchPlayerPosition
 from tasks.LoadAdditionalScrobbleDataTask import LoadAdditionalScrobbleDataTask
 from tasks.SubmitTrackIsLovedChanged import SubmitTrackIsLovedChanged
 from tasks.FetchRecentScrobblesTask import FetchRecentScrobblesTask
@@ -27,9 +31,11 @@ class HistoryViewModel(QtCore.QObject):
   current_scrobble_percentage_changed = QtCore.Signal()
   is_using_mock_player_plugin_changed = QtCore.Signal()
   is_in_mini_mode_changed = QtCore.Signal()
+  is_player_paused_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
+  media_player_name_changed = QtCore.Signal()
   
   # Scrobble history list model signals
   pre_append_scrobble = QtCore.Signal()
@@ -78,17 +84,38 @@ class HistoryViewModel(QtCore.QObject):
     self.__application_reference = None
     self.__is_enabled = False
     
-    # Initialize media player plugin
-    self.media_player = MockPlayerPlugin() if os.environ.get('MOCK') else AppleMusicPlugin()
+    # Initialize media player plugins
+    self.__spotify_plugin = SpotifyPlugin()
+    self.__music_app_plugin = MusicAppPlugin()
+    self.media_player = None
+    
+    if os.environ.get('MOCK'):
+      self.media_player = MockPlayerPlugin()
+    else:
+      use_spotify = False
+      spotify_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
+      
+      # TODO: Use better method to figure out if Spotify is installed without logged error
+      if spotify_app:
+        if spotify_app.isRunning():
+          use_spotify = True
+      
+      if use_spotify:
+        self.media_player = self.__spotify_plugin
+      else:
+        # Use Music app plugin in all other cases since every Mac has it
+        self.media_player = self.__music_app_plugin
+
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
     self.media_player.paused.connect(self.__handle_media_player_paused)
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
-
-    # Track window mode
+    
+    # TODO: Move these properties to an App view model
     self.is_in_mini_mode = False
+    self.is_player_paused = False
     
     self.initialize_variables()
 
@@ -127,9 +154,6 @@ class HistoryViewModel(QtCore.QObject):
   
   def get_is_using_mock_player_plugin(self):
     return isinstance(self.media_player, MockPlayerPlugin)
-
-  def get_is_in_mini_mode(self):
-    return self.is_in_mini_mode if self.__is_enabled else False
     
   def get_selected_scrobble_index(self):
     '''Make the private selected scrobble index variable available to the UI'''
@@ -142,8 +166,12 @@ class HistoryViewModel(QtCore.QObject):
   
   def set_selected_scrobble_index(self, new_index):
     if self.__is_enabled:
-      # Prevent setting an illegal index when going back/forward with keyboard
-      if new_index == len(self.scrobble_history) or new_index == -2:
+      # Prevent setting an illegal index with keyboard shortcuts
+      if (
+        new_index == len(self.scrobble_history) # Prevent navigating past scrobble history
+        or new_index == -2 # Prevent navigating into negative numbers
+        or self.__current_scrobble is None and new_index == -1 # Prevent navigating to current scrobble when there isn't one
+      ):
         return
       
       self.__selected_scrobble_index = new_index
@@ -172,7 +200,7 @@ class HistoryViewModel(QtCore.QObject):
 
     if is_enabled:
       self.initialize_variables()
-      self.media_player.request_initial_notification()
+      self.media_player.request_initial_state()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
 
@@ -254,16 +282,37 @@ class HistoryViewModel(QtCore.QObject):
       self.is_in_mini_mode = not self.is_in_mini_mode
       self.is_in_mini_mode_changed.emit()
 
-  # --- Mock Slots ---
+  @QtCore.Slot(str)
+  def switchToMediaPlugin(self, media_plugin_name):
+    # Fake stopped event to unload the current scrobble
+    self.__handle_media_player_stopped()
 
-  @QtCore.Slot()
-  def MOCK_playNextSong(self):
-    self.media_player.track_index += 1
-    self.media_player.player_position = 0
+    # Disconnect event signals
+    self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
+    self.media_player.playing.disconnect(self.__handle_media_player_playing)
+    self.media_player.paused.disconnect(self.__handle_media_player_paused)
 
-  @QtCore.Slot()
-  def MOCK_moveTo75Percent(self):
-    self.media_player.player_position = self.__cached_media_player_data['track_finish'] * 0.75
+    if media_plugin_name == 'spotify':
+      self.media_player = self.__spotify_plugin
+    elif media_plugin_name == 'musicApp':
+      self.media_player = self.__music_app_plugin
+
+    # Reconnect event signals
+    self.media_player.stopped.connect(self.__handle_media_player_stopped)
+    self.media_player.playing.connect(self.__handle_media_player_playing)
+    self.media_player.paused.connect(self.__handle_media_player_paused)
+
+    # Load initial track from newly selected media player without a notification
+    if self.media_player.is_open():
+      # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
+      self.media_player.request_initial_state()
+    
+    # Update 'Listening on X'  text in history view for current scrobble
+    self.media_player_name_changed.emit()
+
+  @QtCore.Slot(str)
+  def mock_event(self, event_name):
+    self.media_player.mock_event(event_name)
 
   # --- Private Functions ---
 
@@ -339,7 +388,7 @@ class HistoryViewModel(QtCore.QObject):
       return 0
 
     # Compensate for custom track start and end times
-    # TODO: Only do this if the media player is Apple Music/iTunes
+    # TODO: Only do this if the media player is the mac Music app
     relative_position = self.__furthest_player_position_reached - self.__current_track_start
     relative_track_length = self.__current_track_finish - self.__current_track_start
     min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database
@@ -368,7 +417,7 @@ class HistoryViewModel(QtCore.QObject):
       # This will set the Scrobble's timestamp to the current date
       self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
 
-      logger.trace(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
+      logger.debug(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
 
       # Update UI content in current scrobble sidebar item
       self.current_scrobble_data_changed.emit()
@@ -422,9 +471,9 @@ class HistoryViewModel(QtCore.QObject):
     if self.__is_enabled:
       self.__scrobbles_with_additional_data_count += 1
 
-      if self.__scrobbles_with_additional_data_count == self.__INITIAL_SCROBBLE_HISTORY_COUNT:
-        self.__should_show_loading_indicator = False
-        self.should_show_loading_indicator_changed.emit()
+    if self.__scrobbles_with_additional_data_count == len(self.scrobble_history):
+      self.__should_show_loading_indicator = False
+      self.should_show_loading_indicator_changed.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble):
     if self.__is_enabled:
@@ -452,7 +501,7 @@ class HistoryViewModel(QtCore.QObject):
       # Skip fetching if there isn't a track playing
       if self.__current_scrobble:
         # Create thread task with reference to the media player
-        fetch_new_media_player_position = FetchAppleMusicPlayerPosition(self.media_player)
+        fetch_new_media_player_position = FetchPlayerPosition(self.media_player)
 
         # Process the new media player position after the data is returned
         fetch_new_media_player_position.finished.connect(self.__process_new_media_player_position)
@@ -503,6 +552,10 @@ class HistoryViewModel(QtCore.QObject):
     '''Handle media player play event'''
 
     if self.__is_enabled:
+      # Update playback indicator
+      self.is_player_paused = False
+      self.is_player_paused_changed.emit()
+
       current_track_changed = not self.__current_scrobble or new_media_player_state.track_title != self.__current_scrobble.title or new_media_player_state.artist_name != self.__current_scrobble.artist.name or new_media_player_state.album_title != self.__current_scrobble.album.title
 
       # Only run this code when the track changes (or the first track is loaded)
@@ -519,7 +572,9 @@ class HistoryViewModel(QtCore.QObject):
   def __handle_media_player_paused(self, new_media_player_state):
     '''Handle media player pause event'''
 
-    pass
+    # Update playback indicator
+    self.is_player_paused = True
+    self.is_player_paused_changed.emit()
 
   # --- Qt Properties ---
   
@@ -529,5 +584,5 @@ class HistoryViewModel(QtCore.QObject):
   currentScrobblePercentage = QtCore.Property(float, get_current_scrobble_percentage, notify=current_scrobble_percentage_changed)
   isUsingMockPlayerPlugin = QtCore.Property(bool, get_is_using_mock_player_plugin, notify=is_using_mock_player_plugin_changed)
   selectedScrobbleIndex = QtCore.Property(int, get_selected_scrobble_index, set_selected_scrobble_index, notify=selected_scrobble_index_changed)
-  miniMode = QtCore.Property(bool, get_is_in_mini_mode, notify=is_in_mini_mode_changed) # TODO: Change to isInMiniMode
   shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)
+  mediaPlayerName = QtCore.Property(str, lambda self: self.media_player.__str__(), notify=media_player_name_changed)

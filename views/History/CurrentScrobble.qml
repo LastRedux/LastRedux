@@ -7,6 +7,7 @@ Column {
 
   spacing: 8
 
+  property string mediaPlayerName
   property alias percentage: scrobbleMeter.percentage
 
   // Passthrough properties to scrobble view
@@ -32,7 +33,7 @@ Column {
       id: title
 
       style: kTitleTertiary
-      text: 'Now Scrobbling'
+      text: `LISTENING ON ${mediaPlayerName}`
 
       // Add left margin because layout of rest of column is edge-to-edge
       x: 15

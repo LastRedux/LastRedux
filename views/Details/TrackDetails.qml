@@ -9,6 +9,7 @@ PictureBackground {
 
   property bool isInMiniMode
   property bool isCurrentlyScrobbling
+  property bool isPlayerPaused
   property bool isTrackNotFound
   property string title
   property var lastfmUrl
@@ -30,7 +31,14 @@ PictureBackground {
 
   source: albumImageUrl
 
-  height: Math.max(albumImageView.y + albumImageView.height, tags.y + tags.height) + 30
+  height: {
+    if (isInMiniMode) {
+      // Tags are hidden in mini mode
+      return Math.max(albumImageView.y + albumImageView.height, statistics.y + statistics.height) + 30
+    }
+
+    return Math.max(albumImageView.y + albumImageView.height, tags.y + tags.height) + 30
+  }
 
   // --- Album Image ---
 
@@ -40,8 +48,8 @@ PictureBackground {
     source: albumImageUrl
     shouldBlankOnNewSource: true
 
-    width: 181
-    height: 181
+    width: isInMiniMode ? 139 : 181
+    height: width
 
     anchors {
       top: parent.top
@@ -57,7 +65,7 @@ PictureBackground {
     id: playbackIndicator
 
     isLarge: true
-    visible: isCurrentlyScrobbling && !isInMiniMode
+    visible: isCurrentlyScrobbling && !isPlayerPaused && !isInMiniMode
 
     anchors {
       top: albumImageView.top
@@ -195,6 +203,7 @@ PictureBackground {
   
   Flow {
     id: tags
+    visible: !isInMiniMode
 
     spacing: 8
     

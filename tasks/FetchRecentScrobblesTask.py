@@ -1,8 +1,8 @@
 import os
+import json
 from PySide2 import QtCore
 
 from util.LastfmApiWrapper import LastfmApiWrapper
-from plugins.MockPlayerPlugin import MockPlayerPlugin
 
 class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(list)
@@ -19,8 +19,7 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
 
     if os.environ.get('MOCK'):
       # Get the first n mock tracks in reverse order since that's how they would be added
-      mock_tracks = MockPlayerPlugin.MOCK_TRACKS[0:self.count]
-      mock_tracks.reverse()
+      mock_tracks = json.load(open('mock_data/mock_tracks.json'))[0:self.count]
 
       mock_recent_scrobbles = []
 
@@ -28,7 +27,7 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
       for i, mock_track in enumerate(mock_tracks):
         # Skip tracks with no artists (one of the mock test cases)
         if not mock_track.get('artist_name'):
-          return
+          continue
 
         mock_recent_scrobbles.append({
           'name': mock_track['track_title'],

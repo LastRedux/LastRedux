@@ -78,7 +78,7 @@ class Track:
 
     if 'error' in track_response:
       if track_response['message'] == 'Track not found':
-        logger.warning(f'{self.title}: Track not found on Last.fm')
+        logger.trace(f'{self.title}: Track not found on Last.fm')
         self.loading_state = 'LASTFM_TRACK_NOT_FOUND'
       else:
         logger.error(f'{self.title}: Last.fm track.getInfo returned an error `{track_response}`')
@@ -90,7 +90,7 @@ class Track:
       self.load_lastfm_track_object(track_response['track'])
     except KeyError as e:
       # There is a missing key in the Last.fm response
-      logger.warning(f'{self.title}: Last.fm returned an incomplete track response `{repr(e)}`')
+      logger.trace(f'{self.title}: Last.fm returned an incomplete track response `{repr(e)}`')
 
       # Retry requesting track data from Last.fm, usually if there's a missing key, retrying the request will resolve the issue
       self.fetch_and_load_lastfm_track_data()
@@ -106,7 +106,7 @@ class Track:
 
     if 'error' in artist_response:
       if artist_response['message'] == 'The artist you supplied could not be found':
-        logger.warning(f'{self.title}: Artist not found on Last.fm')
+        logger.trace(f'{self.title}: Artist not found on Last.fm')
       else:
         logger.error(f'{self.title}: Last.fm artist.getInfo for `{self.artist.name}` returned an error {artist_response}')
   
@@ -116,7 +116,7 @@ class Track:
       self.artist.load_lastfm_artist_object(artist_response['artist'])
     except KeyError as e:
       # There is a missing key in the Last.fm response
-      logger.warning(f'{self.title}: Last.fm returned an incomplete artist response `{repr(e)}`')
+      logger.trace(f'{self.title}: Last.fm returned an incomplete artist response `{repr(e)}`')
 
       # Retry requesting artist data from Last.fm, usually if there's a missing key, retrying the request will resolve the issue
       self.fetch_and_load_lastfm_artist_data()
@@ -131,7 +131,7 @@ class Track:
       # Don't log error if a fallback album (with ` - Single ` removed) doesn't exist on Last.fm
       if album_response['message'] == 'Album not found':
         if not is_fallback:
-          logger.warning(f'{self.title}: Album not found on Last.fm')    
+          logger.trace(f'{self.title}: Album not found on Last.fm')    
       else:
         logger.error(f'{self.title}: Last.fm album.getInfo for `{album_title}` returned an error {album_response}')
 
@@ -141,7 +141,7 @@ class Track:
       self.album.load_lastfm_album_object(album_response['album'], only_images=is_fallback)
     except KeyError as e:
       # There is a missing key in the Last.fm response
-      logger.warning(f'{self.title}: Last.fm returned an incomplete album response `{repr(e)}`')
+      logger.trace(f'{self.title}: Last.fm returned an incomplete album response `{repr(e)}`')
 
       # Retry requesting album data from Last.fm, usually if there's a missing key, retrying the request will resolve the issue
       self.fetch_and_load_lastfm_album_data(album_title)
@@ -164,7 +164,7 @@ class Track:
       if self.album.title and not self.album.image_url:
         self.album.image_url = album_image
         self.album.image_url_small = album_image_small
-        logger.debug(f'{self.title}: Album art found on Spotify')
+        logger.trace(f'{self.title}: Album art found on Spotify')
 
   def fetch_and_load_itunes_store_images(self):
     itunes_images = None
@@ -181,7 +181,7 @@ class Track:
 
       self.album.image_url = album_image
       self.album.image_url_small = album_image_small
-      logger.debug(f'{self.title}: Album art found on iTunes search')
+      logger.trace(f'{self.title}: Album art found on iTunes search')
 
   def load_lastfm_data(self, no_artists=False):
     '''Fill in data about the track, album, and artist from Last.fm'''
@@ -198,14 +198,14 @@ class Track:
       self.fetch_and_load_lastfm_album_data(self.album.title)
       
       if self.album.image_url:
-        logger.debug(f'{self.title}: Album art found on Last.fm')
+        logger.trace(f'{self.title}: Album art found on Last.fm')
       else:
         # Try fetching album art for the album name without ` - Single` (Some music services do not label singles)
         if ' - Single' in self.album.title:
           self.fetch_and_load_lastfm_album_data(self.album.title.replace(' - Single', ''), is_fallback=True)
           
         if self.album.image_url:
-          logger.debug(f'{self.title}: Album art found on Last.fm (album with single label removed)')
+          logger.trace(f'{self.title}: Album art found on Last.fm (album with single label removed)')
 
       # Use track art instead (usually a 'single' album art ie. `Aamon - Single`)
       # One of the following could result in this case: 
@@ -224,7 +224,7 @@ class Track:
         # Not all tracks have an image associated with them
         if 'image' in track_response:
           self.album.load_lastfm_track_images(track_response['image'])
-          logger.debug(f'{self.title}: Album art found on Last.fm (track image)')
+          logger.trace(f'{self.title}: Album art found on Last.fm (track image)')
   
     if not self.loading_state == 'LASTFM_TRACK_NOT_FOUND':
       self.loading_state = 'LASTFM_TRACK_LOADED'
@@ -239,7 +239,7 @@ class Track:
         spotify_images_loaded = self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)
 
         if spotify_images_loaded:
-          logger.debug(f'{self.title}: Album art found on Spotify (album title excluded from search)')
+          logger.trace(f'{self.title}: Album art found on Spotify (album title excluded from search)')
     else:
       # Always search without album if there isn't one associated with the scrobble
       self.fetch_and_load_spotify_data(search_without_album=True, no_artists=no_artists)

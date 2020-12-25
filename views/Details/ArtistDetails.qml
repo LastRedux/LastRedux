@@ -5,6 +5,7 @@ import '../../shared/components'
 Item {
   id: root
 
+  property bool isInMiniMode
   property url imageUrl
   property string name
   property bool isReadMoreLinkVisible
@@ -25,6 +26,8 @@ Item {
 
   height: hasMultipleArtists ? Math.max(column.y + column.height + 30, multipleArtistImagesView.y + multipleArtistImagesView.height + 30) : Math.max(column.y + column.height + 30, singularArtistImageView.y + singularArtistImageView.height + 30)
   
+  // --- Artist Information ---
+
   Column {
     id: column
 
@@ -35,7 +38,7 @@ Item {
       right: hasMultipleArtists ? multipleArtistImagesView.left : parent.right
       left: spotifyArtists.length ? (hasMultipleArtists ? parent.left : singularArtistImageView.right) : parent.left
 
-      topMargin: spotifyArtists.length ? (hasMultipleArtists ? 0 : 10) : 0
+      topMargin: (spotifyArtists.length && !isInMiniMode) ? (hasMultipleArtists ? 0 : 10) : 0
       leftMargin: spotifyArtists.length ? (hasMultipleArtists ? 30 : 20) : 30
       rightMargin: hasMultipleArtists ? 20 : 30
     }
@@ -80,6 +83,7 @@ Item {
     // --- Tags ---
 
     Flow {
+      visible: !isInMiniMode
       spacing: 8
       
       width: parent.width
@@ -98,6 +102,7 @@ Item {
 
     Column {
       spacing: 5
+      visible: !isInMiniMode
 
       width: parent.width
 
@@ -248,7 +253,7 @@ Item {
 
       source: spotifyArtists.length ? spotifyArtists[0].image_url : ''
 
-      width: 139
+      width: isInMiniMode ? 107 : 139
       height: width
 
       anchors {

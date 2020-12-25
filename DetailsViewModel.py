@@ -7,6 +7,8 @@ from HistoryViewModel import HistoryViewModel
 
 class DetailsViewModel(QtCore.QObject):
   scrobble_track_data_changed = QtCore.Signal()
+  is_in_mini_mode_changed = QtCore.Signal()
+  is_player_paused_changed = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
@@ -21,8 +23,10 @@ class DetailsViewModel(QtCore.QObject):
     if new_reference:
       self.__history_reference = new_reference
 
-      # Connect to scrobble selection change on view model, so when a new scrobble is selected, details will update
+      # Pass through signals from history view model
       self.__history_reference.selected_scrobble_changed.connect(lambda: self.scrobble_track_data_changed.emit())
+      self.__history_reference.is_in_mini_mode_changed.connect(lambda: self.is_in_mini_mode_changed.emit())
+      self.__history_reference.is_player_paused_changed.connect(lambda: self.is_player_paused_changed.emit())
 
       # Update scrobble data because the scrobble data changed signal won't be triggered upon connection
       self.scrobble_track_data_changed.emit()
@@ -48,5 +52,6 @@ class DetailsViewModel(QtCore.QObject):
 
   # Make the __history_reference available to the view
   scrobbleTrackData = QtCore.Property('QVariant', get_scrobble_track_data, notify=scrobble_track_data_changed)
-
-  isCurrentScrobble = QtCore.Property(bool, get_is_current_scrobble, notify=scrobble_track_data_changed) # Update when scrobble track data updates
+  isCurrentScrobble = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.get_selected_scrobble_index() == -1, notify=scrobble_track_data_changed)
+  isInMiniMode = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.is_in_mini_mode, notify=is_in_mini_mode_changed)
+  isPlayerPaused = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.is_player_paused, notify=is_player_paused_changed)

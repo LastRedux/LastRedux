@@ -17,16 +17,14 @@ Window {
   property bool shouldShowFriendsLoadingIndicator: true
 
   property bool isInMiniMode: {
-    if (historyViewModel) {
-      if (historyViewModel.miniMode) {
+    if (detailsViewModel) {
+      if (detailsViewModel.isInMiniMode) {
         return true
       }
     }
 
     return false
   }
-
-  property alias isInMiniMode: details.isInMiniMode
 
   color: '#171717'
   title: 'LastRedux'
@@ -126,6 +124,18 @@ Window {
         text: qsTr('Toggle mini mode')
 
         onTriggered: historyViewModel.toggleMiniMode()
+      }
+
+      MenuItem {
+        text: qsTr('Use Music app')
+
+        onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
+      }
+
+      MenuItem {
+        text: qsTr('Use Spotify')
+
+        onTriggered: historyViewModel.switchToMediaPlugin('spotify')
       }
       
       MenuItem {

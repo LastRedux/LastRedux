@@ -1,0 +1,85 @@
+[{
+  "reason": "Test song with artist that has a comma in it",
+  "track_title": "Just the Two of Us (feat. Bill Withers)",
+  "artist_name": "Grover Washington, Jr.",
+  "album_title": "Love Songs"
+}, {
+  "reason": "Test song with extra keywords in name on Apple Music",
+  "track_title": "Heartbreaker (Album Version (Featuring Jay-Z))",
+  "artist_name": "Mariah Carey",
+  "album_title": "Rainbow"
+}, {
+  "reason": "Test song with fixable mismatched artist name on Apple Music vs. Spotify",
+  "track_title": "It's Tricky",
+  "artist_name": "Run-DMC",
+  "album_title": "Raising Hell"
+}, {
+  "reason": "Test song with diacriticals in the title",
+  "track_title": "Do You Mean (feat. Ty Dolla $ign & b\u00fclow)",
+  "artist_name": "The Chainsmokers",
+  "album_title": "World War Joy"
+}, {
+  "reason": "Test song with album on Last.fm that doesn't match Apple Music album",
+  "track_title": "Don't Stop",
+  "artist_name": "Kuuro",
+  "album_title": "Don't Stop - Single"
+}, {
+  "reason": "Test song with no album",
+  "track_title": "Where It's At",
+  "artist_name": "Beck"
+}, {
+  "reason": "Test song with 3 artists",
+  "track_title": "Flames",
+  "artist_name": "R3HAB, ZAYN & Jungleboi",
+  "album_title": "Flames (The EP)"
+}, {
+  "reason": "Test artist with diacritical marks in name",
+  "track_title": "Grapevine",
+  "artist_name": "Ti\u00ebsto",
+  "album_title": "Grapevine - Single"
+}, {
+  "reason": "Test song with album only on Apple Music (pre-release as of 10/25/20)",
+  "track_title": "NEVERMIND",
+  "artist_name": "HRVY",
+  "album_title": "Can Anybody Hear Me? (Deluxe Edition)"
+}, {
+  "reason": "Test consecutive tracks with the same title",
+  "track_title": "Alone",
+  "artist_name": "Marshmello",
+  "album_title": "Alone - Single"
+}, {
+  "reason": "Test consecutive tracks with the same title",
+  "track_title": "Alone",
+  "artist_name": "Alan Walker",
+  "album_title": "Alone - Single"
+}, {
+  "reason": "Test Last.fm corrections API",
+  "track_title": "Waters (feat. Phluze) [Elbor edit]",
+  "artist_name": "Elbor",
+  "album_title": "Waters (Elbor edit) [feat. Phluze] - Single"
+}, {
+  "reason": "Test song with more popular remix than original on Spotify",
+  "track_title": "Horsepower",
+  "artist_name": "Muzzy",
+  "album_title": "Rocket League x Monstercat, Vol. 4 - EP"
+}, {
+  "reason": "Test song with censored name",
+  "track_title": "C**o",
+  "artist_name": "Jason Derulo, Puri & Jhorrmountain",
+  "album_title": "C**o - Single"
+}, {
+  "reason": "Test song from soundtrack album",
+  "track_title": "Welcome to the Party (feat. Zhavia Ward) [From the \"Deadpool 2\" Original Motion Picture Soundtrack]",
+  "artist_name": "Diplo, French Montana & Lil Pump",
+  "album_title": "Welcome to the Party (feat. Zhavia Ward) [From the \"Deadpool 2\" Original Motion Picture Soundtrack] - Single"
+}, {
+  "reason": "Test song with no Spotify results (artist names don't match and aren't fixable between platforms)",
+  "track_title": "Shut It Down (feat. MC Mota)",
+  "artist_name": "Muzzy & Teddy Killers",
+  "album_title": "The Cascade - EP"
+}, {
+  "reason": "Test song with super long list of artists",
+  "track_title": "Interstate 5 (feat. Azure Onyxscore, Hum4n01d, Arimyth, Mr. Serpent, console.frog, SpaghettiSauce, INDIR3CT & Glacial Viper)",
+  "artist_name": "Auxy Collective",
+  "album_title": "Interstate 5 (feat. Azure Onyxscore, Hum4n01d, Arimyth, Mr. Serpent, console.frog, SpaghettiSauce, INDIR3CT & Glacial Viper) - Single"
+}]
