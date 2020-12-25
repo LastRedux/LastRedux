@@ -18,9 +18,6 @@ class DetailsViewModel(QtCore.QObject):
 
   # --- Qt Property Getters and Setters ---
 
-  def get_history_reference(self):
-    return self.__history_reference
-
   def set_history_reference(self, new_reference):
     # Only change the view model reference if there is a new one (don't reload when closing the app)
     if new_reference:
@@ -35,15 +32,25 @@ class DetailsViewModel(QtCore.QObject):
       self.scrobble_track_data_changed.emit()
 
   def get_scrobble_track_data(self):
-    if self.__history_reference and self.__history_reference.selected_scrobble:
-      # TODO: Do this properly with QObjects
-      return json.loads(json.dumps(self.__history_reference.selected_scrobble, default=lambda o: o.__dict__ if type(o) != datetime else None)) # Exclude non-object keys from json dump
+    if self.__history_reference:
+      if self.__history_reference.selected_scrobble and self.__history_reference.get_is_enabled():
+        # TODO: Do this properly with QObjects
+        return json.loads(json.dumps(self.__history_reference.selected_scrobble, default=lambda o: o.__dict__ if type(o) != datetime else None)) # Exclude non-object keys from json dump
 
     return None
 
+  def get_is_current_scrobble(self):
+    if self.__history_reference:
+      return self.__history_reference.get_selected_scrobble_index() == -1 and self.__history_reference.get_is_enabled()
+
+    return False
+
   # --- Qt Properties ---
 
-  historyReference = QtCore.Property(HistoryViewModel, get_history_reference, set_history_reference)
+  # Allow the __history_reference to be set in the view
+  historyReference = QtCore.Property(HistoryViewModel, lambda self: self.__history_reference, set_history_reference)
+
+  # Make the __history_reference available to the view
   scrobbleTrackData = QtCore.Property('QVariant', get_scrobble_track_data, notify=scrobble_track_data_changed)
   isCurrentScrobble = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.get_selected_scrobble_index() == -1, notify=scrobble_track_data_changed)
   isInMiniMode = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.is_in_mini_mode, notify=is_in_mini_mode_changed)

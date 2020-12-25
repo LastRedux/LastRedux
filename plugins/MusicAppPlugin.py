@@ -57,7 +57,7 @@ class MusicAppPlugin(QtCore.QObject):
     if self.is_open():
       # Only load current track if something is already playing
       if self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE:
-        self.load_track_with_applescript()
+        self.request_initial_state()
 
   def __str__(self):
     return 'Music'
@@ -72,7 +72,7 @@ class MusicAppPlugin(QtCore.QObject):
   def is_open(self):
     return self.__applescript_music_app.isRunning()
 
-  def load_track_with_applescript(self):
+  def request_initial_state(self):
     current_track = self.__applescript_music_app.currentTrack()
     track_title = current_track.name()
     

@@ -1,6 +1,6 @@
 import QtQuick 2.14
 
-import "../../shared/components"
+import '../../shared/components'
 
 Item {
   property bool hasImage: true
@@ -59,6 +59,7 @@ Item {
     
     elide: Text.ElideRight
     maximumLineCount: 2
+    opacity: 0.81
     visible: text
     wrapMode: Text.Wrap
     style: kBodyPrimary

@@ -12,6 +12,7 @@ Window {
   id: application
 
   property int currentTabIndex: 0
+  property bool hasAttemptedLogin: false
   property bool shouldShowProfileLoadingIndicator: true
   property bool shouldShowFriendsLoadingIndicator: true
 
@@ -35,37 +36,45 @@ Window {
   height: 600
 
   function switchToTab(tabIndex, isSameTab) {
-    if (currentTabIndex !== tabIndex || isSameTab) {
-      currentTabIndex = tabIndex
+    if (historyViewModel.isEnabled) {
+      if (currentTabIndex !== tabIndex || isSameTab) {
+        currentTabIndex = tabIndex
 
-      switch (tabIndex) {
-      case 0:
-        if (!isSameTab) {
-          stackView.replace(historyPage)
-        }
-        
-        break
-      case 1:
-        if (!isSameTab) {
-          stackView.replace(profilePage)
-        }
+        switch (tabIndex) {
+        case 0:
+          if (!isSameTab) {
+            stackView.replace(historyPage)
+          }
+          
+          break
+        case 1:
+          if (!isSameTab) {
+            stackView.replace(profilePage)
+          }
 
-        profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
-        shouldShowProfileLoadingIndicator = false
-        break
-      case 2:
-        if (!isSameTab) {
-          stackView.replace(friendsPage)
+          profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
+          shouldShowProfileLoadingIndicator = false
+          break
+        case 2:
+          if (!isSameTab) {
+            stackView.replace(friendsPage)
+          }
+          
+          friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
+          shouldShowFriendsLoadingIndicator = false
         }
-        
-        friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
-        shouldShowFriendsLoadingIndicator = false
       }
     }
   }
 
   onActiveChanged: {
     if (active) {
+      // Wait until first window focus to attempt login
+      if (!hasAttemptedLogin) {
+        hasAttemptedLogin = true
+        attemptLoginTimer.running = true
+      }
+
       shouldShowProfileLoadingIndicator = true
       shouldShowFriendsLoadingIndicator = true
       switchToTab(currentTabIndex, true)
@@ -79,24 +88,17 @@ Window {
     close.accepted = false // close is a hidden parameter to the onClosing function
   }
 
-  FontLoaders {
-    id: fontLoaders
+  // Wait 100ms because onboarding window dissapears if shown immediately
+  Timer {
+    id: attemptLoginTimer
+    
+    interval: 100
+
+    onTriggered: applicationViewModel.attemptLogin()
   }
 
-  Window {
-    id: onboardingWindow
-
-    color: '#1f1f1f'
-    modality: Qt.WindowModal
-
-    minimumWidth: 632
-    minimumHeight: 427
-    maximumWidth: 632
-    maximumHeight: 427
-    
-    Onboarding {
-      anchors.fill: parent
-    }
+  FontLoaders {
+    id: fontLoaders
   }
 
   SystemTrayIcon {
@@ -116,12 +118,6 @@ Window {
           application.raise()
           application.requestActivate()
         }
-      }
-
-      MenuItem {
-        text: qsTr('Open Onboarding...')
-
-        onTriggered: onboardingWindow.show()
       }
 
       MenuItem {
@@ -165,6 +161,44 @@ Window {
     }
   }
 
+  ApplicationViewModel {
+    id: applicationViewModel
+
+    onOpenOnboarding: onboardingWindow.show()
+    onCloseOnboarding: onboardingWindow.hide()
+  }
+
+  // --- Onboarding ---
+  
+  OnboardingViewModel {
+    id: onboardingViewModel
+
+    applicationReference: applicationViewModel
+
+    onOpenUrl: address => {
+      Qt.openUrlExternally(address)
+    }
+  }
+  
+  Window {
+    id: onboardingWindow
+
+    color: '#1f1f1f'
+    modality: Qt.WindowModal
+    // visible: true
+
+    minimumWidth: 632
+    minimumHeight: 427
+    maximumWidth: 632
+    maximumHeight: 427
+    
+    Onboarding {
+      viewModel: onboardingViewModel
+
+      anchors.fill: parent
+    }
+  }
+
   // --- Details ---
   
   DetailsViewModel {
@@ -192,6 +226,7 @@ Window {
   HistoryViewModel {
     id: historyViewModel
 
+    applicationReference: applicationViewModel
     onShowNotification: (title, message) => trayIcon.showMessage(title, message)
   }
 
@@ -216,6 +251,8 @@ Window {
 
   ProfileViewModel {
     id: profileViewModel
+
+    applicationReference: applicationViewModel
   }
 
   Component {
@@ -232,6 +269,8 @@ Window {
 
   FriendsViewModel {
     id: friendsViewModel
+
+    applicationReference: applicationViewModel
   }
 
   FriendsListModel {
@@ -291,6 +330,7 @@ Window {
 
       Item {
         clip: true
+        visible: historyViewModel.isEnabled
 
         anchors {
           fill: parent

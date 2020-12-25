@@ -3,7 +3,16 @@ import QtQuick 2.14
 
 import '../../shared/components'
 
-Item { 
+Item {
+  id: root
+
+  property var authUrl
+  property bool hasError
+
+  signal back
+  signal tryAgain
+  signal tryAuthenticating
+
   Item {
     anchors {
       top: parent.top
@@ -18,9 +27,24 @@ Item {
 
       anchors.centerIn: parent
 
+      Item {
+        x: parent.width / 2 - (width / 2)
+        width: 313
+        height: 85
+
+        Image {
+          source: '../../shared/resources/onboarding-connecting.png'
+
+          width: 353
+          height: 125
+
+          anchors.centerIn: parent
+        }
+      }
+
       Label {
         horizontalAlignment: Qt.AlignHCenter
-        text: 'Connecting to Last.fm... 🚀'
+        text: hasError ? 'Error Connecting ⚠️' : 'Connect to Last.fm 🚀'
         style: kLargeTitle
 
         width: parent.width
@@ -29,16 +53,26 @@ Item {
       Label {
         horizontalAlignment: Qt.AlignHCenter
         textFormat: Text.StyledText
-        text: 'Authorize LastRedux by clicking <b>Yes, Allow Access</b> on Last.fm. If a webpage didn’t open, click <b>Try Again</b> or copy and paste this link into your browser:'
         lineHeight: 1.25
         wrapMode: Text.Wrap
+
+        text: {
+          if (hasError) {
+            return 'LastRedux didn\'t detect that you logged into your Last.fm account. Click <b>Try Again</b>, then click <b>Yes, Allow Access</b> on Last.fm.'
+          }
+          
+          return `Authorize LastRedux by clicking <b>Yes, Allow Access</b> on Last.fm.${authUrl ? ' If a webpage didn’t open, click <b>Try Again</b> or copy and paste this link into your browser:' : ''}`
+        }
 
         width: parent.width
       }
 
       SelectableText {
         horizontalAlignment: Qt.AlignHCenter
-        text: 'https://www.last.fm/api/auth?api_key=XXXXXXXXXXX&token=XXXXXXXXXXX'
+        isContextMenuEnabled: false // Context menus aren't supported in modals as of Qt 5.15
+        text: authUrl
+        visible: authUrl
+
         width: parent.width
       }
     }
@@ -62,6 +96,8 @@ Item {
       style: kBack
       title: 'Back'
 
+      onClicked: root.back()
+
       anchors {
         left: parent.left
         verticalCenter: parent.verticalCenter
@@ -82,11 +118,15 @@ Item {
       
       LabelButton {
         title: 'Try Again'
+
+        onClicked: root.tryAgain()
       }
 
       LabelButton {
         style: kPrimary
-        title: 'Continue'
+        title: 'I\'ve Logged In'
+
+        onClicked: root.tryAuthenticating()
       }
     }
   }

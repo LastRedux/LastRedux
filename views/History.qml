@@ -109,6 +109,7 @@ Item {
     canReload: !viewModel.shouldShowLoadingIndicator
     model: listModel
     selectedScrobbleIndex: viewModel ? viewModel.selectedScrobbleIndex : -2
+    visible: viewModel && viewModel.isEnabled
 
     // index is an argument passed through when the signal is triggered
     onSelect: viewModel.selectedScrobbleIndex = index

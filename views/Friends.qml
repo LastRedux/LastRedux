@@ -49,6 +49,7 @@ Item {
       text: 'You haven\'t added any friends on Last.fm yet.'
       wrapMode: Text.Wrap
       horizontalAlignment: Qt.AlignHCenter
+      visible: viewModel.isEnabled
 
       anchors {
         verticalCenter: parent.verticalCenter

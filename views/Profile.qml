@@ -102,7 +102,7 @@ Item {
   UserLink {
     id: userLink
     
-    address: isProfileLoaded && viewModel.accountDetails.lastfm_url
+    address: isProfileLoaded ? viewModel.accountDetails.lastfm_url : ''
     imageSource: isProfileLoaded ? viewModel.accountDetails.image_url : ''
     backgroundImageSource: isProfileLoaded ? viewModel.accountDetails.large_image_url : ''
     username: isProfileLoaded ? viewModel.accountDetails.username : ''
@@ -158,6 +158,8 @@ Item {
 
     Flickable {
       id: flickable
+
+      visible: viewModel.isEnabled
 
       anchors.fill: parent
       

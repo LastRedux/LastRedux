@@ -1,9 +1,12 @@
-import QtQuick.Controls 2.14
 import QtQuick 2.14
 
 import '../../shared/components'
 
-Item { 
+Item {
+  id: root
+
+  signal nextPage
+
   Item {
     anchors {
       top: parent.top
@@ -14,33 +17,56 @@ Item {
 
     Column {
       width: 512
-      spacing: 15
+      spacing: 30
 
       anchors.centerIn: parent
 
-      Label {
-        horizontalAlignment: Qt.AlignHCenter
-        text: 'Welcome to LastRedux ✨'
-        style: kLargeTitle
+      Item {
+        width: 170
+        height: width
 
-        width: parent.width
+        x: (parent.width / 2) - (width / 2)
+
+        Image {
+          source: '../../shared/resources/onboarding-logo.png'
+
+          anchors {
+            fill: parent
+
+            margins: -100
+          }
+        }
       }
 
-      Label {
-        horizontalAlignment: Qt.AlignHCenter
-        textFormat: Text.StyledText
-        text: 'Connect to Last.fm to track Music app (Apple Music or local library) listening activity on this Mac.<br>If you don’t have a Last.fm account yet, you can create one <b><a href="https://www.last.fm/join">here</a></b>.'
-        lineHeight: 1.25
-        
-        onLinkActivated: Qt.openUrlExternally(link)
-        
+      Column {
         width: parent.width
+        spacing: 15
 
-        MouseArea {
-          acceptedButtons: Qt.NoButton
-          cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+        Label {
+          horizontalAlignment: Qt.AlignHCenter
+          text: 'Welcome to LastRedux ✨'
+          style: kLargeTitle
 
-          anchors.fill: parent
+          width: parent.width
+        }
+
+        Label {
+          horizontalAlignment: Qt.AlignHCenter
+          lineHeight: 1.25
+          textFormat: Text.StyledText
+          text: 'Connect to Last.fm to track your listening activity on this Mac.<br>If you don’t have a Last.fm account yet, you can create one <b><a href="https://www.last.fm/join">here</a></b>.'
+          style: kBodyPrimarySystem
+          
+          onLinkActivated: Qt.openUrlExternally(link)
+          
+          width: parent.width
+
+          MouseArea {
+            acceptedButtons: Qt.NoButton
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+
+            anchors.fill: parent
+          }
         }
       }
     }
@@ -60,20 +86,22 @@ Item {
       left: parent.left
     }
 
-    LabelButton {
-      title: 'Use Without Account'
+    // LabelButton {
+    //   title: 'Use Without Account'
 
-      anchors {
-        left: parent.left
-        verticalCenter: parent.verticalCenter
+    //   anchors {
+    //     left: parent.left
+    //     verticalCenter: parent.verticalCenter
         
-        leftMargin: 20
-      }
-    }
+    //     leftMargin: 20
+    //   }
+    // }
 
     LabelButton {
       style: kPrimary
-      title: 'Connect to Last.fm 🚀'
+      title: 'Connect to Last.fm'
+
+      onClicked: root.nextPage()
 
       anchors {
         right: parent.right

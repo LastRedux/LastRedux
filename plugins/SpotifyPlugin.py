@@ -35,7 +35,7 @@ class SpotifyPlugin(QtCore.QObject):
     if self.is_open():
       # Only load if something is already playing
       if self.__applescript_spotify_app.playerState() == SpotifyPlugin.PLAYING_STATE:
-        self.load_track_with_applescript()
+        self.request_initial_state()
 
   def __str__(self):
     return 'Spotify'
@@ -48,7 +48,7 @@ class SpotifyPlugin(QtCore.QObject):
   def is_open(self):
     return self.__applescript_spotify_app.isRunning()
 
-  def load_track_with_applescript(self):
+  def request_initial_state(self):
     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
     if not self.__applescript_spotify_app.isRunning():
       return

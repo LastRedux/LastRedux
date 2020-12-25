@@ -3,6 +3,8 @@ import QtQuick 2.15
 TextEdit {
   id: root
 
+  property bool isContextMenuEnabled: true
+
   color: '#FFF'
   readOnly: true
   renderType: Text.NativeRendering
@@ -28,7 +30,7 @@ TextEdit {
     acceptedButtons: Qt.RightButton
     
     onActiveChanged: {
-      if (active) {
+      if (isContextMenuEnabled && active) {
         contextMenu.open()
       }
     }

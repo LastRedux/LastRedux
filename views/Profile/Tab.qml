@@ -1,6 +1,6 @@
 import QtQuick 2.14
 
-import "../../shared/components"
+import '../../shared/components'
 
 Item {
   id: root
