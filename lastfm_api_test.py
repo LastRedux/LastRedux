@@ -1,4 +1,4 @@
-import util.LastfmApiWrapper as lastfm
+import util.NewLastfmApiWrapper as lastfm
 
 lastfm_instance = lastfm.get_static_instance()
 

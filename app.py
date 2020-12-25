@@ -9,7 +9,7 @@ from PySide2 import QtCore, QtGui, QtQml, QtNetwork
 logger.configure(
   handlers=[{
     'sink': sys.stderr,
-    'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | {name}:{function} | <level>{message}</level>'
+    'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>'
   }]
 )
 

@@ -1,9 +1,7 @@
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
 
 from datatypes.lastfm.LastfmTopTrack import LastfmTopTrack
 from datatypes.lastfm.LastfmTags import LastfmTags
-from datatypes.lastfm.LastfmTag import LastfmTag
 
 @dataclass
 class LastfmFullTrack(LastfmTopTrack):
