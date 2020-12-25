@@ -34,6 +34,7 @@ class AppleMusicPlugin(QtCore.QObject):
     # Store the latest notification from NSNotificationObserver to access it from multiple methods
     self.notification_payload = None
 
+  def request_initial_notification(self):
     # Pause-play to get a new play notification with player data if something is already playing
     if self.apple_music.isRunning():
       # Only pause-play if something is already playing

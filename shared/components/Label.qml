@@ -10,6 +10,7 @@ Text {
   readonly property int kBodyPrimary: 5
   readonly property int kBodySecondary: 6
   readonly property int kNumber: 7
+  readonly property int kBodyPrimarySystem: 9
 
   property bool isShadowEnabled: true
   property int style: kBodyPrimary
@@ -25,6 +26,8 @@ Text {
     
     letterSpacing: {
       switch (style) {
+      case kLargeTitle:
+        return -0.75
       case kTitlePrimary:
       case kNumber:
         return -0.1
@@ -61,6 +64,8 @@ Text {
         return Font.DemiBold
       case kBodyPrimary:
         return Font.Medium
+      case kBodyPrimarySystem:
+        return Font.Normal
       default:
         return Font.Bold
       }

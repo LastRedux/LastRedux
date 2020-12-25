@@ -2,7 +2,11 @@ import QtQuick 2.14
 
 import '../../shared/components'
 
-Item { 
+Item {
+  id: root
+
+  signal finish
+
   Item {
     anchors {
       top: parent.top
@@ -40,7 +44,7 @@ Item {
 
         Label {
           horizontalAlignment: Qt.AlignHCenter
-          text: 'LastRedux is ready 🔥'
+          text: 'LastRedux Is Ready! 💎'
           style: kLargeTitle
 
           width: parent.width
@@ -93,6 +97,8 @@ Item {
     LabelButton {
       style: kPrimary
       title: 'Finish'
+
+      onClicked: root.finish()
 
       anchors {
         right: parent.right

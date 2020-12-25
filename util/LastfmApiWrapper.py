@@ -322,15 +322,8 @@ __lastfm_instance = None
 def get_static_instance():
   global __lastfm_instance
   
-  # If there isn't already LastfmApiWrapper instance, create one and log in using the saved credentials
+  # If there isn't already LastfmApiWrapper instance, create one
   if not __lastfm_instance:
     __lastfm_instance = LastfmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
-
-    # Connect to SQLite
-    db_helper.connect()
-
-    # Set Last.fm wrapper session key and username from database
-    session_key, username = db_helper.get_lastfm_session_details()
-    __lastfm_instance.set_login_info(session_key, username)
 
   return __lastfm_instance
