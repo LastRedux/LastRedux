@@ -126,7 +126,7 @@ class FriendsViewModel(QtCore.QObject):
 
         # Only refresh friends if new friend activity is different
         should_refresh_friends = True
-        consistencies = 0
+        # consistencies = 0
         
         # WIP CODE for comparing friends - not working
         # if self.previous_friends:

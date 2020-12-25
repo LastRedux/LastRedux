@@ -39,7 +39,6 @@ def create_lastfm_session_details(session_key, username):
   # Create lastfm_login_info table
   create_table_query = QtSql.QSqlQuery()
   create_table_query.exec_('CREATE TABLE lastfm_login_info(key text, value text)')
-  print(create_table_query.lastError())
 
   # Insert session key
   session_key_insert_query = QtSql.QSqlQuery()
@@ -47,7 +46,6 @@ def create_lastfm_session_details(session_key, username):
   session_key_insert_query.bindValue(':key', 'session_key')
   session_key_insert_query.bindValue(':value', session_key)
   session_key_insert_query.exec_()
-  print(session_key_insert_query.lastError())
 
   # Insert username
   username_insert_query = QtSql.QSqlQuery()
@@ -55,4 +53,3 @@ def create_lastfm_session_details(session_key, username):
   username_insert_query.bindValue(':key', 'username')
   username_insert_query.bindValue(':value', username)
   username_insert_query.exec_()
-  print(username_insert_query.lastError())
