@@ -7,7 +7,7 @@ from PySide2 import QtSql
 def connect():
   # Connect to SQLite for the first time
   db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-  db.setDatabaseName(os.path.dirname(sys.executable) + 'db.sqlite')
+  db.setDatabaseName(os.path.dirname(sys.executable) + '/db.sqlite')
 
   # Open the database and log connection status
   if db.open():
