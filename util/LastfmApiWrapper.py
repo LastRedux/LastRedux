@@ -121,9 +121,9 @@ class LastfmApiWrapper:
     
     sentry_sdk.set_context('user', {
       'lastfm_username': username,
+      'lastredux_version': 'v0.0.1'
       **system_profile
     })
-    print('registered')
 
     self.__session_key = session_key
     self.__username = username
