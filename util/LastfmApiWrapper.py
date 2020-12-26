@@ -347,6 +347,6 @@ def get_static_instance():
   
   # If there isn't already LastfmApiWrapper instance, create one
   if not __lastfm_instance:
-    __lastfm_instance = LastfmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
+    __lastfm_instance = LastfmApiWrapper('c9205aee76c576c84dc372de469dcb00', 'a643753f16e5c147a0416ecb7bb66eca')
 
   return __lastfm_instance

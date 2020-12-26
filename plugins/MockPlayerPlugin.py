@@ -1,4 +1,5 @@
 import json
+import os
 import random
 from typing import Dict
 
@@ -21,7 +22,8 @@ class MockPlayerPlugin(QtCore.QObject):
     "reason": "Test song with no artist",
     "track_title": "localtrack.mp3",
 
-  }]
+  }] if os.environ.get('MOCK') else []
+
   MOCK_TRACK_LENGTH = 100
 
   def __init__(self):

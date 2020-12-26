@@ -37,7 +37,6 @@ class FriendsViewModel(QtCore.QObject):
 
   # --- Slots ---
 
-  @QtCore.Slot()
   @QtCore.Slot(bool)
   def loadFriends(self, force_loading_indicator=False):
     '''Initiate the process of loading (or reloading) the user's friends and their tracks'''
