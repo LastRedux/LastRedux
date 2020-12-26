@@ -27,13 +27,16 @@ Item {
 
     anchors.fill: parent
 
-    Label {
-      opacity: 0.5
-      style: kTitleSecondary
-      
-      text: 'No Scrobble Selected'
-
+    Column {
       anchors.centerIn: parent
+
+      Label {
+        opacity: 0.5
+        style: kTitleSecondary
+        horizontalAlignment: Qt.AlignHCenter
+        
+        text: `No Scrobble Selected\n\n${viewModel.mediaPlayerName} is currently selected as your media player.`
+      }
     }
   }
 

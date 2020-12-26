@@ -113,6 +113,7 @@ class HistoryViewModel(QtCore.QObject):
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
     self.media_player.paused.connect(self.__handle_media_player_paused)
+    self.media_player_name_changed.emit()
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()

@@ -9,6 +9,7 @@ class DetailsViewModel(QtCore.QObject):
   scrobble_track_data_changed = QtCore.Signal()
   is_in_mini_mode_changed = QtCore.Signal()
   is_player_paused_changed = QtCore.Signal()
+  media_player_name_changed = QtCore.Signal()
 
   def __init__(self):
     QtCore.QObject.__init__(self)
@@ -27,9 +28,11 @@ class DetailsViewModel(QtCore.QObject):
       self.__history_reference.selected_scrobble_changed.connect(lambda: self.scrobble_track_data_changed.emit())
       self.__history_reference.is_in_mini_mode_changed.connect(lambda: self.is_in_mini_mode_changed.emit())
       self.__history_reference.is_player_paused_changed.connect(lambda: self.is_player_paused_changed.emit())
+      self.__history_reference.media_player_name_changed.connect(lambda: self.media_player_name_changed.emit())
 
       # Update scrobble data because the scrobble data changed signal won't be triggered upon connection
       self.scrobble_track_data_changed.emit()
+      self.media_player_name_changed.emit()
 
   def get_scrobble_track_data(self):
     if self.__history_reference:
@@ -55,3 +58,4 @@ class DetailsViewModel(QtCore.QObject):
   isCurrentScrobble = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.get_selected_scrobble_index() == -1, notify=scrobble_track_data_changed)
   isInMiniMode = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.is_in_mini_mode, notify=is_in_mini_mode_changed)
   isPlayerPaused = QtCore.Property(bool, lambda self: self.__history_reference and self.__history_reference.is_player_paused, notify=is_player_paused_changed)
+  mediaPlayerName = QtCore.Property(str, lambda self: self.__history_reference and self.__history_reference.media_player.__str__(), notify=media_player_name_changed)
