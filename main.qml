@@ -109,6 +109,7 @@ Window {
     icon.mask: true
 
     menu: Menu {
+
       MenuItem {
         text: qsTr('Show Window')
         shortcut: 'Ctrl+Meta+S'
@@ -119,33 +120,33 @@ Window {
           application.requestActivate()
         }
       }
+      
+      MenuSeparator { }
 
       MenuItem {
-        text: qsTr('Toggle mini mode')
+        text: qsTr('Toggle Mini Mode')
 
         onTriggered: historyViewModel.toggleMiniMode()
       }
 
       MenuItem {
-        text: qsTr('Use Music app')
+        text: qsTr('Use Music App as Media Player')
 
         onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
       }
 
       MenuItem {
-        text: qsTr('Use Spotify')
+        text: qsTr('Use Spotify as Media Player')
 
         onTriggered: historyViewModel.switchToMediaPlugin('spotify')
       }
-      
-      MenuItem {
-        text: qsTr('Preferences...')
-        shortcut: StandardKey.Preferences
-
-        onTriggered: trayIcon.showMessage('', 'If you are seeing this, welcome to the early commit zone :)')
-      }
 
       MenuSeparator { }
+      
+      MenuItem {
+        text: qsTr('LastRedux Private Beta v0.0.1')
+        enabled: false
+      }
 
       MenuItem {
         text: qsTr('Quit LastRedux')
