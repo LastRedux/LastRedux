@@ -121,7 +121,7 @@ class LastfmApiWrapper:
     
     sentry_sdk.set_context('user', {
       'lastfm_username': username,
-      'lastredux_version': 'v0.0.1'
+      'lastredux_version': 'v0.0.1',
       **system_profile
     })
 
