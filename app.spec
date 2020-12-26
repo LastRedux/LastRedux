@@ -4,8 +4,11 @@ block_cipher = None
 
 added_files = [
   ('main.qml', '.'),
+  ('FontLoaders.qml', '.'),
+  ('util/helpers.js', 'util'),
   ('shared', 'shared'),
   ('views', 'views'),
+  ('mock_data', 'mock_data')
 ]
 
 a = Analysis(['app.py'],
