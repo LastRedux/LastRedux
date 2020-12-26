@@ -53,12 +53,6 @@ class MusicAppPlugin(QtCore.QObject):
     # Store the latest notification from NSNotificationObserver
     self.__cached_notification_payload = None
 
-    # Load currently playing song if there is one
-    if self.is_open():
-      # Only load current track if something is already playing
-      if self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE:
-        self.request_initial_state()
-
   def __str__(self):
     return 'Music'
 
@@ -73,8 +67,12 @@ class MusicAppPlugin(QtCore.QObject):
     return self.__applescript_music_app.isRunning()
 
   def request_initial_state(self):
-    current_track = self.__applescript_music_app.currentTrack()
-    track_title = current_track.name()
+    # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
+    if not self.__applescript_music_app.isRunning():
+      return
+
+    track = self.__applescript_music_app.currentTrack()
+    track_title = track.name()
     
     if not track_title:
       # User is playing a non-library track, so we force a play notification
@@ -82,8 +80,15 @@ class MusicAppPlugin(QtCore.QObject):
       self.__applescript_music_app.playpause() # There is no play function for whatever reason
       return
 
-    self.__state = MediaPlayerState.build_from_applescript_track(current_track, self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE)
-    
+    self.__state = MediaPlayerState(
+      is_playing=self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE,
+      track_title=track_title,
+      artist_name=track.artist(),
+      album_title=track.album(), # TODO: Make sure this isn't going to cause problems without a fallback
+      track_start=0,
+      track_finish=track.duration() # In seconds
+    )
+        
     # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
     timer = QtCore.QTimer(self)
     timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
