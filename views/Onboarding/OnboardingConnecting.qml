@@ -54,6 +54,7 @@ Item {
         horizontalAlignment: Qt.AlignHCenter
         textFormat: Text.StyledText
         lineHeight: 1.25
+        style: kBodyPrimarySystem
         wrapMode: Text.Wrap
 
         text: {

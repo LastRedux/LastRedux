@@ -23,16 +23,16 @@ Item {
 
       Item {
         x: parent.width / 2 - (width / 2) // Center horizontally
-        width: 284
-        height: 109
+        width: 289
+        height: 134
 
         Image {
-          source: '../../shared/resources/trayIconPreview-macOSCatalina.png'
+          source: '../../shared/resources/onboarding-trayIconPreview.png'
 
           anchors {
             fill: parent
 
-            margins: -45
+            margins: -40
           }
         }
       }
@@ -55,6 +55,7 @@ Item {
           textFormat: Text.StyledText
           text: 'LastRedux lives in your Mac’s status bar. Reopen the LastRedux window by<br>clicking the icon and selecting <b>Show Window</b>.'
           lineHeight: 1.1
+          style: kBodyPrimarySystem
           wrapMode: Text.Wrap
 
           width: parent.width
@@ -62,8 +63,11 @@ Item {
 
         Label {
           horizontalAlignment: Qt.AlignHCenter
+          lineHeight: 1.1
           textFormat: Text.StyledText
-          text: 'If you have questions or bug reports, please share them on <b><a href="https://github.com/LastRedux/LastRedux">our GitHub</a></b>.'
+          text: 'If you encounter any bugs, please share them in the <b>#beta-bugs</b> channel in the LastRedux Beta Discord server.'
+          style: kBodyPrimarySystem
+          wrapMode: Text.Wrap
 
           onLinkActivated: Qt.openUrlExternally(link)
           
