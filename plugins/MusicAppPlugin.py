@@ -68,7 +68,7 @@ class MusicAppPlugin(QtCore.QObject):
 
   def request_initial_state(self):
     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-    if not self.__applescript_music_app.isRunning():
+    if not self.__applescript_music_app.isRunning() or not self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE:
       return
 
     track = self.__applescript_music_app.currentTrack()
@@ -81,7 +81,7 @@ class MusicAppPlugin(QtCore.QObject):
       return
 
     self.__state = MediaPlayerState(
-      is_playing=self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE,
+      is_playing=True,
       track_title=track_title,
       artist_name=track.artist(),
       album_title=track.album(), # TODO: Make sure this isn't going to cause problems without a fallback
@@ -92,7 +92,7 @@ class MusicAppPlugin(QtCore.QObject):
     # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
     timer = QtCore.QTimer(self)
     timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
-    timer.timeout.connect(lambda: self.playing.emit(self.__state) if self.__state.is_playing else self.paused.emit(self.__state))
+    timer.timeout.connect(lambda: self.playing.emit(self.__state))
     timer.start(1000)
 
   # --- Private Methods ---
