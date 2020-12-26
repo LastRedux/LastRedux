@@ -2,8 +2,16 @@ import os
 import signal
 import sys
 
+import sentry_sdk
 from loguru import logger
 from PySide2 import QtCore, QtGui, QtQml, QtNetwork
+
+# Initialize Sentry in production
+if getattr(sys, 'frozen', False) or os.environ.get('ENABLE_SENTRY'):
+  sentry_sdk.init(
+    "https://d0fef6e3cd3c411a90fe61532982140e@o496413.ingest.sentry.io/5570752",
+    traces_sample_rate=1.0
+  )
 
 # Configure loguru
 logger.configure(

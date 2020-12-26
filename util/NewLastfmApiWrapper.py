@@ -1,5 +1,4 @@
-from datatypes.lastfm.LastfmFullAlbum import LastfmFullAlbum
-import os
+import sys
 import time
 import json
 import hashlib
@@ -9,7 +8,6 @@ from typing import List
 from loguru import logger
 import requests
 
-import util.db_helper as db_helper
 from datatypes.lastfm.LastfmUserInfo import LastfmUserInfo
 from datatypes.lastfm.LastfmTopArtists import LastfmTopArtists
 from datatypes.lastfm.LastfmTopArtist import LastfmTopArtist
@@ -18,6 +16,7 @@ from datatypes.lastfm.LastfmHistoryTrack import LastfmHistoryTrack
 from datatypes.lastfm.LastfmTopTrack import LastfmTopTrack
 from datatypes.lastfm.LastfmTopAlbums import LastfmTopAlbums
 from datatypes.lastfm.LastfmTopAlbum import LastfmTopAlbum
+from datatypes.lastfm.LastfmFullAlbum import LastfmFullAlbum
 from datatypes.lastfm.LastfmUser import LastfmUser
 from datatypes.lastfm.LastfmFriendTrack import LastfmFriendTrack
 from datatypes.lastfm.LastfmArtist import LastfmArtist
@@ -26,25 +25,24 @@ from datatypes.lastfm.LastfmTags import LastfmTags
 from datatypes.lastfm.LastfmTag import LastfmTag
 from datatypes.lastfm.LastfmFullTrack import LastfmFullTrack
 from datatypes.lastfm.LastfmArtists import LastfmArtists
+from datatypes.lastfm.LastfmSession import LastfmSession
 
 class LastfmApiWrapper:
+  API_KEY = 'c9205aee76c576c84dc372de469dcb00'
+  CLIENT_SECRET = 'a643753f16e5c147a0416ecb7bb66eca'
   USER_AGENT = 'LastRedux v0.0.0'
   MAX_RETRIES = 3
-  NOT_FOUND_ERRORS = ['The artist you supplied could not be found', 'Track not found', 'Album not found']
 
-  def __init__(self, api_key, client_secret):
-    # Private attributes
-    self.__api_key = api_key
-    self.__client_secret = client_secret
+  def __init__(self):
+    self.username = None
     self.__session_key = None
-    self.__username = None
 
-  # --- Request Wrappers ---
+  # --- User Request Wrappers ---
 
   def get_user_info(self) -> LastfmUserInfo:
     return self.__lastfm_request({
         'method': 'user.getInfo',
-        'username': self.__username
+        'username': self.username
       },
       main_key_getter=lambda response: response['user'],
       return_value_builder=lambda user_info, response: LastfmUserInfo(
@@ -58,66 +56,11 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_top_artists(self, limit, period='overall') -> LastfmTopArtists:
-    return self.__lastfm_request({
-        'method': 'user.getTopArtists',
-        'username': self.__username,
-        'limit': limit,
-        'period': period
-      },
-      main_key_getter=lambda response: response['topartists']['artist'],
-      return_value_builder=lambda artists, response: LastfmTopArtists(
-        artists=[LastfmTopArtist(
-          name=artist['name'],
-          plays=int(artist['playcount']),
-          url=artist['url']
-        ) for artist in artists],
-        total=response['topartists']['@attr']['total']
-      )
-    )
-
-  def get_top_tracks(self, limit, period='overall') -> LastfmTracks:
-    return self.__lastfm_request({
-        'method': 'user.getTopTracks',
-        'username': self.__username,
-        'limit': limit,
-        'period': period
-      },
-      main_key_getter=lambda response: response['toptracks']['track'],
-      return_value_builder=lambda tracks, response: LastfmTracks(
-        tracks=[LastfmTopTrack(
-          title=track['name'],
-          artist_name=track['artist']['name'],
-          url=track['url'],
-          plays=track['playcount']
-        ) for track in tracks],
-        total=response['toptracks']['@attr']['total']
-      )
-    )
-
-  def get_top_albums(self, limit, period='overall') -> LastfmTopAlbums:
-    return self.__lastfm_request({
-        'method': 'user.getTopAlbums',
-        'username': self.__username,
-        'limit': limit,
-        'period': period
-      },
-      main_key_getter=lambda response: response['topalbums']['album'],
-      return_value_builder=lambda albums, response: LastfmTopAlbums(
-        albums=[LastfmTopAlbum(
-          title=album['name'],
-          artist_name=album['artist']['name'],
-          url=album['url'],
-          plays=album['playcount']
-        ) for album in albums],
-        total=int(response['topalbums']['@attr']['total'])
-      )
-    )
-
-  def get_recent_scrobbles(self, limit, from_timestamp=None, username=None) -> LastfmTracks:
+  def get_recent_scrobbles(self, limit: int, from_timestamp: int=None, username: str=None) -> LastfmTracks:
     return self.__lastfm_request({
         'method': 'user.getRecentTracks',
-        'username': username or self.__username, # Default arg value can't refer to self
+        'username': username or self.username, # Default arg value can't refer to self
+        'limit': limit,
         'from': from_timestamp
       },
       main_key_getter=lambda response: response['recenttracks']['track'],
@@ -134,16 +77,16 @@ class LastfmApiWrapper:
   def get_total_loved_tracks(self) -> int:
     return self.__lastfm_request({
         'method': 'user.getLovedTracks',
-        'user': self.__username,
+        'user': self.username,
         'limit': 1 # We don't actually want any loved tracks
       },
       return_value_builder=lambda response: response['lovedtracks']['@attr']['total']
     )
 
-  def get_friends(self) -> List:
+  def get_friends(self) -> List[LastfmUser]:
     return self.__lastfm_request({
         'method': 'user.getFriends',
-        'username': self.__username
+        'username': self.username
       },
       main_key_getter=lambda response: response['friends']['user'],
       return_value_builder=lambda friends, response: [
@@ -157,7 +100,7 @@ class LastfmApiWrapper:
       ]
     )
 
-  def get_friend_track(self, friend_username):
+  def get_friend_track(self, friend_username: str) -> LastfmFriendTrack:
     return self.__lastfm_request({
         'method': 'user.getRecentTracks',
         'username': friend_username
@@ -170,11 +113,69 @@ class LastfmApiWrapper:
         is_now_playing=track.get('@attr', {}).get('nowplaying') == 'true'
       ) if track else None
     )
+
+  def get_top_artists(self, limit: int, period: str='overall') -> LastfmTopArtists:
+    return self.__lastfm_request({
+        'method': 'user.getTopArtists',
+        'username': self.username,
+        'limit': limit,
+        'period': period
+      },
+      main_key_getter=lambda response: response['topartists']['artist'],
+      return_value_builder=lambda artists, response: LastfmTopArtists(
+        artists=[LastfmTopArtist(
+          name=artist['name'],
+          plays=int(artist['playcount']),
+          url=artist['url']
+        ) for artist in artists],
+        total=response['topartists']['@attr']['total']
+      )
+    )
+
+  def get_top_tracks(self, limit: int, period: str='overall') -> LastfmTracks:
+    return self.__lastfm_request({
+        'method': 'user.getTopTracks',
+        'username': self.username,
+        'limit': limit,
+        'period': period
+      },
+      main_key_getter=lambda response: response['toptracks']['track'],
+      return_value_builder=lambda tracks, response: LastfmTracks(
+        tracks=[LastfmTopTrack(
+          title=track['name'],
+          artist_name=track['artist']['name'],
+          url=track['url'],
+          plays=track['playcount']
+        ) for track in tracks],
+        total=response['toptracks']['@attr']['total']
+      )
+    )
+
+  def get_top_albums(self, limit: int, period: str='overall') -> LastfmTopAlbums:
+    return self.__lastfm_request({
+        'method': 'user.getTopAlbums',
+        'username': self.username,
+        'limit': limit,
+        'period': period
+      },
+      main_key_getter=lambda response: response['topalbums']['album'],
+      return_value_builder=lambda albums, response: LastfmTopAlbums(
+        albums=[LastfmTopAlbum(
+          title=album['name'],
+          artist_name=album['artist']['name'],
+          url=album['url'],
+          plays=album['playcount']
+        ) for album in albums],
+        total=int(response['topalbums']['@attr']['total'])
+      )
+    )
   
-  def get_artist_info(self, artist_name):
+  # --- Info Request Wrappers ---
+
+  def get_artist_info(self, artist_name: str) -> LastfmFullArtist:
     return self.__lastfm_request({
         'method': 'artist.getInfo',
-        'username': self.__username,
+        'username': self.username,
         'artist': artist_name
       },
       main_key_getter=lambda response: response['artist'],
@@ -199,10 +200,10 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_track_info(self, artist_name, track_title):
+  def get_track_info(self, artist_name: str, track_title: str) -> LastfmFullTrack:
     return self.__lastfm_request({
         'method': 'track.getInfo',
-        'username': self.__username,
+        'username': self.username,
         'artist': artist_name,
         'track': track_title
       },
@@ -221,10 +222,10 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_album_info(self, artist_name, album_title):
+  def get_album_info(self, artist_name: str, album_title: str) -> LastfmFullAlbum:
     return self.__lastfm_request({
         'method': 'album.getInfo',
-        'username': self.__username,
+        'username': self.username,
         'artist': artist_name,
         'album': album_title
       },
@@ -241,6 +242,38 @@ class LastfmApiWrapper:
         )
       )
     )
+
+  # --- Authentication Wrappers ---
+  
+  def get_auth_token(self) -> str:
+    '''Request an authorization token used to get a the session key (lasts 60 minutes)'''
+    
+    # return self.__lastfm_request('auth.getToken').get('token', '')
+    return self.__lastfm_request({
+        'method': 'auth.getToken'
+      },
+      return_value_builder=lambda response: response['token']
+    )
+
+  def get_session(self, auth_token: str) -> LastfmSession:
+    '''Get and save a session key and username to enable other functions'''
+
+    session = self.__lastfm_request({
+        'method': 'auth.getSession',
+        'token': auth_token
+      },
+      main_key_getter=lambda response: response['session'],
+      return_value_builder=lambda session, response: LastfmSession(
+        session_key=session['key'],
+        username=session['name']
+      )
+    )
+
+    return session
+
+  def log_in_with_session(self, session: LastfmSession) -> None:
+    self.username = session.username
+    self.__session_key = session.session_key
 
   # # POST requests
   # def submit_scrobble(self, scrobble):
@@ -298,14 +331,11 @@ class LastfmApiWrapper:
 
   # --- Other Methods ---
 
-  def set_login_info(self, session_key, username):
-    self.__session_key = session_key
-    self.__username = username
-
-  def generate_authorization_url(self, auth_token):
+  @staticmethod
+  def generate_authorization_url(auth_token):
     '''Generate a Last.fm authentication url for the user to allow access to their account'''
     
-    return f'https://www.last.fm/api/auth/?api_key={self.__api_key}&token={auth_token}'
+    return f'https://www.last.fm/api/auth/?api_key={LastfmApiWrapper.API_KEY}&token={auth_token}'
   
   def get_total_scrobbles_today(self) -> int:
     # Get the unix timestamp of 12am today
@@ -320,7 +350,7 @@ class LastfmApiWrapper:
 
   def __lastfm_request(self, args, main_key_getter=None, return_value_builder=None, http_method='GET'):
     params = {
-      'api_key': self.__api_key, 
+      'api_key': LastfmApiWrapper.API_KEY, 
       'format': 'json',
       **args
     }
@@ -328,18 +358,31 @@ class LastfmApiWrapper:
     if http_method == 'POST':
       params['sk'] = self.__session_key
 
-    params['api_sig'] = self.__generate_method_signature(params)
+    if http_method == 'POST' or args.get('method') == 'auth.getSession':
+      params['api_sig'] = self.__generate_method_signature(params)
+
+    # Prevent accidental usage without logging in
+    # if params.get('username') and not self.username:
+    #   raise Exception('Not logged in, use LastfmApiWrapper.set_login')
 
     # Make the request with automatic retries up to a limit
     for _ in range(LastfmApiWrapper.MAX_RETRIES):
-      resp = requests.request(
-        method=http_method,
-        url='https://ws.audioscrobbler.com/2.0/', 
-        headers={'user-agent': self.USER_AGENT},
-        params=params if http_method == 'GET' else None,
-        data=params if http_method == 'POST' else None
-      )
+      resp = None
       resp_json = None
+      
+      try:
+        resp = requests.request(
+          method=http_method,
+          url='https://ws.audioscrobbler.com/2.0/', 
+          headers={'user-agent': LastfmApiWrapper.USER_AGENT},
+          params=params if http_method == 'GET' else None,
+          data=params if http_method == 'POST' else None
+        )
+      except requests.exceptions.ConnectionError:
+        logger.critical(f'Connection error: {params}')
+        # TODO: Notify the user that the app is closing through QML
+        # TODO: In the future don't do this though, keep the app open and handle the error
+        sys.exit()
 
       try:
         resp_json = resp.json()
@@ -347,11 +390,17 @@ class LastfmApiWrapper:
         logger.critical(f'Last.fm returned non-JSON response: {resp.text}')
         return
 
-      if 'error' in resp_json:
+      # if 'error' in resp_json:
         # Ignore not found errors
         # TODO: Check for 404 code instead of error message
-        if not resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
-          logger.error(f'Error requesting {args["method"]} response: {resp.text}')
+        # if not resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
+          # logger.error(f'Error requesting {args['method']} response: {resp.text}')
+
+      if not resp.status_code in [200, 404]: # 404 errors are ok
+        if resp.status_code == 403:
+          raise Exception(f'403 Forbidden: {resp_json}')
+        elif resp.status_code == 400:
+          raise Exception(f'403 Bad Request: {resp_json}')
 
       return_object = None
       
@@ -368,16 +417,17 @@ class LastfmApiWrapper:
       return return_object
     else:
       # The for loop completed without breaking (The key was not found after the max number of retries)
-      logger.critical(f'Could not request {method} after {LastfmApiWrapper.MAX_RETRIES} retries')
+      logger.critical(f'Could not request {args.get("method")} after {LastfmApiWrapper.MAX_RETRIES} retries')
     
     return None
 
-  def __generate_method_signature(self, payload):
+  @staticmethod
+  def __generate_method_signature(payload):
     '''
     Create an api method signature from the request payload (in alphabetical order by key) with the client secret
 
-    in: {'api_key': 'xxxxxxxxxx', 'method': 'auth.getSession', 'token': 'yyyyyyilovecher'}
-    out: md5("api_keyxxxxxxxxxxmethodauth.getSessiontokenyyyyyyilovecher")
+    in: {'api_key': 'xxxxxxxxxx', 'method': 'auth.getSession', 'token': 'yyyyyy'} and client secret 'ilovecher'
+    out: md5('api_keyxxxxxxxxxxmethodauth.getSessiontokenyyyyyyilovecher')
     '''
 
     # Remove format key from payload
@@ -389,7 +439,7 @@ class LastfmApiWrapper:
     param = [key + str(data[key]) for key in keys]
 
     # Append client secret to the param string
-    param = ''.join(param) + self.__client_secret
+    param = ''.join(param) + LastfmApiWrapper.CLIENT_SECRET
 
     # Unicode encode param before hashing
     param = param.encode()
@@ -398,6 +448,8 @@ class LastfmApiWrapper:
     api_sig = hashlib.md5(param).hexdigest()
     
     return api_sig
+
+    b'api_keyc9205aee76c576c84dc372de469dcb00fromNonelimit5methoduser.getRecentTracksusernameHum4n01d2a643753f16e5c147a0416ecb7bb66eca'
   
   @staticmethod
   def __tag_to_lastfm_tag(tag):
@@ -405,57 +457,3 @@ class LastfmApiWrapper:
       name=tag['name'],
       url=tag['url']
     )
-
-  # def get_auth_token(self):
-  #   '''Request an authorization token used to get a the session key (lasts 60 minutes)'''
-    
-  #   return self.__lastfm_request('auth.getToken').get('token', '')
-
-  # def get_session_key_and_username(self, auth_token):
-  #   '''Use an auth token to get the session key and to access the user's account (does not expire)'''
-    
-  #   response_json = self.__lastfm_request({
-  #     'method': 'auth.getSession',
-  #     'token': auth_token
-  #   })
-
-  #   try:
-  #     return response_json['session']['key'], response_json['session']['name']
-  #   except KeyError:
-  #     raise Exception(f'Error loading new session key: {response_json}')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Initialize api wrapper instance with login info once to use in multiple files
-__lastfm_instance = None
-
-def get_static_instance():
-  global __lastfm_instance
-  
-  # If there isn't already LastfmApiWrapper instance, create one and log in using the saved credentials
-  if not __lastfm_instance:
-    __lastfm_instance = LastfmApiWrapper(os.environ['LASTREDUX_LASTFM_API_KEY'], os.environ['LASTREDUX_LASTFM_CLIENT_SECRET'])
-
-    # Connect to SQLite
-    db_helper.connect()
-
-    # Set Last.fm wrapper session key and username from database
-    session_key, username = db_helper.get_lastfm_session_details()
-    __lastfm_instance.set_login_info(session_key, username)
-
-  return __lastfm_instance

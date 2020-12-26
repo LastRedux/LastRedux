@@ -4,10 +4,12 @@ import json
 import hashlib
 from datetime import datetime, time
 
+import sentry_sdk
 from loguru import logger
 import requests
 
 import util.db_helper as db_helper
+from util.helpers import generate_system_profile
 
 class LastfmApiWrapper:
   USER_AGENT = 'LastRedux v0.0.0'
@@ -115,6 +117,14 @@ class LastfmApiWrapper:
     })['token']
 
   def set_login_info(self, session_key, username):
+    system_profile = generate_system_profile()
+    
+    sentry_sdk.set_context('user', {
+      'lastfm_username': username,
+      **system_profile
+    })
+    print('registered')
+
     self.__session_key = session_key
     self.__username = username
 
