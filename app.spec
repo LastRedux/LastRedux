@@ -49,5 +49,9 @@ coll = COLLECT(exe,
 
 app = BUNDLE(coll,
              name='LastRedux.app',
-             icon=None,
-             bundle_identifier=None)
+             icon='AppIcon.icns',
+             bundle_identifier=None,
+             info_plist={
+               'LSUIElement': True, # Hide in Dock
+               'NSRequiresAquaSystemAppearance': False # Allow Dark Mode to affect UI
+             })

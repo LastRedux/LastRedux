@@ -4,7 +4,7 @@ from typing import List, ClassVar
 
 from loguru import logger
 
-import util.LastfmApiWrapper as lastfm
+from util.LastfmApiWrapper import get_static_instance
 from util.LastfmApiWrapper import LastfmApiWrapper
 import util.spotify_api_helper as spotify_api_helper
 import util.itunes_store_api_helper as itunes_store_api_helper
@@ -20,7 +20,7 @@ class Track:
   album: Album
 
   # Reference to helper instances
-  lastfm_instance: ClassVar[LastfmApiWrapper] = lastfm.get_static_instance()
+  lastfm_instance: ClassVar[LastfmApiWrapper] = get_static_instance()
 
   # Last.fm data
   lastfm_url: str = ''

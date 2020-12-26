@@ -1,10 +1,13 @@
+import os
+import sys
+
 from loguru import logger
 from PySide2 import QtSql
 
 def connect():
   # Connect to SQLite for the first time
   db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-  db.setDatabaseName('db.sqlite')
+  db.setDatabaseName(os.path.dirname(sys.executable) + 'db.sqlite')
 
   # Open the database and log connection status
   if db.open():
