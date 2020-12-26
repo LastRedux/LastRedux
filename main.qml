@@ -120,7 +120,7 @@ Window {
           application.requestActivate()
         }
       }
-      
+
       MenuSeparator { }
 
       MenuItem {
@@ -144,7 +144,7 @@ Window {
       MenuSeparator { }
       
       MenuItem {
-        text: qsTr('LastRedux Private Beta v0.0.1')
+        text: qsTr('LastRedux Private Beta 1')
         enabled: false
       }
 

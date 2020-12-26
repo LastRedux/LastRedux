@@ -52,6 +52,7 @@ app = BUNDLE(coll,
              icon='AppIcon.icns',
              bundle_identifier=None,
              info_plist={
+               'CFBundleShortVersionString': 'Private Beta 1',
                'LSUIElement': True, # Hide in Dock
                'NSRequiresAquaSystemAppearance': False # Allow Dark Mode to affect UI
              })
