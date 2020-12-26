@@ -1,3 +1,4 @@
+from dataclasses import is_dataclass
 import os
 from datetime import datetime
 from plugins.MusicAppPlugin import MusicAppPlugin
@@ -88,6 +89,7 @@ class HistoryViewModel(QtCore.QObject):
     self.__spotify_plugin = SpotifyPlugin()
     self.__music_app_plugin = MusicAppPlugin()
     self.media_player = None
+    self.is_submission_enabled = None
     
     if os.environ.get('MOCK'):
       self.media_player = MockPlayerPlugin()
@@ -102,9 +104,11 @@ class HistoryViewModel(QtCore.QObject):
       
       if use_spotify:
         self.media_player = self.__spotify_plugin
+        self.set_is_scrobble_submission_enabled(False)
       else:
         # Use Music app plugin in all other cases since every Mac has it
         self.media_player = self.__music_app_plugin
+        self.set_is_scrobble_submission_enabled(True)
 
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
@@ -119,12 +123,19 @@ class HistoryViewModel(QtCore.QObject):
     
     self.initialize_variables()
 
-    if os.environ.get('SUBMIT_SCROBBLES'):
-      logger.info('Scrobble submission is enabled')
-
     # Start polling interval to check for new media player position
     self.__timer = QtCore.QTimer(self)
     self.__timer.timeout.connect(self.__fetch_new_media_player_position)
+
+
+  def set_is_scrobble_submission_enabled(self, value: bool):
+    if not os.environ.get('DISABLE_SUBMISSION'):
+      self.is_submission_enabled = value
+
+    if self.is_submission_enabled:
+      logger.debug('Scrobble submission is enabled')
+    else:
+      logger.debug('Scrobble submission is disabled')
 
   # --- Qt Property Getters and Setters ---
 
@@ -294,9 +305,11 @@ class HistoryViewModel(QtCore.QObject):
 
     if media_plugin_name == 'spotify':
       self.media_player = self.__spotify_plugin
+      self.set_is_scrobble_submission_enabled(False)
       logger.success('Switched media player to Spotify')
     elif media_plugin_name == 'musicApp':
       self.media_player = self.__music_app_plugin
+      self.set_is_scrobble_submission_enabled(True)
       logger.success('Switched media player to Music app')
 
     # Reconnect event signals
@@ -344,7 +357,7 @@ class HistoryViewModel(QtCore.QObject):
           self.selected_scrobble_index_changed.emit()
 
       # Submit scrobble to Last.fm in background thread task
-      if os.environ.get('SUBMIT_SCROBBLES'):
+      if self.is_submission_enabled:
         submit_scrobble_task = SubmitScrobbleTask(self.lastfm_instance, self.__current_scrobble)
         QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
@@ -425,7 +438,7 @@ class HistoryViewModel(QtCore.QObject):
       self.current_scrobble_data_changed.emit()
 
       # Tell Last.fm to update the user's now playing status
-      if os.environ.get('SUBMIT_SCROBBLES'):
+      if self.is_submission_enabled:
         QtCore.QThreadPool.globalInstance().start(UpdateNowPlayingTask(self.lastfm_instance, self.__current_scrobble))
 
       # Reset player position to temporary value until a new value can be recieved from the media player
