@@ -294,8 +294,10 @@ class HistoryViewModel(QtCore.QObject):
 
     if media_plugin_name == 'spotify':
       self.media_player = self.__spotify_plugin
+      logger.success('Switched media player to Spotify')
     elif media_plugin_name == 'musicApp':
       self.media_player = self.__music_app_plugin
+      logger.success('Switched media player to Music app')
 
     # Reconnect event signals
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
@@ -423,9 +425,8 @@ class HistoryViewModel(QtCore.QObject):
       self.current_scrobble_data_changed.emit()
 
       # Tell Last.fm to update the user's now playing status
-      if not os.environ.get('MOCK'):
-        update_now_playing_task = UpdateNowPlayingTask(self.lastfm_instance, self.__current_scrobble)
-        QtCore.QThreadPool.globalInstance().start(update_now_playing_task)
+      if os.environ.get('SUBMIT_SCROBBLES'):
+        QtCore.QThreadPool.globalInstance().start(UpdateNowPlayingTask(self.lastfm_instance, self.__current_scrobble))
 
       # Reset player position to temporary value until a new value can be recieved from the media player
       self.__furthest_player_position_reached = 0
