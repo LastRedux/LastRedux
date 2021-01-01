@@ -41,25 +41,11 @@ Window {
         currentTabIndex = tabIndex
 
         switch (tabIndex) {
-        case 0:
-          if (!isSameTab) {
-            stackView.replace(historyPage)
-          }
-          
-          break
         case 1:
-          if (!isSameTab) {
-            stackView.replace(profilePage)
-          }
-
           profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
           shouldShowProfileLoadingIndicator = false
           break
         case 2:
-          if (!isSameTab) {
-            stackView.replace(friendsPage)
-          }
-          
           friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
           shouldShowFriendsLoadingIndicator = false
         }
@@ -237,33 +223,12 @@ Window {
     historyReference: historyViewModel
   }
 
-  Component {
-    id: historyPage
-
-    History {
-      id: history
-
-      listModel: historyListModel
-      viewModel: historyViewModel
-    }
-  }
-
   // --- Profile Page ---
 
   ProfileViewModel {
     id: profileViewModel
 
     applicationReference: applicationViewModel
-  }
-
-  Component {
-    id: profilePage
-
-    Profile {
-      id: profile
-
-      viewModel: profileViewModel
-    }
   }
 
   // --- Friends Page ---
@@ -280,17 +245,6 @@ Window {
     friendsReference: friendsViewModel
   }
 
-  Component {
-    id: friendsPage
-
-    Friends {
-      id: friends
-
-      listModel: friendsListModel
-      viewModel: friendsViewModel
-    }
-  }
-
   // --- Sidebar ---
 
   SidebarBackground {
@@ -304,19 +258,43 @@ Window {
       left: parent.left
     }
 
-    Controls.StackView {
-      id: stackView
-
+    Item {
       clip: true
-      initialItem: historyPage
-      replaceEnter: Transition { }
-      replaceExit: Transition { }
 
       anchors {
         top: tabBar.bottom
         right: parent.right
         bottom: parent.bottom
         left: parent.left
+      }
+
+      History {
+        id: history
+
+        listModel: historyListModel
+        viewModel: historyViewModel
+        visible: currentTabIndex === 0
+
+        anchors.fill: parent
+      }
+
+      Profile {
+        id: profile
+
+        viewModel: profileViewModel
+        visible: currentTabIndex === 1
+
+        anchors.fill: parent
+      }
+
+      Friends {
+        id: friends
+
+        listModel: friendsListModel
+        viewModel: friendsViewModel
+        visible: currentTabIndex === 2
+
+        anchors.fill: parent
       }
     }
 
