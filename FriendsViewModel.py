@@ -16,6 +16,7 @@ class FriendsViewModel(QtCore.QObject):
   begin_refresh_friends = QtCore.Signal()
   end_refresh_friends = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
+  is_loading_changed = QtCore.Signal()
   album_image_url_changed = QtCore.Signal(int)
 
   def initialize_variables(self):
@@ -50,7 +51,7 @@ class FriendsViewModel(QtCore.QObject):
       # Fetch friends if they aren't already being fetched
       if not self.__is_loading:
         self.__is_loading = True
-
+        self.is_loading_changed.emit()
         fetch_friends_task = FetchFriendsTask(self.lastfm_instance)
         fetch_friends_task.finished.connect(self.__handle_fetched_lastfm_friends)
         QtCore.QThreadPool.globalInstance().start(fetch_friends_task)
@@ -144,6 +145,7 @@ class FriendsViewModel(QtCore.QObject):
           
         self.previous_friends = self.friends
         self.__is_loading = False
+        self.is_loading_changed.emit()
         
         # Update loading indicator on tab bar if needed
         if self.__should_show_loading_indicator:
@@ -178,9 +180,12 @@ class FriendsViewModel(QtCore.QObject):
       self.initialize_variables()
       self.should_show_loading_indicator_changed.emit()
       self.end_refresh_friends.emit()
+
+    self.is_loading_changed.emit()
   
   # --- Qt Properties ---
 
   applicationReference = QtCore.Property(ApplicationViewModel, lambda self: self.__application_reference, set_application_reference)
   isEnabled = QtCore.Property(bool, lambda self: self.__is_enabled, set_is_enabled, notify=is_enabled_changed)
   shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)
+  isLoading = QtCore.Property(bool, lambda self: self.__is_loading, notify=is_loading_changed)

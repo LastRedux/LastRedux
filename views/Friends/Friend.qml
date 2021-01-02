@@ -18,6 +18,7 @@ Item {
   property alias trackArtistLastfmUrl: trackArtistNameView.address
   property bool isTrackPlaying
   property bool isLoading
+  property alias isContextMenuEnabled: pointerHandlers.isContextMenuEnabled
 
   property bool shouldShowTrackSection: isLoading || (!isLoading && trackTitle) // Show track section if it's still loading or if it loaded and there's a track
 

@@ -6,6 +6,7 @@ Item {
   
   property string address
   property string text
+  property bool isContextMenuEnabled: true
 
   property bool containsPress: hoverHandler.hovered && leftPointHandler.active
   property alias hovered: hoverHandler.hovered
@@ -57,7 +58,7 @@ Item {
     enabled: !!address
     
     onActiveChanged: {
-      if (active) {
+      if (active && isContextMenuEnabled) {
         contextMenu.open()
       }
     }
