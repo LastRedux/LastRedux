@@ -27,6 +27,7 @@ Window {
   }
 
   color: '#171717'
+  flags: Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint // Disable fullscreen on macOS
   title: 'LastRedux'
   visible: true
 
