@@ -19,7 +19,7 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
 
     if os.environ.get('MOCK'):
       # Get the first n mock tracks in reverse order since that's how they would be added
-      mock_tracks = json.load(open('mock_data/mock_tracks.json'))[0:self.count]
+      mock_tracks = json.load(open('mock_data/mock_tracks.json'))[1:self.count]
 
       mock_recent_scrobbles = []
 
@@ -38,7 +38,7 @@ class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
             '#text': mock_track.get('album_title'),
           },
           'date': {
-            'uts': -48899446800 + (i * 100)
+            'uts': 1609653557 - (i * 180)
           }
         })
 

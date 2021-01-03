@@ -33,10 +33,16 @@ class MockPlayerPlugin(QtCore.QObject):
     self.__track_index = 0
     self.__player_position = 0
 
+  def __str__(self):
+    return 'Mock'
+
   # --- Media Player Implementation ---
 
   def get_player_position(self) -> float:
     return self.__player_position
+
+  def request_initial_state(self):
+    return self.__state
 
   # --- Mock Specific Functions ---
 
