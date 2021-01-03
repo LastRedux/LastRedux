@@ -26,6 +26,9 @@ from datatypes.lastfm.LastfmTag import LastfmTag
 from datatypes.lastfm.LastfmFullTrack import LastfmFullTrack
 from datatypes.lastfm.LastfmArtists import LastfmArtists
 from datatypes.lastfm.LastfmSession import LastfmSession
+from datatypes.lastfm.LastfmScrobbleStatus import LastfmScrobbleStatus
+from datatypes.lastfm.LastfmLoveStatus import LastfmLoveStatus
+from datatypes.lastfm.LastfmUpdateNowPlayingStatus import LastfmUpdateNowPlayingStatus
 
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
@@ -275,68 +278,62 @@ class LastfmApiWrapper:
     self.username = session.username
     self.__session_key = session.session_key
 
-  # # POST requests
-  # def submit_scrobble(self, scrobble):
-  #   '''Send a Scrobble object to Last.fm to save a scrobble to a user\'s profile'''
+  # --- POST request wrappers ---
 
-  #   if not self.__is_logged_in():
-  #     return
+  def submit_scrobble(self, artist_name: str, track_title: str, date: datetime, album_title: str=None) -> LastfmScrobbleStatus:
+    args = {
+      'method': 'track.scrobble',
+      'username': self.username,
+      'artist': artist_name,
+      'track': track_title,
+      'timestamp': date.timestamp()
+    }
 
-  #   scrobble_payload = {
-  #     'method': 'track.scrobble',
-  #     'track': scrobble.title,
-  #     'artist': scrobble.artist.name,
-  #     'timestamp': scrobble.timestamp.timestamp() # Convert from datetime object to UTC time
-  #   }
+    if album_title:
+      args['album'] = album_title
 
-  #   album_title = scrobble.album.title
+    return self.__lastfm_request(args,
+      http_method='POST',
+      main_key_getter=lambda response: response['scrobbles']['scrobble'],
+      return_value_builder=lambda status, response: LastfmScrobbleStatus(
+        accepted_count=response['scrobbles']['@attr']['accepted'],
+        ignored_count=response['scrobbles']['@attr']['ignored'],
+        ignored_error_code=int(status['ignoredMessage']['code'])
+      )
+    )
+  
+  def set_track_is_loved(self, artist_name: str, track_title: str, is_loved: bool) -> LastfmLoveStatus:
+    return self.__lastfm_request({
+        'method': 'track.love' if is_loved else 'track.unlove',
+        'artist': artist_name,
+        'track': track_title
+      },
+      http_method='POST',
+      return_value_builder=lambda response: LastfmLoveStatus(
+        ok=True # If the request fails, an error will be thrown
+      )
+    )
+  
+  def update_now_playing(self, artist_name: str, track_title: str, album_title: str=None) -> LastfmUpdateNowPlayingStatus:
+    args = {
+      'method': 'track.updateNowPlaying',
+      'artist': artist_name,
+      'track': track_title
+    }
 
-  #   # Only submit album title if it exists
-  #   if album_title:
-  #     scrobble_payload['album'] = album_title
+    if album_title:
+      args['album'] = album_title
 
-  #   return self.__lastfm_request(scrobble_payload, http_method='POST')
-
-  # def set_track_is_loved(self, scrobble, is_loved):
-  #   '''Set loved value on Last.fm for the passed scrobble'''
-
-  #   if not self.__is_logged_in():
-  #     return
-
-  #   return self.__lastfm_request({
-  #     'method': 'track.love' if is_loved else 'track.unlove',
-  #     'track': scrobble.title,
-  #     'artist': scrobble.artist.name
-  #   }, http_method='POST')
-
-  # def update_now_playing(self, scrobble):
-  #   '''Tell Last.fm to update the user's now playing track'''
-
-  #   if not self.__is_logged_in():
-  #     return
-
-  #   scrobble_payload = {
-  #     'method': 'track.updateNowPlaying',
-  #     'track': scrobble.title,
-  #     'artist': scrobble.artist.name,
-  #   }
-
-  #   album_title = scrobble.album.title
-
-  #   # Only submit album title if it exists
-  #   if album_title:
-  #     scrobble_payload['album'] = album_title
-
-  #   return self.__lastfm_request(scrobble_payload, http_method='POST')
+    return self.__lastfm_request(args,
+      http_method='POST',
+      main_key_getter=lambda response: response['nowplaying'],
+      return_value_builder=lambda status, response: LastfmUpdateNowPlayingStatus(
+        ignored_error_code=int(status['ignoredMessage']['code'])
+      )
+    )
 
   # --- Other Methods ---
 
-  @staticmethod
-  def generate_authorization_url(auth_token):
-    '''Generate a Last.fm authentication url for the user to allow access to their account'''
-    
-    return f'https://www.last.fm/api/auth/?api_key={LastfmApiWrapper.API_KEY}&token={auth_token}'
-  
   def get_total_scrobbles_today(self) -> int:
     # Get the unix timestamp of 12am today
     twelve_am_today = datetime.combine(datetime.now(), time.min).timestamp()
@@ -345,6 +342,12 @@ class LastfmApiWrapper:
       limit=1, # We don't actually care about the tracks
       from_timestamp=int(twelve_am_today) # Trim decimal points per API requirement
     ).total
+
+  @staticmethod
+  def generate_authorization_url(auth_token):
+    '''Generate a Last.fm authentication url for the user to allow access to their account'''
+    
+    return f'https://www.last.fm/api/auth/?api_key={LastfmApiWrapper.API_KEY}&token={auth_token}'
 
   # --- Private Methods ---
 
@@ -448,9 +451,7 @@ class LastfmApiWrapper:
     api_sig = hashlib.md5(param).hexdigest()
     
     return api_sig
-
-    b'api_keyc9205aee76c576c84dc372de469dcb00fromNonelimit5methoduser.getRecentTracksusernameHum4n01d2a643753f16e5c147a0416ecb7bb66eca'
-  
+ 
   @staticmethod
   def __tag_to_lastfm_tag(tag):
     return LastfmTag(

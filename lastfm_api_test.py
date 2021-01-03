@@ -1,5 +1,6 @@
 import sys
 import webbrowser
+from datetime import datetime
 
 from loguru import logger
 
@@ -77,3 +78,25 @@ for friend in lastfm.get_friends():
 
   print(friend)
   print(f'{"Now playing" if friend_track and friend_track.is_now_playing else "Last scrobble"}: {friend_track or "N/A"}\n')
+
+# POST requests below should stay commented out unless you're specifically testing them
+
+# print('\n***** SUBMIT SCROBBLE *****\n')
+# print(lastfm.submit_scrobble(
+#   artist_name='DOWDD',
+#   track_title='DOW',
+#   date=datetime.now()
+# ))
+
+# print('\n***** LOVE TRACK *****\n')
+# print(lastfm.set_track_is_loved(
+#   artist_name='fun.',
+#   track_title='We Are Young (feat. Janelle Monáe)',
+#   is_loved=True
+# ))
+
+# print('\n***** UPDATE NOW PLAYING *****\n')
+# print(lastfm.update_now_playing(
+#   artist_name='fun.',
+#   track_title='We Are Young (feat. Janelle Monáe)'
+# ))
