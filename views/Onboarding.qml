@@ -12,9 +12,9 @@ Item {
   OnboardingWelcome {
     id: welcome
 
-    visible: viewModel && viewModel.currentPage === 0
+    visible: viewModel && viewModel.currentPageIndex === 0
 
-    onNextPage: viewModel.currentPage = 1
+    onNextPage: viewModel.currentPageIndex = 1
 
     anchors.fill: parent
   }
@@ -24,11 +24,11 @@ Item {
 
     authUrl: viewModel ? viewModel.authUrl : ''
     hasError: viewModel && viewModel.hasError
-    visible: viewModel && viewModel.currentPage === 1
+    visible: viewModel && viewModel.currentPageIndex === 1
 
-    onBack: viewModel.currentPage = 0
+    onBack: viewModel.currentPageIndex = 0
     onTryAgain: viewModel.openNewAuthorizationUrl()
-    onTryAuthenticating: viewModel.authenticate()
+    onTryAuthenticating: viewModel.handleTryAuthenticating()
 
     anchors.fill: parent
   }
@@ -36,9 +36,9 @@ Item {
   OnboardingReady {
     id: ready
 
-    visible: viewModel && viewModel.currentPage === 2
+    visible: viewModel && viewModel.currentPageIndex === 2
 
-    onFinish: viewModel.finish()
+    onFinish: viewModel.handleFinish()
 
     anchors.fill: parent
   }

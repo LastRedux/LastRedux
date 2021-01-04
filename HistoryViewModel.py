@@ -26,7 +26,7 @@ class HistoryViewModel(QtCore.QObject):
   # Constants
   __INITIAL_SCROBBLE_HISTORY_COUNT = int(os.environ.get('INITIAL_HISTORY_ITEMS', 30)) # 30 is the default but can be configured
 
-  # Qt Property changed signals
+  # Qt Property signals
   is_enabled_changed = QtCore.Signal()
   current_scrobble_data_changed = QtCore.Signal()
   current_scrobble_percentage_changed = QtCore.Signal()
@@ -48,7 +48,7 @@ class HistoryViewModel(QtCore.QObject):
 
   showNotification = QtCore.Signal(str, str)
 
-  def initialize_variables(self):
+  def reset_state(self):
     # Store Scrobble objects that have been submitted
     self.scrobble_history = []
 
@@ -122,12 +122,11 @@ class HistoryViewModel(QtCore.QObject):
     self.is_in_mini_mode = False
     self.is_player_paused = False
     
-    self.initialize_variables()
+    self.reset_state()
 
     # Start polling interval to check for new media player position
     self.__timer = QtCore.QTimer(self)
     self.__timer.timeout.connect(self.__fetch_new_media_player_position)
-
 
   def set_is_scrobble_submission_enabled(self, value: bool):
     if not os.environ.get('DISABLE_SUBMISSION'):
@@ -211,7 +210,7 @@ class HistoryViewModel(QtCore.QObject):
     self.is_enabled_changed.emit()
 
     if is_enabled:
-      self.initialize_variables()
+      self.reset_state()
       self.media_player.request_initial_state()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
@@ -221,7 +220,7 @@ class HistoryViewModel(QtCore.QObject):
         self.reloadHistory()
     else:
       self.begin_refresh_history.emit()
-      self.initialize_variables()
+      self.reset_state()
       self.end_refresh_history.emit()
       self.selected_scrobble_index_changed.emit()
       self.selected_scrobble_changed.emit() # This causes details pane to stop showing a scrobble
@@ -330,7 +329,7 @@ class HistoryViewModel(QtCore.QObject):
   def mock_event(self, event_name):
     self.media_player.mock_event(event_name)
 
-  # --- Private Functions ---
+  # --- Private Methods ---
 
   def __submit_scrobble(self, scrobble):
     '''Add a scrobble object to the history array and submit it to Last.fm'''

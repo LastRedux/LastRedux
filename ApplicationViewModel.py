@@ -1,7 +1,8 @@
 from PySide2 import QtCore
 
+from util.LastfmApiWrapper import LastfmApiWrapper
 import util.db_helper as db_helper
-import util.LastfmApiWrapper as lastfm
+from datatypes.lastfm.LastfmSession import LastfmSession
 
 class ApplicationViewModel(QtCore.QObject):
   # Qt Property changed signals
@@ -15,34 +16,52 @@ class ApplicationViewModel(QtCore.QObject):
     QtCore.QObject.__init__(self)
     self.is_logged_in = False
 
-    # Get instance of lastfm api wrapper
-    self.lastfm_instance = lastfm.get_static_instance()
+    self.lastfm = LastfmApiWrapper()
 
     # Connect to SQLite
     db_helper.connect()
 
-  def log_in(self, session_key, username):
-    self.lastfm_instance.set_login_info(session_key, username)
-    db_helper.create_lastfm_session_details(session_key, username)
-    self.set_is_logged_in(True)
+  def log_in_after_onboarding(self, session: LastfmSession):
+    '''Save new login details to db, log in, and close onboarding'''
+
+    self.lastfm.log_in_with_session(session)
+
+    # Create database table
+    # TODO: Only do this if there isn't already a table
+    db_helper.create_lastfm_session_table()
+
+    # Save Last.fm details to the db
+    db_helper.save_lastfm_session(session)
+
+    # Close onboarding and start app
+    self.__set_is_logged_in(True)
     self.closeOnboarding.emit()
 
-  def set_is_logged_in(self, is_logged_in):
-    self.is_logged_in = is_logged_in
-    self.is_logged_in_changed.emit()
+  # --- Slots ---
 
   @QtCore.Slot()
-  def attemptLogin(self):
-    db_helper.get_lastfm_session_details()
+  def attemptLogin(self) -> None:
+    '''Try to log in from database and open onboarding if they don't exist'''
 
     # Try to get session key and username from database
-    session_key, username = db_helper.get_lastfm_session_details()
+    session = db_helper.get_lastfm_session_details()
 
-    if session_key:
+    if session:
       # Set Last.fm wrapper session key and username from database
-      self.lastfm_instance.set_login_info(session_key, username)
-      self.set_is_logged_in(True)
+      self.lastfm.log_in_with_session(session)
+      self.__set_is_logged_in(True)
     else:
       self.openOnboarding.emit()
 
-  isLoggedIn = QtCore.Property(bool, lambda self: self.is_logged_in, set_is_logged_in, notify=is_logged_in_changed)
+  # --- Private Methods ---
+
+  def __set_is_logged_in(self, is_logged_in: bool):
+    self.is_logged_in = is_logged_in
+    self.is_logged_in_changed.emit()
+
+  isLoggedIn = QtCore.Property(
+    type=bool, 
+    fget=lambda self: self.is_logged_in, 
+    fset=__set_is_logged_in, 
+    notify=is_logged_in_changed
+  )

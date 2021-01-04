@@ -19,7 +19,7 @@ class FriendsViewModel(QtCore.QObject):
   is_loading_changed = QtCore.Signal()
   album_image_url_changed = QtCore.Signal(int)
 
-  def initialize_variables(self):
+  def reset_state(self):
     self.__should_show_loading_indicator = False
     self.previous_friends = None
     self.friends = []
@@ -31,7 +31,7 @@ class FriendsViewModel(QtCore.QObject):
 
     self.__application_reference = None
     self.__is_enabled = False
-    self.initialize_variables()
+    self.reset_state()
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
@@ -174,10 +174,10 @@ class FriendsViewModel(QtCore.QObject):
     self.is_enabled_changed.emit()
 
     if is_enabled:
-      self.initialize_variables()
+      self.reset_state()
     else:
       self.begin_refresh_friends.emit()
-      self.initialize_variables()
+      self.reset_state()
       self.should_show_loading_indicator_changed.emit()
       self.end_refresh_friends.emit()
 

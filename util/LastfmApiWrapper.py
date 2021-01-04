@@ -271,6 +271,10 @@ class LastfmApiWrapper:
       )
     )
 
+    if not session.session_key:
+      # The user needs to authorize the auth token for us to get a session key
+      raise AuthTokenNotAuthorizedError()
+
     return session
 
   def log_in_with_session(self, session: LastfmSession) -> None:

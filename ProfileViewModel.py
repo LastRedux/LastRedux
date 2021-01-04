@@ -19,7 +19,7 @@ class ProfileViewModel(QtCore.QObject):
   top_albums_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
 
-  def initialize_variables(self):
+  def reset_state(self):
     self.__should_show_loading_indicator = False
     self.__account_details = None
     self.__overall_statistics = None
@@ -33,7 +33,7 @@ class ProfileViewModel(QtCore.QObject):
 
     self.__application_reference = None
     self.__is_enabled = False
-    self.initialize_variables()
+    self.reset_state()
 
     # Get instance of lastfm api wrapper
     self.lastfm_instance = lastfm.get_static_instance()
@@ -122,7 +122,7 @@ class ProfileViewModel(QtCore.QObject):
   def set_is_enabled(self, is_enabled):
     self.__is_enabled = is_enabled
     self.is_enabled_changed.emit()
-    self.initialize_variables()
+    self.reset_state()
     self.should_show_loading_indicator_changed.emit()
 
     if not is_enabled:
