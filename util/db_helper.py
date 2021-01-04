@@ -30,7 +30,7 @@ def get_lastfm_session_details() -> LastfmSession:
   if username_query.next():
     # Get column id for value in settings
     username = username_query.value(username_query.record().indexOf('value'))
-    sv
+    
     # Execute SQL to find the row that matches our criteria
     session_key_query = QtSql.QSqlQuery('SELECT value FROM lastfm_login_info WHERE key="session_key"')
 
