@@ -4,6 +4,7 @@ Item {
   id: root
   
   property bool isLarge: false
+  property bool isPaused: false
 
   width: isLarge ? 31 : 18
   height: isLarge ? 31 : 18
@@ -40,9 +41,33 @@ Item {
         height: width
       }
 
+      states: State {
+        name: 'paused'
+        when: !root.visible || root.isPaused
+
+        PropertyChanges {
+          target: animation
+          running: false
+        }
+      }
+
+      transitions: Transition {
+        from: ''
+        to: 'paused'
+
+        NumberAnimation {
+          target: bar
+          property: 'height'
+          to: width
+          duration: 175
+        }
+      }
+
       SequentialAnimation {
+        id: animation
+
         loops: Animation.Infinite
-        running: root.visible
+        running: true
 
         NumberAnimation {
           target: bar

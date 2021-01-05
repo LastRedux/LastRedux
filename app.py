@@ -34,8 +34,8 @@ from shared.components.NetworkImage import NetworkImage
 
 # Get the built application path
 if getattr(sys, 'frozen', False):
-  # If the application is run as a bundle, the PyInstaller bootloader extends the sys module by a flag frozen=True and sets the app path into variable _MEIPASS
-  application_path = os.path.dirname(sys.executable) # sys._MEIPASS
+  # If the application is run as a bundle, the PyInstaller bootloader extends the sys module by a flag frozen=True and sets the app path into variable sys.executable
+  application_path = os.path.dirname(sys.executable)
 else:
   application_path = os.path.dirname(os.path.abspath(__file__))
 

@@ -65,7 +65,8 @@ PictureBackground {
     id: playbackIndicator
 
     isLarge: true
-    visible: isCurrentlyScrobbling && !isPlayerPaused && !isInMiniMode
+    isPaused: isPlayerPaused
+    visible: isCurrentlyScrobbling && !isInMiniMode
 
     anchors {
       top: albumImageView.top
