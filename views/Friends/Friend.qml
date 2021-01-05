@@ -17,6 +17,7 @@ Item {
   property alias trackLastfmUrl: trackTitleLabel.address
   property alias trackArtistLastfmUrl: trackArtistNameView.address
   property bool isTrackPlaying
+  property alias isTrackLoved: playbackIndicator.isTrackLoved
   property bool isLoading
   property alias isContextMenuEnabled: pointerHandlers.isContextMenuEnabled
 
@@ -212,7 +213,7 @@ Item {
 
     // --- Track Playback Status - Currently Playing ---
 
-    PlaybackIndicator {
+    FriendPlaybackIndicator {
       id: playbackIndicator
 
       visible: isTrackPlaying
