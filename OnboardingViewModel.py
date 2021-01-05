@@ -34,9 +34,11 @@ class OnboardingViewModel(QtCore.QObject):
   # --- Qt Property Getters and Setters ---
 
   def set_application_reference(self, new_reference):
-    if new_reference:
-      self.__application_reference = new_reference
-      self.__application_reference.openOnboarding.connect(self.__handle_open)
+    if not new_reference:
+      return
+
+    self.__application_reference = new_reference
+    self.__application_reference.openOnboarding.connect(self.__handle_open)
 
   def set_has_error(self, has_error):
     self.__has_error = has_error

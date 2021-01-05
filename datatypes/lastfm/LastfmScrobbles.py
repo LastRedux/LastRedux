@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
-from datatypes.lastfm.LastfmHistoryTrack import LastfmHistoryTrack
+from datatypes.lastfm.LastfmScrobble import LastfmScrobble
 
 @dataclass
-class LastfmTracks:
-  tracks: List[LastfmHistoryTrack]
+class LastfmScrobbles:
+  tracks: List[LastfmScrobble]
   total: int
 
   def __str__(self) -> str:

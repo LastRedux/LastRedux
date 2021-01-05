@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from datatypes.lastfm.LastfmHistoryTrack import LastfmHistoryTrack
+from datatypes.lastfm.LastfmTrack import LastfmTrack
 
 @dataclass
-class LastfmTopTrack(LastfmHistoryTrack):
+class LastfmTopTrack(LastfmTrack):
   plays: int
 
   def __str__(self) -> str:

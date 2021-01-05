@@ -83,10 +83,10 @@ class ProfileViewModel(QtCore.QObject):
   
   @QtCore.Slot()
   @QtCore.Slot(bool)
-  def loadProfileData(self, force_loading_indicator=False):
+  def loadProfileData(self, was_app_refocused=False):
     if self.__is_enabled:
       # Enable loading indicator if initial load or window reactivated
-      if not self.__overall_statistics or force_loading_indicator:
+      if not self.__overall_statistics or was_app_refocused:
         self.__should_show_loading_indicator = True
         self.should_show_loading_indicator_changed.emit()
 

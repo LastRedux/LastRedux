@@ -1,3 +1,4 @@
+from datetime import datetime
 import subprocess
 import json
 from typing import List
@@ -38,3 +39,6 @@ def generate_system_profile():
     'hardware': hardware_string,
     'displays': f'''{[f'{int(screen.frame().size.width)}x{int(screen.frame().size.height)} {"(Retina)" if screen.backingScaleFactor() == 2.0 else ""}' for screen in NSScreen.screens()]}'''
   }
+
+def is_within_24_hours(date: datetime):
+  return (datetime.now() - date).total_seconds() <= 86400 # 24 hours = 86400 seconds

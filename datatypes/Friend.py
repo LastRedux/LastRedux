@@ -1,27 +1,18 @@
-from dataclasses import dataclass
+from __future__ import annotations
 
-from datatypes.Track import Track
+from dataclasses import dataclass, asdict
+
+from datatypes.lastfm.LastfmUser import LastfmUser
+from datatypes.lastfm.LastfmFriendTrack import LastfmScrobble
 
 @dataclass
-class Friend:
-  username: str
-  real_name: str
-  image_url: str
-  lastfm_url: str
-  track: Track = None
-  is_track_playing: bool = None
-  is_loading: bool = True
+class Friend(LastfmUser):
+  is_loading: bool
+  track: LastfmScrobble = None
 
   @staticmethod
-  def build_from_lastfm_friend(lastfm_friend):
-    '''Build a Friend from a Last.fm friend object'''
-    
-    return Friend(
-      real_name=lastfm_friend['realname'],
-      username=lastfm_friend['name'],
-      image_url=lastfm_friend['image'][2]['#text'], # Large size profile image
-      lastfm_url=lastfm_friend['url']
-    )
+  def from_lastfm_user(lastfm_user: LastfmUser) -> Friend:
+    return Friend(**asdict(lastfm_user))
   
   # # WIP CODE for comparing friends - not working
   # # TODO: Look into why "Friend" type annotation doesn't work here, it works in Track

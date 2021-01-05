@@ -14,9 +14,9 @@ class ApplicationViewModel(QtCore.QObject):
 
   def __init__(self):
     QtCore.QObject.__init__(self)
-    self.is_logged_in = False
-
-    self.lastfm = LastfmApiWrapper()
+    
+    self.lastfm: LastfmApiWrapper = LastfmApiWrapper()
+    self.is_logged_in: bool = False
 
     # Connect to SQLite
     db_helper.connect()
