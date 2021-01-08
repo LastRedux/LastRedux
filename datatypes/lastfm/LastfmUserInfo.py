@@ -5,8 +5,8 @@ from datatypes.lastfm.LastfmUser import LastfmUser
 
 @dataclass
 class LastfmUserInfo(LastfmUser):
-  registered_timestamp: int
   total_scrobbles: int
+  registered_date: datetime
   
   def __str__(self) -> str:
     return '\n'.join((
@@ -14,6 +14,6 @@ class LastfmUserInfo(LastfmUser):
       f'Name: {self.real_name or "N/A"}',
       f'Profile: {self.url}',
       f'Image: {self.image_url}',
-      f'Registered: {datetime.fromtimestamp(self.registered_timestamp).strftime("%Y-%m-%d %H:%M:%S")}',
+      f'Registered: {self.registered_date.strftime("%Y-%m-%d %H:%M:%S")}',
       f'Scrobbles: {self.total_scrobbles}'
     ))

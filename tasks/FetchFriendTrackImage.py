@@ -1,26 +1,26 @@
-from PySide2 import QtCore
+# from PySide2 import QtCore
 
-from datatypes.Track import Track
+# from datatypes.SimpleTrack import MediaPlayerTrack
 
-class FetchFriendTrackImage(QtCore.QObject, QtCore.QRunnable):
-  finished = QtCore.Signal(int)
+# class FetchFriendTrackImage(QtCore.QObject, QtCore.QRunnable):
+#   finished = QtCore.Signal(int)
 
-  def __init__(self, track: Track, row_in_friends_list: int):
-    QtCore.QObject.__init__(self)
-    QtCore.QRunnable.__init__(self)
-    self.track = track
-    self.setAutoDelete(True)
-    self.row_in_friends_list = row_in_friends_list
+#   def __init__(self, track: MediaPlayerTrack, row_in_friends_list: int):
+#     QtCore.QObject.__init__(self)
+#     QtCore.QRunnable.__init__(self)
+#     self.track = track
+#     self.setAutoDelete(True)
+#     self.row_in_friends_list = row_in_friends_list
 
-  def run(self):
-    '''Fetch and attach information from Last.fm and iTunes to the passed Track object '''
+#   def run(self):
+#     '''Fetch and attach information from Last.fm and iTunes to the passed Track object '''
 
-    self.track.load_lastfm_data(no_artists=True)
+#     self.track.load_lastfm_data(no_artists=True)
 
-    if not self.track.album.image_url:
-      self.track.load_spotify_data(no_artists=True)
+#     if not self.track.album.image_url:
+#       self.track.load_spotify_data(no_artists=True)
 
-    if not self.track.album.image_url:
-      self.track.fetch_and_load_itunes_store_images()
+#     if not self.track.album.image_url:
+#       self.track.fetch_and_load_itunes_store_images()
       
-    self.finished.emit(self.row_in_friends_list)
+#     self.finished.emit(self.row_in_friends_list)

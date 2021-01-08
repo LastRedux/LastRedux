@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
 @dataclass
-class LastfmScrobbleStatus:
+class LastfmSubmissionStatus:
   accepted_count: int
   ignored_count: int
 
   '''
-  Scrobble ignored error codes:
+  Ignored error codes:
   1: Artist was ignored
   2: Track was ignored
   3: Timestamp was too old

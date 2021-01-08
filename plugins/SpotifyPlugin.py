@@ -54,12 +54,13 @@ class SpotifyPlugin(QtCore.QObject):
       return
 
     track = self.__applescript_spotify_app.currentTrack()
+    album_title = track.album() or None # Prevent storing empty strings in album_title key
 
     self.__state = MediaPlayerState(
       is_playing=self.__applescript_spotify_app.playerState() == SpotifyPlugin.PLAYING_STATE,
       track_title=track.name(),
       artist_name=track.artist(),
-      album_title=track.album(), # TODO: Make sure this isn't going to cause problems without a fallback
+      album_title=album_title,
       track_start=0,
       track_finish=track.duration() / 1000 # Convert from ms to s
     )
@@ -98,7 +99,7 @@ class SpotifyPlugin(QtCore.QObject):
       self.paused.emit(self.__state)
       return
     
-    album_title = notification_payload.get('Album', '')
+    album_title = notification_payload['Album'] or None # Prevent storing empty strings in album_title key
     
     # Emit play signal early and skip AppleScript if the track is the same as the last one (if it exists)
     if self.__state:

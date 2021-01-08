@@ -8,7 +8,6 @@ from ApplicationViewModel import ApplicationViewModel
 from tasks.FetchFriendTrack import FetchFriendTrack
 from tasks.FetchFriendsTask import FetchFriendsTask
 from tasks.FetchFriendTrackImage import FetchFriendTrackImage
-from datatypes.Track import Track
 from datatypes.Friend import Friend
 
 class FriendsViewModel(QtCore.QObject):

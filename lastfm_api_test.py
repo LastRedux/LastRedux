@@ -73,10 +73,10 @@ print(lastfm.get_top_albums(limit=5, period='7day'))
 print('\n***** FRIENDS *****\n')
 
 for friend in lastfm.get_friends():
-  friend_track = lastfm.get_last_scrobble_by_username(friend_username=friend.username)
+  friend_track = lastfm.get_last_scrobble_by_username(username=friend.username)
 
   print(friend)
-  print(f'{"Now playing" if friend_track and friend_track.is_now_playing else "Last scrobble"}: {friend_track or "N/A"}\n')
+  print(f'Last Scrobble: {friend_track or "N/A"}\n')
 
 # POST requests below should stay commented out unless you're specifically testing them
 

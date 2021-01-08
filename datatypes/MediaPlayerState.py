@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
 @dataclass
-class MediaPlayerState:
+class MediaPlayerState(Track):
   is_playing: bool
-  track_title: str
-  artist_name: str
-  album_title: str
+
+  # Track crop data (in seconds)
   track_start: float = 0.0
   track_finish: float = None
