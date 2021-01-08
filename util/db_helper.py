@@ -20,7 +20,7 @@ def connect():
   else:
     logger.critical('sqlite connection failed')
 
-def get_lastfm_session_details() -> LastfmSession:
+def get_lastfm_session() -> LastfmSession:
   '''Fetch the user's Last.fm session key and username from the settings table'''
   
   # Execute SQL to find the row that matches our criteria
@@ -36,9 +36,8 @@ def get_lastfm_session_details() -> LastfmSession:
 
     # Move to next row 
     session_key_query.next()
-    
+
     session_key = session_key_query.value(session_key_query.record().indexOf('value'))
-    # print(session_key_query.lastError())
     
     return LastfmSession(session_key, username)
 
@@ -47,16 +46,17 @@ def get_lastfm_session_details() -> LastfmSession:
 def create_lastfm_session_table():
   create_table_query = QtSql.QSqlQuery()
   create_table_query.exec_('CREATE TABLE lastfm_login_info(key text, value text)')
-  # print(create_table_query.lastError())
   
-def save_lastfm_session(session: LastfmSession):
+def save_lastfm_session_to_database(session: LastfmSession):
+  # TODO: Only do this if there isn't already a table
+  create_lastfm_session_table()
+
   # Insert session key
   session_key_insert_query = QtSql.QSqlQuery()
   session_key_insert_query.prepare('INSERT INTO lastfm_login_info (key, value) VALUES (:key, :value)')
   session_key_insert_query.bindValue(':key', 'session_key')
   session_key_insert_query.bindValue(':value', session.session_key)
   session_key_insert_query.exec_()
-  # print(session_key_insert_query.lastError())
 
   # Insert username
   username_insert_query = QtSql.QSqlQuery()
@@ -64,4 +64,3 @@ def save_lastfm_session(session: LastfmSession):
   username_insert_query.bindValue(':key', 'username')
   username_insert_query.bindValue(':value', session.username)
   username_insert_query.exec_()
-  # print(username_insert_query.lastError())

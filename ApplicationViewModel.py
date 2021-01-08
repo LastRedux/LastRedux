@@ -26,12 +26,8 @@ class ApplicationViewModel(QtCore.QObject):
 
     self.lastfm.log_in_with_session(session)
 
-    # Create database table
-    # TODO: Only do this if there isn't already a table
-    db_helper.create_lastfm_session_table()
-
     # Save Last.fm details to the db
-    db_helper.save_lastfm_session(session)
+    db_helper.save_lastfm_session_to_database(session)
 
     # Close onboarding and start app
     self.__set_is_logged_in(True)
@@ -44,7 +40,7 @@ class ApplicationViewModel(QtCore.QObject):
     '''Try to log in from database and open onboarding if they don't exist'''
 
     # Try to get session key and username from database
-    session = db_helper.get_lastfm_session_details()
+    session = db_helper.get_lastfm_session()
 
     if session:
       # Set Last.fm wrapper session key and username from database

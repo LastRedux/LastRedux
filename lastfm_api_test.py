@@ -4,7 +4,7 @@ from datetime import datetime
 
 from loguru import logger
 
-import util.new_db_helper as db_helper
+import util.db_helper as db_helper
 from util.LastfmApiWrapper import LastfmApiWrapper
 
 lastfm = LastfmApiWrapper()
@@ -79,8 +79,6 @@ if not input('Run friends? (type anything to skip) '):
 
     print(friend)
     print(f'Last Scrobble: {friend_track or "N/A"}\n')
-
-# DANGEROUS: POST requests 
 
 if not input('Run POST requests? (type anything to skip) [WARNING: THESE WILL SUBMIT THINGS TO YOUR LAST.FM ACCOUNT] '):
   print('\n***** SUBMIT SCROBBLE *****\n')
