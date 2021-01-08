@@ -329,7 +329,6 @@ class LastfmApiWrapper:
       http_method='POST',
       main_key_getter=lambda response: response['nowplaying'],
       return_value_builder=lambda status, response: LastfmSubmissionStatus(
-        ignored_count=1, # Only one track will be sent at once
         ignored_error_code=int(status['ignoredMessage']['code'])
       )
     )

@@ -1,5 +1,6 @@
 import sys
 import webbrowser
+from datetime import datetime
 
 from loguru import logger
 
@@ -72,30 +73,34 @@ print(lastfm.get_top_albums(limit=5, period='7day'))
 
 print('\n***** FRIENDS *****\n')
 
-for friend in lastfm.get_friends():
-  friend_track = lastfm.get_last_scrobble_by_username(username=friend.username)
+if not input('Run friends? (type anything to skip) '):
+  for friend in lastfm.get_friends():
+    friend_track = lastfm.get_last_scrobble_by_username(username=friend.username)
 
-  print(friend)
-  print(f'Last Scrobble: {friend_track or "N/A"}\n')
+    print(friend)
+    print(f'Last Scrobble: {friend_track or "N/A"}\n')
 
-# POST requests below should stay commented out unless you're specifically testing them
+# DANGEROUS: POST requests 
 
-# print('\n***** SUBMIT SCROBBLE *****\n')
-# print(lastfm.submit_scrobble(
-#   artist_name='DOWDD',
-#   track_title='DOW',
-#   date=datetime.now()
-# ))
+if not input('Run POST requests? (type anything to skip) [WARNING: THESE WILL SUBMIT THINGS TO YOUR LAST.FM ACCOUNT] '):
+  print('\n***** SUBMIT SCROBBLE *****\n')
+  print(lastfm.submit_scrobble(
+    artist_name=f'LASTREDUX TEST ARTIST',
+    track_title=f'LASTREDUX TEST SONG',
+    date=datetime.now()
+  ))
 
-# print('\n***** LOVE TRACK *****\n')
-# print(lastfm.set_track_is_loved(
-#   artist_name='fun.',
-#   track_title='We Are Young (feat. Janelle Monáe)',
-#   is_loved=True
-# ))
+  print('\n***** LOVE TRACK *****\n')
+  print(lastfm.set_track_is_loved(
+    artist_name='LASTREDUX TEST ARTIST',
+    track_title='LASTREDUX TEST SONG 0',
+    is_loved=True
+  ))
 
-# print('\n***** UPDATE NOW PLAYING *****\n')
-# print(lastfm.update_now_playing(
-#   artist_name='fun.',
-#   track_title='We Are Young (feat. Janelle Monáe)'
-# ))
+  print('\n***** UPDATE NOW PLAYING *****\n')
+  print(lastfm.update_now_playing(
+    artist_name='LASTREDUX TEST ARTIST',
+    track_title='LASTREDUX TEST SONG 0'
+  ))
+
+print('Congrats, nothing broke (apparently)')
