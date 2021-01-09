@@ -2,12 +2,12 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 
 from util.lastfm.LastfmUser import LastfmUser
-from util.lastfm.LastfmScrobble import LastfmScrobble
+from .FriendScrobble import FriendScrobble
 
 @dataclass
 class Friend(LastfmUser):
-  is_loading: bool
-  track: LastfmScrobble = None
+  last_scrobble: FriendScrobble = None
+  is_loading: bool = True
 
   @staticmethod
   def from_lastfm_user(lastfm_user: LastfmUser) -> Friend:

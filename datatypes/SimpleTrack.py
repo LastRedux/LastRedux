@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class SimpleTrack:
-  track_title: str
   artist_name: str
+  track_title: str
   album_title: str
 
   def __str__(self) -> str:

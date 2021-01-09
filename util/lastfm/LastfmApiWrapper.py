@@ -1,24 +1,26 @@
+from datatypes.Friend import Friend
+import hashlib
+import json
 import sys
 import time
-import json
-import hashlib
 from datetime import datetime, time
 from typing import List
 
-from loguru import logger
 import requests
-
 from datatypes import ImageSet
-from .LastfmUserInfo import LastfmUserInfo
+from loguru import logger
+
+from .LastfmAlbumInfo import LastfmAlbumInfo
+from .LastfmArtistInfo import LastfmArtistInfo
 from .LastfmList import LastfmList
 from .LastfmScrobble import LastfmScrobble
-from .LastfmUser import LastfmUser
-from .LastfmArtistInfo import LastfmArtistInfo
-from .LastfmTrackInfo import LastfmTrackInfo
-from .LastfmAlbumInfo import LastfmAlbumInfo
-from .LastfmTag import LastfmTag
 from .LastfmSession import LastfmSession
 from .LastfmSubmissionStatus import LastfmSubmissionStatus
+from .LastfmTag import LastfmTag
+from .LastfmTrackInfo import LastfmTrackInfo
+from .LastfmUser import LastfmUser
+from .LastfmUserInfo import LastfmUserInfo
+from datatypes import FriendScrobble
 
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
@@ -60,9 +62,9 @@ class LastfmApiWrapper:
       main_key_getter=lambda response: response['recenttracks']['track'],
       return_value_builder=lambda tracks, response: LastfmList(
         items=[LastfmScrobble(
-          track_title=track['name'],
           artist_name=track['artist']['#text'],
-          album_title=track['album']['#text'],
+          track_title=track['name'],
+          album_title=track['album']['#text'] or None,
           timestamp=datetime.fromtimestamp(int(track['date']['uts'])) if not track.get('@attr', {}).get('nowplaying', False) else None # Now playing tracks don't have a date
          ) for track in tracks],
         attr_total=response['recenttracks']['@attr']['total']
@@ -89,25 +91,9 @@ class LastfmApiWrapper:
           url=friend['url'],
           username=friend['name'],
           real_name=friend['realname'],
-          image_url=friend['image'][2]['#text'],
-          image_url_small=friend['image'][-2]['#text']
+          image_url=friend['image'][0]['#text'] # All sizes are the same apparently
         ) for friend in friends
       ]
-    )
-
-  def get_last_scrobble_by_username(self, username: str) -> LastfmScrobble:
-    return self.__lastfm_request({
-        'method': 'user.getRecentTracks',
-        'username': username,
-        'limit': 1 # We only want the last scrobble
-      },
-      main_key_getter=lambda response: response['recenttracks']['track'][0] if len(response['recenttracks']['track']) else None, # Not all users have a scrobble
-      return_value_builder=lambda track, response: LastfmScrobble(
-        track_title=track['name'],
-        artist_name=track['artist']['#text'],
-        album_title=track['album']['#text'],
-        timestamp=datetime.fromtimestamp(int(track['date']['uts'])) if not track.get('@attr', {}).get('nowplaying', False) else None
-      ) if track else None
     )
 
   def get_top_artists(self, limit: int, period: str='overall') -> LastfmList[LastfmArtistInfo]:
@@ -344,6 +330,39 @@ class LastfmApiWrapper:
       from_timestamp=int(twelve_am_today) # Trim decimal points per API requirement
     ).attr_total
 
+  def get_friend_track(self, username: str) -> FriendScrobble:
+    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
+
+    def __track_to_friend_track(track):
+      is_playing = bool(track.get('@attr', {}).get('nowplaying')) # 'true' when true, misssing when false
+
+      if not is_playing:
+        date = datetime.fromtimestamp(int(track['date']['uts']))
+        
+        # Don't load scrobble if it's older than 24 hours
+        if (datetime.now() - date).total_seconds() >= 86400:
+          return None
+
+      return FriendScrobble(
+        url=track['url'],
+        track_title=track['name'],
+        artist_name=track['artist']['name'],
+        artist_url=track['artist']['url'],
+        album_title=track['album']['#text'] or None,
+        image_url=None, # Will be populated later
+        is_playing=is_playing
+      )
+
+    return self.__lastfm_request({
+        'method': 'user.getRecentTracks',
+        'username': username,
+        'limit': 1, # We only want the last scrobble
+        'extended': 1
+      },
+      main_key_getter=lambda response: response['recenttracks']['track'][0] if len(response['recenttracks']['track']) else None, # Not all users have a scrobble
+      return_value_builder=lambda track, response:  __track_to_friend_track(track) if track else None
+    )
+
   @staticmethod
   def generate_authorization_url(auth_token):
     '''Generate a Last.fm authentication url for the user to allow access to their account'''
@@ -353,6 +372,8 @@ class LastfmApiWrapper:
   # --- Private Methods ---
 
   def __lastfm_request(self, args, main_key_getter=None, return_value_builder=None, http_method='GET'):
+    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
+
     params = {
       'api_key': LastfmApiWrapper.API_KEY, 
       'format': 'json',
@@ -394,20 +415,21 @@ class LastfmApiWrapper:
         logger.critical(f'Last.fm returned non-JSON response: {resp.text}')
         return
 
-      if 'error' in resp_json:
-        # Ignore not found errors
-        if resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
-          return None
-        else:
-          raise Exception(f'Unknown Last.fm error: {resp_json}')
-
-      if not resp.status_code in [200, 404]: # 404 errors are ok
+      if not resp.status_code == 200:
         if resp.status_code == 403:
           raise Exception(f'403 Forbidden: {resp_json}')
         elif resp.status_code == 400:
           raise Exception(f'403 Bad Request: {resp_json}')
         elif resp.status_code == 500:
           raise Exception(f'500 Internal Server Error: {resp_json}')
+
+      # Handle other non-fatal errors
+      if 'error' in resp_json:
+        # Ignore not found errors
+        if resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
+          return None
+        else:
+          raise Exception(f'Unknown Last.fm error: {resp_json}')
       
       try:
         if main_key_getter:

@@ -80,12 +80,12 @@ class MusicAppPlugin(QtCore.QObject):
       self.__applescript_music_app.playpause() # There is no play function for whatever reason
       return
 
-  album_title = track.album() or None # Prevent storing empty strings in album_title key
+    album_title = track.album() or None # Prevent storing empty strings in album_title key
 
     self.__state = MediaPlayerState(
       is_playing=True,
-      track_title=track_title,
       artist_name=track.artist(),
+      track_title=track_title,
       album_title=album_title, # TODO: Make sure this isn't going to cause problems without a fallback
       track_start=0,
       track_finish=track.duration() # In seconds

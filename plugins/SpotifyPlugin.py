@@ -58,8 +58,8 @@ class SpotifyPlugin(QtCore.QObject):
 
     self.__state = MediaPlayerState(
       is_playing=self.__applescript_spotify_app.playerState() == SpotifyPlugin.PLAYING_STATE,
-      track_title=track.name(),
       artist_name=track.artist(),
+      track_title=track.name(),
       album_title=album_title,
       track_start=0,
       track_finish=track.duration() / 1000 # Convert from ms to s

@@ -1,8 +1,9 @@
 from PySide2 import QtCore
 
-from util.LastfmApiWrapper import LastfmApiWrapper
+from util.lastfm import LastfmApiWrapper, LastfmSession
+from util.spotify_api import SpotifyApiWrapper
+from util.AlbumArtProvider import AlbumArtProvider
 import util.db_helper as db_helper
-from util.lastfm.LastfmSession import LastfmSession
 
 class ApplicationViewModel(QtCore.QObject):
   # Qt Property changed signals
@@ -12,16 +13,18 @@ class ApplicationViewModel(QtCore.QObject):
   openOnboarding = QtCore.Signal()
   closeOnboarding = QtCore.Signal()
 
-  def __init__(self):
+  def __init__(self) -> None:
     QtCore.QObject.__init__(self)
     
     self.lastfm: LastfmApiWrapper = LastfmApiWrapper()
+    self.spotify_api: SpotifyApiWrapper = SpotifyApiWrapper()
+    self.album_art_provider: AlbumArtProvider = AlbumArtProvider(self.lastfm, self.spotify_api)
     self.is_logged_in: bool = False
 
     # Connect to SQLite
     db_helper.connect()
 
-  def log_in_after_onboarding(self, session: LastfmSession):
+  def log_in_after_onboarding(self, session: LastfmSession) -> None:
     '''Save new login details to db, log in, and close onboarding'''
 
     self.lastfm.log_in_with_session(session)
@@ -51,7 +54,7 @@ class ApplicationViewModel(QtCore.QObject):
 
   # --- Private Methods ---
 
-  def __set_is_logged_in(self, is_logged_in: bool):
+  def __set_is_logged_in(self, is_logged_in: bool) -> None:
     self.is_logged_in = is_logged_in
     self.is_logged_in_changed.emit()
 

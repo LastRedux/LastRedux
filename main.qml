@@ -11,7 +11,7 @@ import './views'
 Window {
   id: application
 
-  property int currentTabIndex: 0
+  property int currentTabIndex: 2
   property bool hasAttemptedLogin: false
   property bool shouldShowProfileLoadingIndicator: true
   property bool shouldShowFriendsLoadingIndicator: true
@@ -234,122 +234,122 @@ Window {
 
   // // --- Friends Page ---
 
-  // FriendsViewModel {
-  //   id: friendsViewModel
+  FriendsViewModel {
+    id: friendsViewModel
 
-  //   applicationReference: applicationViewModel
-  // }
+    applicationReference: applicationViewModel
+  }
 
-  // FriendsListModel {
-  //   id: friendsListModel
+  FriendsListModel {
+    id: friendsListModel
 
-  //   friendsReference: friendsViewModel
-  // }
+    friendsReference: friendsViewModel
+  }
 
   // // --- Sidebar ---
 
-  // SidebarBackground {
-  //   id: sidebar
+  SidebarBackground {
+    id: sidebar
 
-  //   visible: isInMiniMode ? false : true
+    visible: true //isInMiniMode ? false : true
 
-  //   anchors {
-  //     top: parent.top
-  //     bottom: parent.bottom
-  //     left: parent.left
-  //   }
+    anchors {
+      top: parent.top
+      bottom: parent.bottom
+      left: parent.left
+    }
 
-  //   Item {
-  //     clip: true
+    Item {
+      clip: true
 
-  //     anchors {
-  //       top: tabBar.bottom
-  //       right: parent.right
-  //       bottom: parent.bottom
-  //       left: parent.left
-  //     }
+      anchors {
+        top: tabBar.bottom
+        right: parent.right
+        bottom: parent.bottom
+        left: parent.left
+      }
 
-  //     History {
-  //       id: history
+      // History {
+      //   id: history
 
-  //       listModel: historyListModel
-  //       viewModel: historyViewModel
-  //       visible: currentTabIndex === 0
+      //   listModel: historyListModel
+      //   viewModel: historyViewModel
+      //   visible: currentTabIndex === 0
 
-  //       anchors.fill: parent
-  //     }
+      //   anchors.fill: parent
+      // }
 
-  //     Profile {
-  //       id: profile
+      // Profile {
+      //   id: profile
 
-  //       viewModel: profileViewModel
-  //       visible: currentTabIndex === 1
+      //   viewModel: profileViewModel
+      //   visible: currentTabIndex === 1
 
-  //       anchors.fill: parent
-  //     }
+      //   anchors.fill: parent
+      // }
 
-  //     Friends {
-  //       id: friends
+      Friends {
+        id: friends
 
-  //       listModel: friendsListModel
-  //       viewModel: friendsViewModel
-  //       visible: currentTabIndex === 2
+        listModel: friendsListModel
+        viewModel: friendsViewModel
+        visible: currentTabIndex === 2
 
-  //       anchors.fill: parent
-  //     }
-  //   }
+        anchors.fill: parent
+      }
+    }
 
-  //   TabBarBackground {
-  //     id: tabBar
+    TabBarBackground {
+      id: tabBar
 
-  //     anchors {
-  //       top: parent.top
-  //       right: parent.right
-  //       left: parent.left
-  //     }
+      anchors {
+        top: parent.top
+        right: parent.right
+        left: parent.left
+      }
 
-  //     Item {
-  //       clip: true
-  //       visible: historyViewModel.isEnabled
+      Item {
+        clip: true
+        visible: true //historyViewModel.isEnabled
 
-  //       anchors {
-  //         fill: parent
+        anchors {
+          fill: parent
 
-  //         topMargin: 22
-  //       }
+          topMargin: 22
+        }
 
-  //       Row {
-  //         spacing: 29
+        Row {
+          spacing: 29
 
-  //         anchors.centerIn: parent
+          anchors.centerIn: parent
 
-  //         TabBarItem {
-  //           iconName: 'history'
-  //           shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
-  //           isSelected: currentTabIndex === 0
+          // TabBarItem {
+          //   iconName: 'history'
+          //   shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
+          //   isSelected: currentTabIndex === 0
 
-  //           onClicked: switchToTab(0)
-  //         }
+          //   onClicked: switchToTab(0)
+          // }
 
-  //         TabBarItem {
-  //           iconName: 'profile'
-  //           shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
-  //           isSelected: currentTabIndex === 1
+          // TabBarItem {
+          //   iconName: 'profile'
+          //   shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
+          //   isSelected: currentTabIndex === 1
 
-  //           onClicked: switchToTab(1)
-  //         }
+          //   onClicked: switchToTab(1)
+          // }
 
-  //         TabBarItem {
-  //           iconName: 'friends'
-  //           shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
-  //           isSelected: currentTabIndex === 2
+          TabBarItem {
+            iconName: 'friends'
+            shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
+            isSelected: currentTabIndex === 2
 
-  //           onClicked: switchToTab(2)
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+            // onClicked: switchToTab(2)
+          }
+        }
+      }
+    }
+  }
 
   // Shortcut {
   //   sequence: 'Ctrl+1'

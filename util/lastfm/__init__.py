@@ -6,6 +6,6 @@ from .LastfmScrobble import LastfmScrobble
 from .LastfmSession import LastfmSession
 from .LastfmSubmissionStatus import LastfmSubmissionStatus
 from .LastfmTag import LastfmTag
-from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
+from .LastfmUser import LastfmUser
 from .LastfmAlbumInfo import LastfmAlbumInfo

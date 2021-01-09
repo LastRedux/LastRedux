@@ -1,6 +1,6 @@
 from PySide2 import QtCore
 
-from util.LastfmApiWrapper import LastfmApiWrapper
+from util.lastfm import LastfmApiWrapper
 
 class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(list)

@@ -1,12 +1,8 @@
-from datatypes.FriendTrack import FriendTrack
-from datetime import datetime
-
 from PySide2 import QtCore
-from loguru import logger
 
-from util.LastfmApiWrapper import LastfmApiWrapper
+from util.lastfm import LastfmApiWrapper
 
-class FetchFriendTrack(QtCore.QObject, QtCore.QRunnable):
+class FetchFriendScrobble(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(dict, int)
 
   def __init__(self, lastfm: LastfmApiWrapper, username: str, friend_index: int):
@@ -20,6 +16,6 @@ class FetchFriendTrack(QtCore.QObject, QtCore.QRunnable):
   def run(self):
     '''Load the friend's most recent scrobble from Last.fm'''
 
-    scrobble = self.lastfm.get_last_scrobble_by_username(self.username)
+    scrobble = self.lastfm.get_friend_track(self.username)
 
     self.finished.emit(scrobble, self.friend_index)

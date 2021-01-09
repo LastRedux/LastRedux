@@ -11,13 +11,13 @@ class OnboardingViewModel(QtCore.QObject):
   # Signals handled by QML
   openUrl = QtCore.Signal(str)
 
-  def __init__(self):
+  def __init__(self) -> None:
     QtCore.QObject.__init__(self)
 
     self.__application_reference: ApplicationViewModel = None
     self.reset_state()
 
-  def reset_state(self):
+  def reset_state(self) -> None:
     # Keep track of errors, True if Last.fm can't get a session key (auth token wasn't authorized by user)
     self.__has_error = None
     
@@ -33,7 +33,7 @@ class OnboardingViewModel(QtCore.QObject):
 
   # --- Qt Property Getters and Setters ---
 
-  def set_application_reference(self, new_reference):
+  def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
     if not new_reference:
       return
 
@@ -60,7 +60,7 @@ class OnboardingViewModel(QtCore.QObject):
   # --- Slots ---
 
   @QtCore.Slot()
-  def openNewAuthorizationUrl(self):
+  def openNewAuthorizationUrl(self) -> None:
     '''Get an auth token, then generate and open the Last.fm user authorization url'''
 
     self.set_has_error(False)
@@ -76,7 +76,7 @@ class OnboardingViewModel(QtCore.QObject):
     self.openUrl.emit(self.__auth_url)
   
   @QtCore.Slot()
-  def handleTryAuthenticating(self):
+  def handleTryAuthenticating(self) -> None:
     '''Try getting a Last.fm session after the user authorizes the auth token in their browser'''
 
     try:
@@ -93,14 +93,14 @@ class OnboardingViewModel(QtCore.QObject):
     self.set_current_page(2)
   
   @QtCore.Slot()
-  def handleFinish(self):
+  def handleFinish(self) -> None:
     '''Tell ApplicationViewModel to log in'''
     
     self.__application_reference.log_in_after_onboarding(self.__session)
 
   # --- Private Methods ---
 
-  def __handle_open(self):
+  def __handle_open(self) -> None:
     '''Reset state when onboarding opens and call signals to update UI'''
 
     self.reset_state()
