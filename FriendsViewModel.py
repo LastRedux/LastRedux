@@ -1,4 +1,4 @@
-from datatypes.lastfm.LastfmUser import LastfmUser
+from util.lastfm.LastfmUser import LastfmUser
 from typing import List
 from datetime import datetime
 
@@ -7,7 +7,6 @@ from PySide2 import QtCore
 from ApplicationViewModel import ApplicationViewModel
 from tasks.FetchFriendTrack import FetchFriendTrack
 from tasks.FetchFriendsTask import FetchFriendsTask
-from tasks.FetchFriendTrackImage import FetchFriendTrackImage
 from datatypes.Friend import Friend
 
 class FriendsViewModel(QtCore.QObject):

@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from datatypes.lastfm.LastfmArtistInfo import LastfmArtistInfo
-from datatypes.lastfm.LastfmAlbumInfo import LastfmAlbumInfo
-from datatypes.lastfm.LastfmTag import LastfmTag
+from .LastfmAlbumInfo import LastfmAlbumInfo
+from .LastfmArtistInfo import LastfmArtistInfo
+from .LastfmTag import LastfmTag
 
 @dataclass
 class LastfmTrackInfo:

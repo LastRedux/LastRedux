@@ -8,26 +8,24 @@ from typing import List
 from loguru import logger
 import requests
 
-from datatypes.lastfm.LastfmUserInfo import LastfmUserInfo
-from datatypes.lastfm.LastfmList import LastfmList
-from datatypes.lastfm.LastfmScrobble import LastfmScrobble
-from datatypes.lastfm.LastfmUser import LastfmUser
-from datatypes.lastfm.LastfmArtistInfo import LastfmArtistInfo
-from datatypes.lastfm.LastfmTrackInfo import LastfmTrackInfo
-from datatypes.lastfm.LastfmAlbumInfo import LastfmAlbumInfo
-from datatypes.lastfm.LastfmTag import LastfmTag
-from datatypes.lastfm.LastfmSession import LastfmSession
-from datatypes.lastfm.LastfmSubmissionStatus import LastfmSubmissionStatus
-
-class AuthTokenNotAuthorizedError(Exception):
-  '''This error will be raised if a user tries to get a session from Last.fm with an unauthorized  auth token'''
-  pass
+from datatypes import ImageSet
+from .LastfmUserInfo import LastfmUserInfo
+from .LastfmList import LastfmList
+from .LastfmScrobble import LastfmScrobble
+from .LastfmUser import LastfmUser
+from .LastfmArtistInfo import LastfmArtistInfo
+from .LastfmTrackInfo import LastfmTrackInfo
+from .LastfmAlbumInfo import LastfmAlbumInfo
+from .LastfmTag import LastfmTag
+from .LastfmSession import LastfmSession
+from .LastfmSubmissionStatus import LastfmSubmissionStatus
 
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
   CLIENT_SECRET = 'a643753f16e5c147a0416ecb7bb66eca'
   USER_AGENT = 'LastRedux v0.0.0'
   MAX_RETRIES = 3
+  NOT_FOUND_ERRORS = ['The artist you supplied could not be found', 'Track not found', 'Album not found']
 
   def __init__(self):
     self.username = None
@@ -168,6 +166,7 @@ class LastfmApiWrapper:
             url=None,
             name=album['artist']['name']
           ),
+          image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
           plays=album['playcount']
         ) for album in albums
       ]
@@ -237,6 +236,7 @@ class LastfmApiWrapper:
           url=None,
           name=album['artist']
         ),
+        image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
         plays=int(album['userplaycount']),
         global_listeners=int(album['listeners']),
         global_plays=int(album['playcount']),
@@ -270,8 +270,7 @@ class LastfmApiWrapper:
     )
 
     if not session.session_key:
-      # The user needs to authorize the auth token for us to get a session key
-      raise AuthTokenNotAuthorizedError()
+      raise Exception('Auth token has not been authorized by user')
 
     return session
 
@@ -329,6 +328,7 @@ class LastfmApiWrapper:
       http_method='POST',
       main_key_getter=lambda response: response['nowplaying'],
       return_value_builder=lambda status, response: LastfmSubmissionStatus(
+        accepted_count=1,
         ignored_error_code=int(status['ignoredMessage']['code'])
       )
     )
@@ -394,11 +394,12 @@ class LastfmApiWrapper:
         logger.critical(f'Last.fm returned non-JSON response: {resp.text}')
         return
 
-      # if 'error' in resp_json:
+      if 'error' in resp_json:
         # Ignore not found errors
-        # TODO: Check for 404 code instead of error message
-        # if not resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
-          # logger.error(f'Error requesting {args['method']} response: {resp.text}')
+        if resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
+          return None
+        else:
+          raise Exception(f'Unknown Last.fm error: {resp_json}')
 
       if not resp.status_code in [200, 404]: # 404 errors are ok
         if resp.status_code == 403:
@@ -407,8 +408,6 @@ class LastfmApiWrapper:
           raise Exception(f'403 Bad Request: {resp_json}')
         elif resp.status_code == 500:
           raise Exception(f'500 Internal Server Error: {resp_json}')
-
-      return_object = None
       
       try:
         if main_key_getter:
@@ -456,8 +455,15 @@ class LastfmApiWrapper:
     return api_sig
  
   @staticmethod
-  def __tag_to_lastfm_tag(tag):
+  def __tag_to_lastfm_tag(tag: dict) -> LastfmTag:
     return LastfmTag(
       name=tag['name'],
       url=tag['url']
+    )
+
+  @staticmethod
+  def __images_to_image_set(images: List[dict]) -> ImageSet:
+    return ImageSet(
+      small_url=images[1]['#text'] or None,
+      medium_url=images[-1]['#text'] or None
     )

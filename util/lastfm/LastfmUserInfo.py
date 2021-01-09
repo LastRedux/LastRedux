@@ -1,7 +1,7 @@
 from datetime import datetime
 from dataclasses import dataclass
 
-from datatypes.lastfm.LastfmUser import LastfmUser
+from .LastfmUser import LastfmUser
 
 @dataclass
 class LastfmUserInfo(LastfmUser):

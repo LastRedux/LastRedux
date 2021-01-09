@@ -5,7 +5,7 @@ from datetime import datetime
 from loguru import logger
 
 import util.db_helper as db_helper
-from util.LastfmApiWrapper import LastfmApiWrapper
+from util.lastfm.LastfmApiWrapper import LastfmApiWrapper
 
 lastfm = LastfmApiWrapper()
 
@@ -73,14 +73,14 @@ print(lastfm.get_top_albums(limit=5, period='7day'))
 
 print('\n***** FRIENDS *****\n')
 
-if not input('Run friends? (type anything to skip) '):
+if input('Run friends? (yN) ') == 'y':
   for friend in lastfm.get_friends():
     friend_track = lastfm.get_last_scrobble_by_username(username=friend.username)
 
     print(friend)
     print(f'Last Scrobble: {friend_track or "N/A"}\n')
 
-if not input('Run POST requests? (type anything to skip) [WARNING: THESE WILL SUBMIT THINGS TO YOUR LAST.FM ACCOUNT] '):
+if input('Run POST requests? (yN) [WARNING: THESE WILL SUBMIT THINGS TO YOUR LAST.FM ACCOUNT] ') == 'y':
   print('\n***** SUBMIT SCROBBLE *****\n')
   print(lastfm.submit_scrobble(
     artist_name=f'LASTREDUX TEST ARTIST',
@@ -101,4 +101,4 @@ if not input('Run POST requests? (type anything to skip) [WARNING: THESE WILL SU
     track_title='LASTREDUX TEST SONG 0'
   ))
 
-print('Congrats, nothing broke (apparently)')
+print('\nLast.fm api test succeeded!\n')

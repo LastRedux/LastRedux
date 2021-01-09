@@ -14,3 +14,9 @@ class LastfmSubmissionStatus:
   5: Daily scrobble limit exceeded
   '''
   ignored_error_code: int = None
+
+  def __str__(self) -> str:
+    if self.ignored_count == 0:
+      return f'{self.accepted_count} successfully submitted'
+    else:
+      return f'{self.ignored_count} ignored, {self.accepted_count} accepted'

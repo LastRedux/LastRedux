@@ -2,7 +2,7 @@ from PySide2 import QtCore
 
 from util.LastfmApiWrapper import LastfmApiWrapper
 import util.db_helper as db_helper
-from datatypes.lastfm.LastfmSession import LastfmSession
+from util.lastfm.LastfmSession import LastfmSession
 
 class ApplicationViewModel(QtCore.QObject):
   # Qt Property changed signals

@@ -1,9 +1,8 @@
 from __future__ import annotations
-
 from dataclasses import dataclass, asdict
 
-from datatypes.lastfm.LastfmUser import LastfmUser
-from datatypes.lastfm.LastfmFriendTrack import LastfmScrobble
+from util.lastfm.LastfmUser import LastfmUser
+from util.lastfm.LastfmScrobble import LastfmScrobble
 
 @dataclass
 class Friend(LastfmUser):

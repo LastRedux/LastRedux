@@ -1,15 +1,19 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from datatypes.lastfm.LastfmArtistInfo import LastfmArtistInfo
-from datatypes.lastfm.LastfmTag import LastfmTag
+from .LastfmArtistInfo import LastfmArtistInfo
+from .LastfmTag import LastfmTag
+from datatypes import ImageSet
 
 @dataclass
 class LastfmAlbumInfo:
   url: str
   title: str
   artist: LastfmArtistInfo
+  image_set: ImageSet
   plays: int
+
+  # TODO: Actually display this data
   global_listeners: int = None
   global_plays: int = None
   tags: List[LastfmTag] = field(default_factory=list)

@@ -2,12 +2,14 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from datatypes.SimpleTrack import SimpleTrack
-from datatypes.lastfm.LastfmTrackInfo import LastfmTrackInfo
+from datatypes.ImageSet import ImageSet
+from util.lastfm.LastfmTrackInfo import LastfmTrackInfo
 from datatypes.MediaPlayerState import MediaPlayerState
 
 @dataclass
 class Scrobble(SimpleTrack):
   timestamp: datetime
+  image_set: ImageSet
   lastfm_track: LastfmTrackInfo = None
   
   @classmethod

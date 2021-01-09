@@ -2,8 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List
 
-from datatypes.lastfm.LastfmList import LastfmList
-from datatypes.lastfm.LastfmTag import LastfmTag
+from .LastfmList import LastfmList
+from .LastfmTag import LastfmTag
 
 @dataclass
 class LastfmArtistInfo:

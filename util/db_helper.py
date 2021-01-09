@@ -3,7 +3,7 @@ import sys
 from loguru import logger
 from PySide2 import QtCore, QtSql
 
-from datatypes.lastfm.LastfmSession import LastfmSession
+from util.lastfm.LastfmSession import LastfmSession
 
 def connect():
   # Connect to SQLite for the first time
