@@ -1,6 +1,5 @@
-db.sqlite
-.vscode/settings.json
-.vscode/launch.json
+*.sqlite
+.vscode
 .idea
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,python,qml

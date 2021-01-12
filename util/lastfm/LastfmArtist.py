@@ -1,20 +1,20 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 from .LastfmList import LastfmList
 from .LastfmTag import LastfmTag
 
 @dataclass
-class LastfmArtistInfo:
+class LastfmArtist:
   url: str
   name: str
   plays: int = None
   bio: str = None
   global_listeners: int = None
   global_plays: int = None
-  tags: List[LastfmTag] = field(default_factory=list)
-  similar_artists: LastfmList[LastfmArtistInfo] = field(default_factory=list)
+  tags: List[LastfmTag] = None
+  similar_artists: LastfmList[LastfmArtist] = None
 
   def __str__(self) -> str:
     return '\n'.join((

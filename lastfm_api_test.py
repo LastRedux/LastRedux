@@ -29,9 +29,9 @@ else:
   try:
     session = lastfm.get_session(auth_token)
     lastfm.log_in_with_session(session)
-    print(f'Successfully logged in as {session.username} with {session.session_key}')
+    logger.success(f'Successfully logged in as {session.username} with {session.session_key}')
     db_helper.save_lastfm_session_to_database(session)
-    print('Successfully saved session key and username to database')
+    logger.success('Successfully saved session key and username to database')
   except:
     logger.info(f'Could not get session, auth token not authorized')
     sys.exit(1)

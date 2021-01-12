@@ -1,9 +1,10 @@
 from PySide2 import QtCore
 
+from datatypes.FriendScrobble import FriendScrobble
 from util.lastfm import LastfmApiWrapper
 
 class FetchFriendScrobble(QtCore.QObject, QtCore.QRunnable):
-  finished = QtCore.Signal(dict, int)
+  finished = QtCore.Signal(FriendScrobble, int)
 
   def __init__(self, lastfm: LastfmApiWrapper, username: str, friend_index: int):
     QtCore.QObject.__init__(self)

@@ -10,8 +10,8 @@ class Friend(LastfmUser):
   is_loading: bool = True
 
   @staticmethod
-  def from_lastfm_user(lastfm_user: LastfmUser) -> Friend:
-    return Friend(**asdict(lastfm_user))
+  def from_lastfm_user(user: LastfmUser) -> Friend:
+    return Friend(**asdict(user))
   
   # # WIP CODE for comparing friends - not working
   # # TODO: Look into why "Friend" type annotation doesn't work here, it works in Track

@@ -30,7 +30,6 @@ class FriendsViewModel(QtCore.QObject):
     self.__friends_with_track_loaded_count: int = 0
     self.__should_show_loading_indicator: bool = False
     self.__is_loading: bool = False
-    self.loadFriends(was_app_refocused=True)
     # self.__previous_friends = None
 
   # --- Slots ---
@@ -39,20 +38,22 @@ class FriendsViewModel(QtCore.QObject):
   def loadFriends(self, was_app_refocused: bool=False) -> None:
     '''Initiate the process of loading (or reloading) the user's friends and their tracks'''
 
-    if self.__is_enabled:
-      # Enable loading indicator if there are no friends (initial page load) or the window was refocused
-      if not self.friends or was_app_refocused:
-        self.__should_show_loading_indicator = True
-        self.should_show_loading_indicator_changed.emit()
+    if not self.__is_enabled:
+      return
+    
+    # Enable loading indicator if there are no friends (initial page load) or the window was refocused
+    if not self.friends or was_app_refocused:
+      self.__should_show_loading_indicator = True
+      self.should_show_loading_indicator_changed.emit()
 
-      # Fetch friends if they aren't already being fetched
-      if not self.__is_loading:
-        self.__is_loading = True
-        self.is_loading_changed.emit()
+    # Fetch friends if they aren't already being fetched
+    if not self.__is_loading:
+      self.__is_loading = True
+      self.is_loading_changed.emit()
 
-        fetch_friends_task = FetchFriendsTask(self.__application_reference.lastfm)
-        fetch_friends_task.finished.connect(self.__handle_fetched_lastfm_friends)
-        QtCore.QThreadPool.globalInstance().start(fetch_friends_task)
+      fetch_friends_task = FetchFriendsTask(lastfm=self.__application_reference.lastfm)
+      fetch_friends_task.finished.connect(self.__handle_fetched_lastfm_friends)
+      QtCore.QThreadPool.globalInstance().start(fetch_friends_task)
 
   # --- Private Methods ---
 
@@ -85,11 +86,15 @@ class FriendsViewModel(QtCore.QObject):
 
     # Load each friend's most recent/currently playing track
     for index, friend in enumerate(self.friends):
-      load_friend_scrobble_task = FetchFriendScrobble(self.__application_reference.lastfm, friend.username, index)
+      load_friend_scrobble_task = FetchFriendScrobble(
+        lastfm=self.__application_reference.lastfm, 
+        username=friend.username, 
+        index=index
+      )
       load_friend_scrobble_task.finished.connect(self.__handle_friend_scrobble_fetched)
       QtCore.QThreadPool.globalInstance().start(load_friend_scrobble_task)
 
-  def __handle_friend_scrobble_fetched(self, last_scrobble: FriendScrobble, friend_index: int):
+  def __handle_friend_scrobble_fetched(self, last_scrobble: FriendScrobble, friend_index: int) -> None:
     if not self.__is_enabled:
       return
 
@@ -103,10 +108,18 @@ class FriendsViewModel(QtCore.QObject):
     # Update UI when the last friend is loaded
     if self.__friends_with_track_loaded_count == len(self.friends):      
       # Move friends currently playing music to the top
-      self.friends = sorted(self.friends, key=lambda friend: bool(friend.last_scrobble.is_playing) if friend.last_scrobble else False, reverse=True) # bool() because it might be None
+      self.friends = sorted(
+        self.friends,
+        key=lambda friend: bool(friend.last_scrobble.is_playing) if friend.last_scrobble else False, # bool because it might be None
+        reverse=True
+      )
 
       # Move friends with no track to the bottom
-      self.friends = sorted(self.friends, key=lambda friend: bool(friend.last_scrobble.track_title) if friend.last_scrobble else False, reverse=True)
+      self.friends = sorted(
+        self.friends, 
+        key=lambda friend: bool(friend.last_scrobble.track_title) if friend.last_scrobble else False, 
+        reverse=True
+      )
 
       # WIP CODE for comparing friends - not working
       # Only refresh friends if new friend activity is different
@@ -142,21 +155,29 @@ class FriendsViewModel(QtCore.QObject):
         if not friend.last_scrobble or not friend.last_scrobble.is_playing:
           continue
 
-        fetch_album_art_task = FetchFriendScrobbleArt(self.applicationReference.album_art_provider, friend.last_scrobble, row)
-        fetch_album_art_task.finished.connect(lambda row_in_list: self.album_image_url_changed.emit(row_in_list))
+        fetch_album_art_task = FetchFriendScrobbleArt(
+          album_art_provider=self.applicationReference.album_art_provider,
+          friend_scrobble=friend.last_scrobble,
+          row_in_friends_list=row
+        )
+        fetch_album_art_task.finished.connect(
+          lambda row_in_list: self.album_image_url_changed.emit(row_in_list)
+        )
         QtCore.QThreadPool.globalInstance().start(fetch_album_art_task)
 
   # --- Qt Property Getters and Setters ---
 
-  def set_application_reference(self, new_reference):
+  def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
     if not new_reference:
       return
 
     self.__application_reference = new_reference
 
-    self.__application_reference.is_logged_in_changed.connect(lambda: self.set_is_enabled(self.__application_reference.is_logged_in))
+    self.__application_reference.is_logged_in_changed.connect(
+      lambda: self.set_is_enabled(self.__application_reference.is_logged_in)
+    )
 
-  def set_is_enabled(self, is_enabled):
+  def set_is_enabled(self, is_enabled: bool) -> None:
     self.__is_enabled = is_enabled
     self.is_enabled_changed.emit()
 

@@ -1,4 +1,3 @@
-from datatypes.Friend import Friend
 import hashlib
 import json
 import sys
@@ -7,20 +6,19 @@ from datetime import datetime, time
 from typing import List
 
 import requests
-from datatypes import ImageSet
 from loguru import logger
 
-from .LastfmAlbumInfo import LastfmAlbumInfo
-from .LastfmArtistInfo import LastfmArtistInfo
+from .LastfmAlbum import LastfmAlbum
+from .LastfmArtist import LastfmArtist
 from .LastfmList import LastfmList
 from .LastfmScrobble import LastfmScrobble
 from .LastfmSession import LastfmSession
 from .LastfmSubmissionStatus import LastfmSubmissionStatus
 from .LastfmTag import LastfmTag
-from .LastfmTrackInfo import LastfmTrackInfo
+from .LastfmTrackInfo import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
-from datatypes import FriendScrobble
+from datatypes import ImageSet, FriendScrobble
 
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
@@ -45,7 +43,6 @@ class LastfmApiWrapper:
         username=user_info['name'],
         real_name=user_info['realname'],
         image_url=user_info['image'][-1]['#text'].replace('300', '500'),
-        image_url_small=user_info['image'][-2]['#text'],
         url=user_info['url'],
         registered_date=datetime.fromtimestamp(int(user_info['registered']['unixtime'])),
         total_scrobbles=int(user_info['playcount'])
@@ -67,7 +64,7 @@ class LastfmApiWrapper:
           album_title=track['album']['#text'] or None,
           timestamp=datetime.fromtimestamp(int(track['date']['uts'])) if not track.get('@attr', {}).get('nowplaying', False) else None # Now playing tracks don't have a date
          ) for track in tracks],
-        attr_total=response['recenttracks']['@attr']['total']
+        attr_total=int(response['recenttracks']['@attr']['total'])
       )
     )
 
@@ -77,7 +74,7 @@ class LastfmApiWrapper:
         'user': self.username,
         'limit': 1 # We don't actually want any loved tracks
       },
-      return_value_builder=lambda response: response['lovedtracks']['@attr']['total']
+      return_value_builder=lambda response: int(response['lovedtracks']['@attr']['total'])
     )
 
   def get_friends(self) -> List[LastfmUser]:
@@ -96,7 +93,7 @@ class LastfmApiWrapper:
       ]
     )
 
-  def get_top_artists(self, limit: int, period: str='overall') -> LastfmList[LastfmArtistInfo]:
+  def get_top_artists(self, limit: int, period: str='overall') -> LastfmList[LastfmArtist]:
     return self.__lastfm_request({
         'method': 'user.getTopArtists',
         'username': self.username,
@@ -105,16 +102,16 @@ class LastfmApiWrapper:
       },
       main_key_getter=lambda response: response['topartists']['artist'],
       return_value_builder=lambda artists, response: LastfmList(
-        items=[LastfmArtistInfo(
+        items=[LastfmArtist(
           url=artist['url'],
           name=artist['name'],
           plays=int(artist['playcount'])
         ) for artist in artists],
-        attr_total=response['topartists']['@attr']['total']
+        attr_total=int(response['topartists']['@attr']['total'])
       )
     )
 
-  def get_top_tracks(self, limit: int, period: str='overall') -> LastfmList[LastfmTrackInfo]:
+  def get_top_tracks(self, limit: int, period: str='overall') -> LastfmList[LastfmTrack]:
       return self.__lastfm_request({
         'method': 'user.getTopTracks',
         'username': self.username,
@@ -124,19 +121,19 @@ class LastfmApiWrapper:
       },
       main_key_getter=lambda response: response['toptracks']['track'],
       return_value_builder=lambda tracks, response: [
-        LastfmTrackInfo(
+        LastfmTrack(
           url=track['url'],
           title=track['name'],
-          artist=LastfmArtistInfo(
+          artist=LastfmArtist(
             url=track['artist']['url'],
             name=track['artist']['name']
           ),
-          plays=track['playcount']
+          plays=int(track['playcount'])
         ) for track in tracks
       ]
     )
 
-  def get_top_albums(self, limit: int, period: str='overall') -> List[LastfmAlbumInfo]:
+  def get_top_albums(self, limit: int, period: str='overall') -> List[LastfmAlbum]:
     return self.__lastfm_request({
         'method': 'user.getTopAlbums',
         'username': self.username,
@@ -145,29 +142,29 @@ class LastfmApiWrapper:
       },
       main_key_getter=lambda response: response['topalbums']['album'],
       return_value_builder=lambda albums, response: [
-        LastfmAlbumInfo(
+        LastfmAlbum(
           url=album['url'],
           title=album['name'],
-          artist=LastfmArtistInfo(
+          artist=LastfmArtist(
             url=None,
             name=album['artist']['name']
           ),
           image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
-          plays=album['playcount']
+          plays=int(album['playcount'])
         ) for album in albums
       ]
     )
   
   # --- Info Request Wrappers ---
 
-  def get_artist_info(self, artist_name: str) -> LastfmArtistInfo:
+  def get_artist_info(self, artist_name: str) -> LastfmArtist:
     return self.__lastfm_request({
         'method': 'artist.getInfo',
         'username': self.username,
         'artist': artist_name
       },
       main_key_getter=lambda response: response['artist'],
-      return_value_builder=lambda artist, response: LastfmArtistInfo(
+      return_value_builder=lambda artist, response: LastfmArtist(
         url=artist['url'],
         name=artist['name'],
         plays=int(artist['stats']['userplaycount']),
@@ -176,7 +173,7 @@ class LastfmApiWrapper:
         bio=artist['bio']['summary'],
         tags=[self.__tag_to_lastfm_tag(tag) for tag in artist['tags']['tag']],
         similar_artists=[
-          LastfmArtistInfo(
+          LastfmArtist(
             name=similar_artist['name'],
             url=similar_artist['url']
           ) for similar_artist in artist['similar']['artist']
@@ -184,7 +181,7 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_track_info(self, artist_name: str, track_title: str) -> LastfmTrackInfo:
+  def get_track_info(self, artist_name: str, track_title: str) -> LastfmTrack:
     return self.__lastfm_request({
         'method': 'track.getInfo',
         'username': self.username,
@@ -192,10 +189,10 @@ class LastfmApiWrapper:
         'track': track_title
       },
       main_key_getter=lambda response: response['track'],
-      return_value_builder=lambda track, response: LastfmTrackInfo(
+      return_value_builder=lambda track, response: LastfmTrack(
         url=track['url'],
         title=track['name'],
-        artist=LastfmArtistInfo(
+        artist=LastfmArtist(
           name=track['artist']['name'],
           url=track['artist']['url']
         ),
@@ -207,7 +204,7 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_album_info(self, artist_name: str, album_title: str) -> LastfmAlbumInfo:
+  def get_album_info(self, artist_name: str, album_title: str) -> LastfmAlbum:
     return self.__lastfm_request({
         'method': 'album.getInfo',
         'username': self.username,
@@ -215,10 +212,10 @@ class LastfmApiWrapper:
         'album': album_title
       },
       main_key_getter=lambda response: response['album'],
-      return_value_builder=lambda album, response: LastfmAlbumInfo(
+      return_value_builder=lambda album, response: LastfmAlbum(
         url=album['url'],
         title=album['name'],
-        artist=LastfmArtistInfo(
+        artist=LastfmArtist(
           url=None,
           name=album['artist']
         ),
@@ -261,7 +258,7 @@ class LastfmApiWrapper:
     return session
 
   def log_in_with_session(self, session: LastfmSession) -> None:
-    self.username = session.username
+    self.username = 'Ramen2x'#session.username
     self.__session_key = session.session_key
 
   # --- POST request wrappers ---
@@ -331,8 +328,6 @@ class LastfmApiWrapper:
     ).attr_total
 
   def get_friend_track(self, username: str) -> FriendScrobble:
-    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
-
     def __track_to_friend_track(track):
       is_playing = bool(track.get('@attr', {}).get('nowplaying')) # 'true' when true, misssing when false
 
@@ -372,8 +367,6 @@ class LastfmApiWrapper:
   # --- Private Methods ---
 
   def __lastfm_request(self, args, main_key_getter=None, return_value_builder=None, http_method='GET'):
-    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
-
     params = {
       'api_key': LastfmApiWrapper.API_KEY, 
       'format': 'json',

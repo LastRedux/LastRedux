@@ -11,7 +11,7 @@ import './views'
 Window {
   id: application
 
-  property int currentTabIndex: 2
+  property int currentTabIndex: 1
   property bool hasAttemptedLogin: false
   property bool shouldShowProfileLoadingIndicator: true
   property bool shouldShowFriendsLoadingIndicator: true
@@ -43,7 +43,7 @@ Window {
 
   //       switch (tabIndex) {
   //       case 1:
-  //         profileViewModel.loadProfileData(shouldShowProfileLoadingIndicator)
+  //         profileViewModel.loadProfile(shouldShowProfileLoadingIndicator)
   //         shouldShowProfileLoadingIndicator = false
   //         break
   //       case 2:
@@ -224,15 +224,15 @@ Window {
   //   historyReference: historyViewModel
   // }
 
-  // // --- Profile Page ---
+  // --- Profile Page ---
 
-  // ProfileViewModel {
-  //   id: profileViewModel
+  ProfileViewModel {
+    id: profileViewModel
 
-  //   applicationReference: applicationViewModel
-  // }
+    applicationReference: applicationViewModel
+  }
 
-  // // --- Friends Page ---
+  // --- Friends Page ---
 
   FriendsViewModel {
     id: friendsViewModel
@@ -279,14 +279,14 @@ Window {
       //   anchors.fill: parent
       // }
 
-      // Profile {
-      //   id: profile
+      Profile {
+        id: profile
 
-      //   viewModel: profileViewModel
-      //   visible: currentTabIndex === 1
+        viewModel: profileViewModel
+        visible: currentTabIndex === 1
 
-      //   anchors.fill: parent
-      // }
+        anchors.fill: parent
+      }
 
       Friends {
         id: friends
@@ -331,13 +331,13 @@ Window {
           //   onClicked: switchToTab(0)
           // }
 
-          // TabBarItem {
-          //   iconName: 'profile'
-          //   shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
-          //   isSelected: currentTabIndex === 1
+          TabBarItem {
+            iconName: 'profile'
+            shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
+            isSelected: currentTabIndex === 1
 
-          //   onClicked: switchToTab(1)
-          // }
+            onClicked: switchToTab(1)
+          }
 
           TabBarItem {
             iconName: 'friends'

@@ -1,21 +1,21 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
-from .LastfmAlbumInfo import LastfmAlbumInfo
-from .LastfmArtistInfo import LastfmArtistInfo
+from .LastfmAlbum import LastfmAlbum
+from .LastfmArtist import LastfmArtist
 from .LastfmTag import LastfmTag
 
 @dataclass
-class LastfmTrackInfo:
+class LastfmTrack:
   url: str
   title: str
-  artist: LastfmArtistInfo
-  album: LastfmAlbumInfo = None
+  artist: LastfmArtist
+  album: LastfmAlbum = None
   plays: int = None
   is_loved: bool = None
   global_listeners: int = None
   global_plays: int = None
-  tags: List[LastfmTag] = field(default_factory=list)
+  tags: List[LastfmTag] = None
 
   def __str__(self) -> str:
     return '\n'.join((

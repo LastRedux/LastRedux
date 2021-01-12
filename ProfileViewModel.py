@@ -1,146 +1,131 @@
-import json
+from dataclasses import asdict
+from util.spotify_api.SpotifyApiWrapper import SpotifyApiWrapper
 
-from loguru import logger
 from PySide2 import QtCore
 
 from ApplicationViewModel import ApplicationViewModel
-
-from tasks.FetchTopTracksTask import FetchTopTracksTask
-from tasks.FetchTopAlbumsTask import FetchTopAlbumsTask
-from tasks.FetchOverallStatsAndTopArtists import FetchOverallAndArtistStatistics
-import util.LastfmApiWrapper as lastfm
+from tasks import FetchProfileStatistics
+from datatypes import ProfileStatistics
 
 class ProfileViewModel(QtCore.QObject):
+  # Qt Property signals
   is_enabled_changed = QtCore.Signal()
-  account_details_changed = QtCore.Signal()
-  overall_statistics_changed = QtCore.Signal()
-  top_artists_changed = QtCore.Signal()
-  top_tracks_changed = QtCore.Signal()
-  top_albums_changed = QtCore.Signal()
+  profile_statistics_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
 
-  def reset_state(self):
-    self.__should_show_loading_indicator = False
-    self.__account_details = None
-    self.__overall_statistics = None
-    self.__top_artists = None
-    self.__top_tracks = None
-    self.__top_albums = None
-    self.__is_loading = False
-
-  def __init__(self):
+  def __init__(self) -> None:
     QtCore.QObject.__init__(self)
 
-    self.__application_reference = None
-    self.__is_enabled = False
+    self.__application_reference: ApplicationViewModel = None
+    self.__is_enabled: bool = False
     self.reset_state()
 
-    # Get instance of lastfm api wrapper
-    self.lastfm_instance = lastfm.get_static_instance()
-  
-  # --- Private Methods ---
+  def reset_state(self):
+    self.__should_show_loading_indicator: bool = False
 
-  def __handle_loading_done(self):
-    if self.__is_enabled:
-      self.__should_show_loading_indicator = False
-      self.should_show_loading_indicator_changed.emit()
-      self.__is_loading = False
-  
-  def __process_new_profile_and_artist_statistics(self, new_overall_and_artist_statistics):
-    if self.__is_enabled:
-      logger.trace(f'Fetched Last.fm profile data and top artists for profile view')
-      self.__account_details = new_overall_and_artist_statistics['account_details']
-      self.__overall_statistics = new_overall_and_artist_statistics['overall_statistics']
-      self.__top_artists = new_overall_and_artist_statistics['top_artists']
-      
-      self.account_details_changed.emit()
-      self.overall_statistics_changed.emit()
-      self.top_artists_changed.emit()
-
-      # Update loading indicator on tab bar if it's showing and everythiing is loaded
-      if self.__is_loading and self.__top_tracks and self.__top_albums:
-        self.__handle_loading_done()
-
-  def __process_new_top_albums(self, new_album_statistics):
-    if self.__is_enabled:
-      self.__top_albums = new_album_statistics
-      self.top_albums_changed.emit()
-
-      # Update loading indicator on tab bar if it's showing and everythiing is loaded
-      if self.__is_loading and self.__top_tracks and self.__top_artists:
-        self.__handle_loading_done()
-
-  def __process_new_top_tracks(self, new_track_statistics):
-    if self.__is_enabled:
-      self.__top_tracks = new_track_statistics
-      self.top_tracks_changed.emit()
-
-      # Update loading indicator on tab bar if it's showing and everythiing is loaded
-      if self.__is_loading and self.__top_albums and self.__top_artists:
-        self.__handle_loading_done()
+    self.__profile_statistics: ProfileStatistics = None
+    self.__is_loading: bool = False
+    self.loadProfile()
 
   # --- Slots ---
   
-  @QtCore.Slot()
   @QtCore.Slot(bool)
-  def loadProfileData(self, was_app_refocused=False):
-    if self.__is_enabled:
-      # Enable loading indicator if initial load or window reactivated
-      if not self.__overall_statistics or was_app_refocused:
-        self.__should_show_loading_indicator = True
-        self.should_show_loading_indicator_changed.emit()
+  def loadProfile(self, was_app_refocused: bool=False) -> None:
+    if not self.__is_enabled:
+      return
+    
+    # Update loading indicator if needed
+    if not self.__profile_statistics or was_app_refocused:
+      self.__should_show_loading_indicator = True
+      self.should_show_loading_indicator_changed.emit()
 
-      if not self.__is_loading:
-        self.__is_loading = True
+    # Don't reload if the profile page is already loading
+    if self.__is_loading:
+      return
 
-        # Clear data but don't update UI so that we can check later which parts have reloaded
-        self.__top_artists = []
-        self.__top_tracks = []
-        self.__top_albums = []
-        
-        # Load overall statistics and top artists
-        fetch_overall_and_artist_statistics_task = FetchOverallAndArtistStatistics(self.lastfm_instance)
-        fetch_overall_and_artist_statistics_task.finished.connect(self.__process_new_profile_and_artist_statistics)
-        QtCore.QThreadPool.globalInstance().start(fetch_overall_and_artist_statistics_task)
+    self.__is_loading = True
 
-        fetch_top_tracks_task = FetchTopTracksTask(self.lastfm_instance)
-        fetch_top_tracks_task.finished.connect(self.__process_new_top_tracks)
-        QtCore.QThreadPool.globalInstance().start(fetch_top_tracks_task)
-        
-        fetch_top_albums_task = FetchTopAlbumsTask(self.lastfm_instance)
-        fetch_top_albums_task.finished.connect(self.__process_new_top_albums)
-        QtCore.QThreadPool.globalInstance().start(fetch_top_albums_task)
+    # Clear data but don't update UI so that we can check later which parts have reloaded
+    self.__user_info_top_artists = []
+    self.__top_tracks = []
+    self.__top_albums = []
+    
+    fetch_user_stats_top_artists_task = FetchProfileStatistics(
+      lastfm=self.__application_reference.lastfm,
+      spotify_api=self.__application_reference.spotify_api,
+      album_art_provider=self.__application_reference.album_art_provider
+    )
+    fetch_user_stats_top_artists_task.finished.connect(self.__handle_user_statistics_top_artists_fetched)
+    QtCore.QThreadPool.globalInstance().start(fetch_user_stats_top_artists_task)
+
+    # fetch_top_tracks_task = FetchTopTracksTask(self.__application_reference.lastfm)
+    # fetch_top_tracks_task.finished.connect(self.__handle_top_tracks_fetched)
+    # QtCore.QThreadPool.globalInstance().start(fetch_top_tracks_task)
+    
+    # fetch_top_albums_task = FetchTopAlbumsTask(self.__application_reference.lastfm)
+    # fetch_top_albums_task.finished.connect(self.__handle_top_albums_fetched)
+    # QtCore.QThreadPool.globalInstance().start(fetch_top_albums_task)
+
+  # --- Private Methods ---
+
+  def __handle_user_statistics_top_artists_fetched(self, profile_statistics: ProfileStatistics):
+    if not self.__is_enabled:
+      return
+    
+    # Load profile statistics
+    self.__profile_statistics = profile_statistics
+    self.profile_statistics_changed.emit()
+
+    # Update loading indicator
+    self.__should_show_loading_indicator = False
+    self.should_show_loading_indicator_changed.emit()
+    self.__is_loading = False
 
   # --- Qt Property Getters and Setters ---
 
-  def set_application_reference(self, new_reference):
-    if new_reference:
-      self.__application_reference = new_reference
+  def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
+    if not new_reference:
+      return
+    
+    self.__application_reference = new_reference
+    self.__application_reference.is_logged_in_changed.connect(
+      lambda: self.set_is_enabled(self.__application_reference.is_logged_in)
+    )
 
-      self.__application_reference.is_logged_in_changed.connect(lambda: self.set_is_enabled(self.__application_reference.is_logged_in))
-
-  def set_is_enabled(self, is_enabled):
+  def set_is_enabled(self, is_enabled: bool) -> None:
     self.__is_enabled = is_enabled
     self.is_enabled_changed.emit()
     self.reset_state()
     self.should_show_loading_indicator_changed.emit()
 
     if not is_enabled:
-      self.account_details_changed.emit()
-      self.overall_statistics_changed.emit()
-      self.top_artists_changed.emit()
+      self.profile_statistics_changed.emit()
       self.top_tracks_changed.emit()
       self.top_albums_changed.emit()
 
   # --- Qt Properties ---
 
-  applicationReference = QtCore.Property(ApplicationViewModel, lambda self: self.__application_reference, set_application_reference)
+  applicationReference = QtCore.Property(
+    type=ApplicationViewModel,
+    fget=lambda self: self.__application_reference,
+    fset=set_application_reference
+  )
 
-  # TODO: Simplify these account, profile, top artists to one property since they all load together
-  isEnabled = QtCore.Property(bool, lambda self: self.__is_enabled, set_is_enabled, notify=is_enabled_changed)
-  accountDetails = QtCore.Property('QVariant', lambda self: self.__account_details, notify=account_details_changed)
-  profileStatistics = QtCore.Property('QVariant', lambda self: self.__overall_statistics, notify=overall_statistics_changed)
-  topArtists = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_artists, default=lambda o: o.__dict__)), notify=top_artists_changed)
-  topTracks = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_tracks, default=lambda o: o.__dict__)), notify=top_tracks_changed)
-  topAlbums = QtCore.Property('QVariant', lambda self: json.loads(json.dumps(self.__top_albums, default=lambda o: o.__dict__)), notify=top_albums_changed)
-  shouldShowLoadingIndicator = QtCore.Property(bool, lambda self: self.__should_show_loading_indicator, notify=should_show_loading_indicator_changed)
+  isEnabled = QtCore.Property(
+    type=bool,
+    fget=lambda self: self.__is_enabled, 
+    fset=set_is_enabled, 
+    notify=is_enabled_changed
+  )
+
+  profileStatistics = QtCore.Property(
+    type='QVariant',
+    fget=lambda self: asdict(self.__profile_statistics) if self.__profile_statistics else None,
+    notify=profile_statistics_changed
+  )
+
+  shouldShowLoadingIndicator = QtCore.Property(
+    type=bool,
+    fget=lambda self: self.__should_show_loading_indicator,
+    notify=should_show_loading_indicator_changed,
+  )

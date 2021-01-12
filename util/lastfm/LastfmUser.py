@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 
-from datatypes import ImageSet
-
 @dataclass
 class LastfmUser:
   url: str
   username: str
   real_name: str
-  image_url: str
+  image_url: str # There's only one size for friend images
 
   def __str__(self) -> str:
     return '\n'.join((

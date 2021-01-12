@@ -1,9 +1,10 @@
-from PySide2 import QtCore
+from util.spotify_api import SpotifyApiWrapper
+from shared.components.NetworkImage import NetworkImage
+from PySide2 import QtCore, QtNetwork
 
 from util.lastfm import LastfmApiWrapper, LastfmSession
-from util.spotify_api import SpotifyApiWrapper
 from util.AlbumArtProvider import AlbumArtProvider
-import util.db_helper as db_helper
+from util import db_helper
 
 class ApplicationViewModel(QtCore.QObject):
   # Qt Property changed signals
@@ -16,10 +17,15 @@ class ApplicationViewModel(QtCore.QObject):
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
     
-    self.lastfm: LastfmApiWrapper = LastfmApiWrapper()
-    self.spotify_api: SpotifyApiWrapper = SpotifyApiWrapper()
-    self.album_art_provider: AlbumArtProvider = AlbumArtProvider(self.lastfm, self.spotify_api)
-    self.is_logged_in: bool = False
+    # Initialize helper classes
+    self.lastfm = LastfmApiWrapper()
+    self.spotify_api = SpotifyApiWrapper()
+    self.album_art_provider = AlbumArtProvider(self.lastfm, self.spotify_api)
+    self.is_logged_in = False
+    
+    # Create network request manager and expose it to all NetworkImage instances
+    self.network_manager = QtNetwork.QNetworkAccessManager()
+    NetworkImage.NETWORK_MANAGER = self.network_manager
 
     # Connect to SQLite
     db_helper.connect()

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from datatypes.SimpleTrack import SimpleTrack
+from .SimpleTrack import SimpleTrack
 
 @dataclass
 class MediaPlayerState(SimpleTrack):

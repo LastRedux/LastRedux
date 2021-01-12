@@ -5,20 +5,29 @@ from util.spotify_api import SpotifyApiWrapper
 from datatypes.ImageSet import ImageSet
 import util.itunes_store_api_helper as itunes_store
 
+# TODO: Come up with a better name that includes artists
 class AlbumArtProvider:
   def __init__(self, lastfm: LastfmApiWrapper, spotify_api: SpotifyApiWrapper):
     self.lastfm = lastfm
     self.spotify_api = spotify_api
 
   def get_album_art(self, artist_name: str, track_title: str, album_title: str=None) -> ImageSet:
-    # 1. Try geting album art from Last.fm
-    album_art = self.get_lastfm_album_art(artist_name, album_title)
+    album_art = None
+
+    # 1. Try geting album art from Last.fm if there's an album to work with
+    if album_title:
+      album_art = self.get_lastfm_album_art(artist_name, album_title)
 
     if album_art:
       logger.trace(f'Found album art for {track_title} on Last.fm')
     else:
       # 2. Try geting album art from the Spotify api
-      album_art = self.spotify_api.get_images(artist_name, track_title, album_title)
+      album_art = self.spotify_api.get_track_images(
+        artist_name,
+        track_title,
+        album_title,
+        only_album_art=True
+      )
 
       if album_art:
         logger.trace(f'Found album art for {track_title} on Spotify')

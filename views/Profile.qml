@@ -12,7 +12,7 @@ Item {
 
   property bool isProfileLoaded: {
     if (viewModel) {
-      return !!(viewModel.accountDetails && viewModel.profileStatistics)
+      return !!(viewModel.profileStatistics)
     }
 
     return false
@@ -21,7 +21,7 @@ Item {
   // --- Profile Statistics ---
 
   Column {
-    id: profileStatistics
+    id: userStatistics
     
     spacing: 8
 
@@ -37,8 +37,8 @@ Item {
 
     // --- Scrobbles ---
 
-    ProfileStatistic {
-      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library`
+    UserStatistic {
+      address: isProfileLoaded && viewModel.profileStatistics.url
       iconName: 'scrobble'
       value: isProfileLoaded ? viewModel.profileStatistics.total_scrobbles : undefined
       caption: 'scrobbles'
@@ -48,13 +48,13 @@ Item {
 
     // --- Scrobbles Today ---
 
-    ProfileStatistic {
+    UserStatistic {
       property string currentDate: {
         const today = new Date()
         return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
       }
 
-      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library?from=${currentDate}&to=${currentDate}`
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.profileStatistics.username}/library?from=${currentDate}&to=${currentDate}`
       iconName: 'clock'
       value: isProfileLoaded ? viewModel.profileStatistics.total_scrobbles_today : undefined
       caption: 'plays today'
@@ -64,8 +64,8 @@ Item {
     
     // --- Scrobbles Per Day ---
 
-    ProfileStatistic {
-      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library`
+    UserStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.profileStatistics.username}/library`
       iconName: 'calendar'
       value: isProfileLoaded ? viewModel.profileStatistics.average_daily_scrobbles : undefined
       caption: 'plays per day'
@@ -75,8 +75,8 @@ Item {
 
     // --- Artists in Library ---
 
-    ProfileStatistic {
-      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/library/artists`
+    UserStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.profileStatistics.username}/library/artists`
       iconName: 'artist'
       value: isProfileLoaded ? viewModel.profileStatistics.total_artists : undefined
       caption: 'artists in library'
@@ -86,8 +86,8 @@ Item {
 
     // --- Loved Tracks ---
 
-    ProfileStatistic {
-      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.accountDetails.username}/loved`
+    UserStatistic {
+      address: isProfileLoaded && `https://www.last.fm/user/${viewModel.profileStatistics.username}/loved`
       iconName: 'heart'
       value: isProfileLoaded ? viewModel.profileStatistics.total_loved_tracks : undefined
       caption: 'loved tracks'
@@ -102,11 +102,11 @@ Item {
   UserLink {
     id: userLink
     
-    address: isProfileLoaded ? viewModel.accountDetails.lastfm_url : ''
-    imageSource: isProfileLoaded ? viewModel.accountDetails.image_url : ''
-    backgroundImageSource: isProfileLoaded ? viewModel.accountDetails.large_image_url : ''
-    username: isProfileLoaded ? viewModel.accountDetails.username : ''
-    fullName: isProfileLoaded ? viewModel.accountDetails.real_name : ''
+    address: isProfileLoaded ? viewModel.profileStatistics.url : ''
+    imageSource: isProfileLoaded ? viewModel.profileStatistics.image_url : ''
+    backgroundImageSource: isProfileLoaded ? viewModel.profileStatistics.image_url : ''
+    username: isProfileLoaded ? viewModel.profileStatistics.username : ''
+    fullName: isProfileLoaded ? viewModel.profileStatistics.real_name : ''
 
     anchors {
       top: parent.top
@@ -125,7 +125,7 @@ Item {
   //   anchors {
   //     horizontalCenter: parent.horizontalCenter
 
-  //     top: profileStatistics.bottom
+  //     top: userStatistics.bottom
 
   //     topMargin: 15
   //   }
@@ -148,7 +148,7 @@ Item {
     color: '#171717'
 
     anchors {
-      top: profileStatistics.bottom
+      top: userStatistics.bottom
       right: parent.right
       bottom: parent.bottom
       left: parent.left
@@ -200,15 +200,14 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.topArtists && viewModel.topArtists.seven_days
+              model: viewModel.profileStatistics && viewModel.profileStatistics.top_artists_week
 
-              delegate: ListeningStatistic {
-                hasImage: modelData.has_image
+              delegate: ProfileStatistic {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
                 plays: modelData.plays
-                playsPercentage: modelData.plays_percentage
+                playsPercentage: modelData.percentage
 
                 width: flickable.width
               }
@@ -236,15 +235,14 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.topArtists && viewModel.topArtists.all_time
+              model: viewModel.profileStatistics && viewModel.profileStatistics.top_artists
 
-              delegate: ListeningStatistic {
-                hasImage: modelData.has_image
+              delegate: ProfileStatistic {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
                 plays: modelData.plays
-                playsPercentage: modelData.plays_percentage
+                playsPercentage: modelData.percentage
 
                 width: flickable.width
               }
@@ -277,17 +275,16 @@ Item {
               width: parent.width
 
               Repeater {
-                model: viewModel.topAlbums && viewModel.topAlbums.seven_days
+                model: viewModel.profileStatistics && viewModel.profileStatistics.top_albums_week
 
-                delegate: ListeningStatistic {
-                  hasImage: modelData.has_image
+                delegate: ProfileStatistic {
                   imageSource: modelData.image_url
                   lastfmUrl: modelData.lastfm_url
                   title: modelData.title
                   subtitle: modelData.subtitle
                   secondaryLastfmUrl: modelData.secondary_lastfm_url
                   plays: modelData.plays
-                  playsPercentage: modelData.plays_percentage
+                  playsPercentage: modelData.percentage
 
                   width: flickable.width
                 }
@@ -316,17 +313,16 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.topAlbums && viewModel.topAlbums.all_time
+              model: viewModel.profileStatistics && viewModel.profileStatistics.top_albums
 
-              delegate: ListeningStatistic {
-                hasImage: modelData.has_image
+              delegate: ProfileStatistic {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
                 subtitle: modelData.subtitle
                 secondaryLastfmUrl: modelData.secondary_lastfm_url
                 plays: modelData.plays
-                playsPercentage: modelData.plays_percentage
+                playsPercentage: modelData.percentage
 
                 width: flickable.width
               }
@@ -359,17 +355,16 @@ Item {
               width: parent.width
 
               Repeater {
-                model: viewModel.topTracks && viewModel.topTracks.seven_days
+                model: viewModel.profileStatistics && viewModel.profileStatistics.top_tracks_week
 
-                delegate: ListeningStatistic {
-                  hasImage: modelData.has_image
+                delegate: ProfileStatistic {
                   imageSource: modelData.image_url
                   lastfmUrl: modelData.lastfm_url
                   title: modelData.title
                   subtitle: modelData.subtitle
                   secondaryLastfmUrl: modelData.secondary_lastfm_url
                   plays: modelData.plays
-                  playsPercentage: modelData.plays_percentage
+                  playsPercentage: modelData.percentage
 
                   width: flickable.width
                 }
@@ -398,17 +393,16 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.topTracks && viewModel.topTracks.all_time
+              model: viewModel.profileStatistics && viewModel.profileStatistics.top_tracks
 
-              delegate: ListeningStatistic {
-                hasImage: modelData.has_image
+              delegate: ProfileStatistic {
                 imageSource: modelData.image_url
                 lastfmUrl: modelData.lastfm_url
                 title: modelData.title
                 subtitle: modelData.subtitle
                 secondaryLastfmUrl: modelData.secondary_lastfm_url
                 plays: modelData.plays
-                playsPercentage: modelData.plays_percentage
+                playsPercentage: modelData.percentage
 
                 width: flickable.width
               }

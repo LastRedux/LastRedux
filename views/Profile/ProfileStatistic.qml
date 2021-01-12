@@ -1,71 +1,118 @@
 import QtQuick 2.14
 
 import '../../shared/components'
-import '../../util/helpers.js' as Helpers
 
 Item {
-  id: root
+  property bool hasImage: true
+  property var imageSource
+  property alias lastfmUrl: titleLink.address
+  property var secondaryLastfmUrl
+  property alias title: titleLink.text
+  property alias subtitle: subtitleLink.text
+  property string plays
+  property alias playsPercentage: playsProgressBar.percentage
 
-  property string address
-  property string iconName
-  property var value
-  property string caption
-  property bool hasValue: value !== undefined // Allow zero values for statistics
-  
-  height: iconContainer.height
+  height: Math.max(picture.height, playsLabel.y + playsLabel.height)
 
-  // --- Icon ---
+  // --- Picture ---
 
-  Item {
-    id: iconContainer
+  Picture {
+    id: picture
 
-    width: 18
-    height: width
-
-    Image {
-      source: `../../shared/resources/icons/small/${iconName}.png`
-
-      anchors.centerIn: parent
-    }
+    type: secondaryLastfmUrl ? kTrack : kArtist // Artists only have one Last.fm url
+    source: imageSource || '' // undefined is not allowed for a url
+    visible: hasImage
 
     anchors {
       top: parent.top
       left: parent.left
+
+      leftMargin: 15
     }
   }
 
-  // --- Value and Caption ---
+  /// --- Title ---
 
   Link {
-    id: link
-    
-    address: root.address || ''
+    id: titleLink
+
     elide: Text.ElideRight
-    style: kCaption
-    text: hasValue ? `${Helpers.numberWithCommas(value)} ${caption}` : caption
-    visible: hasValue
+    maximumLineCount: 2
+
+    style: kTitleSecondary
+    wrapMode: Text.Wrap
+
+    y: 2
 
     anchors {
-      verticalCenter: iconContainer.verticalCenter
-
       right: parent.right
-      left: iconContainer.right
+      left: hasImage ? picture.right : parent.left
 
-      leftMargin: 10
+      rightMargin: 15 
+      leftMargin: hasImage ? 10 : 15
     }
   }
 
-  // --- Placeholder ---
+  // --- Subtitle ---
 
-  Placeholder {
-    visible: !hasValue
+  Link {
+    id: subtitleLink
+    
+    elide: Text.ElideRight
+    maximumLineCount: 2
+    opacity: 0.81
+    visible: text
+    wrapMode: Text.Wrap
+    style: kBodyPrimary
+    
+    address: secondaryLastfmUrl || null
 
-    width: link.contentWidth + 15
+    y: titleLink.y + titleLink.height + 1
 
     anchors {
-      verticalCenter: link.verticalCenter
+      right: titleLink.right
+      left: titleLink.left
+    }
+  }
 
-      left: link.left
+  // --- Scrobble Count ---
+
+  ProgressBar {
+    id: playsProgressBar
+
+    percentage: 1
+
+    y: {
+      let topMargin = 6
+
+      if (subtitleLink.visible) {
+        return subtitleLink.y + subtitleLink.height + topMargin
+      }
+
+      return titleLink.y + titleLink.height + topMargin
+    }
+
+    anchors {
+      right: playsLabel.left
+      left: titleLink.left
+
+      rightMargin: hasImage ? 8 : 15
+    }
+  }
+
+  Label {
+    id: playsLabel
+
+    horizontalAlignment: Qt.AlignRight
+    style: kTitleTertiary
+    text: `${plays} plays`
+
+    width: 62
+
+    anchors {
+      verticalCenter: playsProgressBar.verticalCenter
+
+      right: titleLink.right
     }
   }
 }

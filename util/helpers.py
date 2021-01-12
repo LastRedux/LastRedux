@@ -5,20 +5,35 @@ from typing import List
 
 from AppKit import NSScreen
 
-from datatypes.ListeningStatistic import ListeningStatistic
+from util.lastfm import LastfmList, LastfmArtist
+from datatypes.ProfileStatistic import ProfileStatistic
 
-def listening_statistics_with_percentages(listening_statistics: List[ListeningStatistic]):
-  '''Calculate the relative percentages of each statistic relative to the highest playcount in a list of statistics ordered by playcount descending'''
+# def listening_statistics_with_percentages(listening_statistics: List[ListeningStatistic]):
+#   '''Calculate the relative percentages of each statistic relative to the highest playcount in a list of statistics ordered by playcount descending'''
   
-  # The first item has the most plays
-  highest_playcount = listening_statistics[0].plays
+#   # The first item has the most plays
+#   highest_playcount = listening_statistics[0].plays
 
-  for listening_statistic in listening_statistics:
-    listening_statistic.plays_percentage = listening_statistic.plays / highest_playcount
+#   for listening_statistic in listening_statistics:
+#     listening_statistic.plays_percentage = listening_statistic.plays / highest_playcount
 
-  return listening_statistics
+#   return listening_statistics
 
-def generate_system_profile():
+def generate_profile_statistics(artists_list: LastfmList[LastfmArtist]) -> List[ProfileStatistic]:
+  '''Generate profile statistics with a percentage relative to the highest playcount in the list'''
+  
+  highest_plays = artists_list.items[0].plays
+
+  for artist in artists_list.items:
+     ProfileStatistic(
+      title=artist.name,
+      subtitle=None,
+      plays=artist.plays,
+      percentage=artist.plays / highest_plays,
+      image_url=
+    )
+
+def generate_system_profile() -> dict:
   software_info = json.loads(subprocess.check_output('system_profiler SPSoftwareDataType -json', shell=True))['SPSoftwareDataType'][0]
   software_string = ' '.join((
     software_info['os_version'],
@@ -40,5 +55,5 @@ def generate_system_profile():
     'displays': f'''{[f'{int(screen.frame().size.width)}x{int(screen.frame().size.height)} {"(Retina)" if screen.backingScaleFactor() == 2.0 else ""}' for screen in NSScreen.screens()]}'''
   }
 
-def is_within_24_hours(date: datetime):
+def is_within_24_hours(date: datetime) -> bool:
   return (datetime.now() - date).total_seconds() <= 86400 # 24 hours = 86400 seconds
