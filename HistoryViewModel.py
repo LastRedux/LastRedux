@@ -1,4 +1,6 @@
 from dataclasses import asdict
+from datatypes.TrackCrop import TrackCrop
+from datatypes.MediaPlayerState import MediaPlayerState
 import os
 from datetime import datetime
 from typing import List
@@ -10,16 +12,18 @@ from loguru import logger
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 
-from tasks import FetchPlayerPosition, LoadExternalScrobbleData, SubmitTrackIsLovedChanged, FetchRecentScrobblesTask, SubmitScrobbleTask, UpdateNowPlayingTask
+from tasks import FetchPlayerPosition, LoadExternalScrobbleData, UpdateTrackLoveOnLastfm, FetchRecentScrobblesTask, SubmitScrobbleTask, UpdateNowPlayingTask
 from plugins.macOS.music_app import MusicAppPlugin
 from plugins.macOS.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.SpotifyPlugin import SpotifyPlugin
 from ApplicationViewModel import ApplicationViewModel
-from datatypes import CurrentScrobble, Scrobble
+from datatypes import Scrobble
 
 class HistoryViewModel(QtCore.QObject):
   # Constants
   __INITIAL_SCROBBLE_HISTORY_COUNT = int(os.environ.get('INITIAL_HISTORY_ITEMS', 30)) # 30 is the default but can be configured
+  __CURRENT_SCROBBLE_INDEX = -1
+  __NO_SELECTION_INDEX = -2
 
   # Qt Property signals
   is_enabled_changed = QtCore.Signal()
@@ -76,9 +80,9 @@ class HistoryViewModel(QtCore.QObject):
         self.media_player = self.__music_app_plugin
         self.set_is_scrobble_submission_enabled(True)
 
-    # self.media_player.stopped.connect(self.__handle_media_player_stopped)
-    # self.media_player.playing.connect(self.__handle_media_player_playing)
-    # self.media_player.paused.connect(self.__handle_media_player_paused)
+    self.media_player.stopped.connect(self.__handle_media_player_stopped)
+    self.media_player.playing.connect(self.__handle_media_player_playing)
+    self.media_player.paused.connect(self.__handle_media_player_paused)
     self.media_player_name_changed.emit()
 
     # Settings
@@ -104,10 +108,10 @@ class HistoryViewModel(QtCore.QObject):
     self.__scrobbles_with_external_data_count = 0
 
     # Hold a Scrobble object for currently playing track (will later be submitted)
-    self.__current_scrobble: CurrentScrobble = None
+    self.__current_scrobble: Scrobble = None
     
     # Hold the index of the selected scrobble in the sidebar
-    self.__selected_scrobble_index = None # -1 for current scrobble, None for no scrobble, numbers > 0 for history items
+    self.__selected_scrobble_index = None
     
     # Hold the Scrobble object at the __selected_scrobble_index
     # This can either be a copy of the current scrobble or one in the history
@@ -120,13 +124,12 @@ class HistoryViewModel(QtCore.QObject):
     # Keep track of furthest position reached in a song to allow moving back without losing progress
     self.__furthest_player_position_reached = None
 
-    # Keep track of the current track's start and finish timestamps since it isn't saved to the scrobble object
-    self.__current_track_start = None
-    self.__current_track_finish = None
+    # Keep track of the current track's crop values since they aren't saved to the scrobble object
+    self.__current_track_crop: TrackCrop = None
 
   # --- Qt Property Getters and Setters ---
 
-  def set_application_reference(self, new_reference: ApplicationViewModel):
+  def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
     if not new_reference:
       return
     
@@ -135,7 +138,7 @@ class HistoryViewModel(QtCore.QObject):
       lambda: self.set_is_enabled(self.__application_reference.is_logged_in)
     )
     
-  def set_is_scrobble_submission_enabled(self, value: bool):
+  def set_is_scrobble_submission_enabled(self, value: bool) -> None:
     if not os.environ.get('DISABLE_SUBMISSION'):
       self.is_submission_enabled = value
 
@@ -148,52 +151,56 @@ class HistoryViewModel(QtCore.QObject):
     '''Make the private selected scrobble index variable available to the UI'''
     
     if self.__selected_scrobble_index is None:
-      # -2 represents no selection because Qt doesn't understand Python's None value
-      return -2
+      # HistoryViewModel.__NO_SELECTION_INDEX represents no selection because Qt doesn't understand Python's None value
+      return HistoryViewModel.__NO_SELECTION_INDEX
 
     return self.__selected_scrobble_index
   
-  def set_selected_scrobble_index(self, new_index):
-    if self.__is_enabled:
-      # Prevent setting an illegal index with keyboard shortcuts
-      if (
-        new_index == len(self.scrobble_history) # Prevent navigating past scrobble history
-        or new_index == -2 # Prevent navigating into negative numbers
-        or self.__current_scrobble is None and new_index == -1 # Prevent navigating to current scrobble when there isn't one
-      ):
-        return
-      
-      self.__selected_scrobble_index = new_index
+  def set_selected_scrobble_index(self, new_index: int) -> None:
+    if not self.__is_enabled:
+      return
+    
+    # Prevent setting an illegal index with keyboard shortcuts
+    if (
+      # Prevent navigating before current scrobble
+      new_index < HistoryViewModel.__CURRENT_SCROBBLE_INDEX
 
-      # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
-      self.selected_scrobble_index_changed.emit()
+      or (
+        # Prevent navigating to current scrobble when there isn't one
+        new_index == HistoryViewModel.__CURRENT_SCROBBLE_INDEX
+        and self.__current_scrobble is None
+      )
 
-      # Update selected_scrobble (Scrobble type) according to the new index
-      if new_index == -1: # If the new selection is the current scrobble
-        self.selected_scrobble = self.__current_scrobble
-      else:
-        self.selected_scrobble = self.scrobble_history[new_index]
-      
-      # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
-      self.selected_scrobble_changed.emit()
+      # Prevent navigating past scrobble history
+      or new_index == len(self.scrobble_history)
+    ):
+      return
+    
+    self.__selected_scrobble_index = new_index
+    self.selected_scrobble_index_changed.emit()
 
-  # Function instead of lambda because DetailsViewModel uses this
-  def get_is_enabled(self):
+    if new_index == HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
+      self.selected_scrobble = self.__current_scrobble
+    else:
+      self.selected_scrobble = self.scrobble_history[new_index]
+    
+    # Update details view
+    self.selected_scrobble_changed.emit()
+
+  def get_is_enabled(self) -> bool: # Function instead of lambda because DetailsViewModel uses this
     return self.__is_enabled
 
-  def set_is_enabled(self, is_enabled):
+  def set_is_enabled(self, is_enabled: bool) -> None:
     self.__is_enabled = is_enabled
     self.is_enabled_changed.emit()
 
     if is_enabled:
+      # Reset view model
       self.reset_state()
       self.media_player.request_initial_state()
+      self.reloadHistory()
       # polling_interval = 100 if os.environ.get('MOCK') else 1000
       # self.__timer.start(polling_interval)
-
-      # Load in recent scrobbles from Last.fm and process them
-      if self.__INITIAL_SCROBBLE_HISTORY_COUNT > 0:
-        self.reloadHistory()
     else:
       self.begin_refresh_history.emit()
       self.reset_state()
@@ -211,8 +218,15 @@ class HistoryViewModel(QtCore.QObject):
   def reloadHistory(self):
     '''Reload recent scrobbles from Last.fm'''
 
-    # Prevent reloading during onboarding or while the view is already loading
-    if not self.__is_enabled or self.__should_show_loading_indicator:
+    if (
+      self.__INITIAL_SCROBBLE_HISTORY_COUNT == 0
+      
+      # Prevent reloading during onboarding
+      or not self.__is_enabled
+
+      # Prevent reloading while the view is already loading
+      or self.__should_show_loading_indicator
+    ):
       return
 
     # Update loading indicator
@@ -234,79 +248,83 @@ class HistoryViewModel(QtCore.QObject):
     QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
     
   @QtCore.Slot(int)
-  def toggleLastfmIsLoved(self, index):
-    if self.__is_enabled:
-      scrobble = None
+  def toggleLastfmIsLoved(self, scrobble_index: int) -> None:
+    # import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
 
-      # -1 refers to current scrobble
-      if index == -1:
-        scrobble = self.__current_scrobble
-      else:
-        scrobble = self.scrobble_history[index]
+    if not self.__is_enabled:
+      return
 
-      if scrobble.loading_state == 'LASTFM_TRACK_NOT_FOUND':
-        return
-      
-      new_is_loved = not scrobble.lastfm_is_loved
+    scrobble = None
 
-      if index == -1:
-        scrobble.lastfm_is_loved = new_is_loved
-      
-      # Update any scrobbles in the scrobble history array that match the scrobble that changed
-      for history_item in self.scrobble_history:
-        if scrobble.equals(history_item):
-          history_item.lastfm_is_loved = new_is_loved
-      
-      # If hearting song in history, also update current scrobble state
-      if index != -1 and scrobble.equals(self.__current_scrobble):
-        self.__current_scrobble.lastfm_is_loved = new_is_loved
+    if scrobble_index == HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
+      scrobble = self.__current_scrobble
+    else:
+      scrobble = self.scrobble_history[scrobble_index]
 
-      self.__emit_scrobble_ui_update_signals(scrobble)
-      
-      # Tell Last.fm about our new is_loved value
-      submit_track_is_loved_task = SubmitTrackIsLovedChanged(self.__application_reference.lastfm, scrobble, new_is_loved)
-      QtCore.QThreadPool.globalInstance().start(submit_track_is_loved_task)
+    new_value = not scrobble.lastfm_track.is_loved
+    scrobble.lastfm_track.is_loved = new_value
+    
+    # Update any matching scrobbles in history
+    for history_scrobble in self.scrobble_history:
+      if history_scrobble == scrobble:
+        history_scrobble.lastfm_track.is_loved = new_value
+    
+    # Update UI to reflect changes
+    self.__emit_scrobble_ui_update_signals(scrobble)
+    
+    # Submit new value to Last.fm
+    QtCore.QThreadPool.globalInstance().start(
+      UpdateTrackLoveOnLastfm(
+        lastfm=self.__application_reference.lastfm,
+        scrobble=scrobble,
+        value=new_value
+      )
+    )
 
   @QtCore.Slot()
-  def toggleMiniMode(self):
-    if self.__is_enabled:
-      self.is_in_mini_mode = not self.is_in_mini_mode
-      self.is_in_mini_mode_changed.emit()
+  def toggleMiniMode(self) -> None:
+    if not self.__is_enabled:
+      return
 
-  @QtCore.Slot(str)
-  def switchToMediaPlugin(self, media_plugin_name):
-    # Fake stopped event to unload the current scrobble
-    self.__handle_media_player_stopped()
+    self.is_in_mini_mode = not self.is_in_mini_mode
+    self.is_in_mini_mode_changed.emit()
 
-    # Disconnect event signals
-    self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
-    self.media_player.playing.disconnect(self.__handle_media_player_playing)
-    self.media_player.paused.disconnect(self.__handle_media_player_paused)
+  # @QtCore.Slot(str)
+  # def switchToMediaPlugin(self, media_plugin_name):
+  #   # Fake stopped event to unload the current scrobble
+  #   self.__handle_media_player_stopped()
 
-    if media_plugin_name == 'spotify':
-      self.media_player = self.__spotify_plugin
-      self.set_is_scrobble_submission_enabled(False)
-      logger.success('Switched media player to Spotify')
-    elif media_plugin_name == 'musicApp':
-      self.media_player = self.__music_app_plugin
-      self.set_is_scrobble_submission_enabled(True)
-      logger.success('Switched media player to Music app')
+  #   # Disconnect event signals
+  #   self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
+  #   self.media_player.playing.disconnect(self.__handle_media_player_playing)
+  #   self.media_player.paused.disconnect(self.__handle_media_player_paused)
 
-    # Reconnect event signals
-    self.media_player.stopped.connect(self.__handle_media_player_stopped)
-    self.media_player.playing.connect(self.__handle_media_player_playing)
-    self.media_player.paused.connect(self.__handle_media_player_paused)
+  #   if media_plugin_name == 'spotify':
+  #     self.media_player = self.__spotify_plugin
+  #     self.set_is_scrobble_submission_enabled(False)
+  #     logger.success('Switched media player to Spotify')
+  #   elif media_plugin_name == 'musicApp':
+  #     self.media_player = self.__music_app_plugin
+  #     self.set_is_scrobble_submission_enabled(True)
+  #     logger.success('Switched media player to Music app')
 
-    # Load initial track from newly selected media player without a notification
-    if self.media_player.is_open():
-      # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-      self.media_player.request_initial_state()
+  #   # Reconnect event signals
+  #   self.media_player.stopped.connect(self.__handle_media_player_stopped)
+  #   self.media_player.playing.connect(self.__handle_media_player_playing)
+  #   self.media_player.paused.connect(self.__handle_media_player_paused)
+
+  #   # Load initial track from newly selected media player without a notification
+  #   if self.media_player.is_open():
+  #     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
+  #     self.media_player.request_initial_state()
     
-    # Update 'Listening on X'  text in history view for current scrobble
-    self.media_player_name_changed.emit()
+  #   # Update 'Listening on X'  text in history view for current scrobble
+  #   self.media_player_name_changed.emit()
 
   @QtCore.Slot(str)
   def mock_event(self, event_name):
+    '''Allow mock player events to be triggered from QML'''
+
     self.media_player.mock_event(event_name)
 
   # --- Private Methods ---
@@ -322,8 +340,9 @@ class HistoryViewModel(QtCore.QObject):
       # TODO: Find a way to avoid loading duplicate scrobble data (two of the same scrobble in the list will have identical external data)
       self.__load_external_scrobble_data(self.scrobble_history[i]) # Pass reference to scrobble in list
 
-  def __load_external_scrobble_data(self, scrobble: Scrobble) -> None:
+    self.end_refresh_history.emit()
 
+  def __load_external_scrobble_data(self, scrobble: Scrobble) -> None:
     load_external_scrobble_data_task = LoadExternalScrobbleData(
       lastfm=self.__application_reference.lastfm,
       art_provider=self.__application_reference.album_art_provider,
@@ -338,21 +357,18 @@ class HistoryViewModel(QtCore.QObject):
     QtCore.QThreadPool.globalInstance().start(load_external_scrobble_data_task)
 
   def __handle_recent_scrobble_external_data_loaded(self) -> None:
-
     if not self.__is_enabled:
       return
 
     self.__scrobbles_with_external_data_count += 1
 
     if self.__scrobbles_with_external_data_count == len(self.scrobble_history):
-      print('pog')
       # All scrobbles have loaded their additional data
       self.__should_show_loading_indicator = False
       self.should_show_loading_indicator_changed.emit()
       self.end_refresh_history.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
-
     if not self.__is_enabled:
       return
     
@@ -391,7 +407,7 @@ class HistoryViewModel(QtCore.QObject):
   #       # Shift down the selected scrobble index if new scrobble has been added to the top
   #       # This is because if the user has a scrobble in the history selected and a new scrobble is submitted, it will display the wrong data if the index isn't updated
   #       # Change __selected_scrobble_index instead of calling set___selected_scrobble_index because the selected scrobble shouldn't be redundantly set to itself and still emit selected_scrobble_changed (wasting resources)
-  #       if self.__selected_scrobble_index > -1: # > -1 is the same as not -2 (no scrobble selected) and not -1
+  #       if self.__selected_scrobble_index > HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
   #         # Shift down the selected scrobble index by 1
   #         self.__selected_scrobble_index += 1
 
@@ -443,49 +459,55 @@ class HistoryViewModel(QtCore.QObject):
 
   #   return scrobble_percentage
 
-  # def __update_scrobble_to_match_new_media_player_data(self, new_media_player_state):
-  #   '''Set __current_scrobble to a new Scrobble object created from the currently playing track, update the playback data for track start/finish, and update the UI'''
+  def __update_current_scrobble(self, media_player_state: MediaPlayerState) -> None:
+    '''Replace the current scrobble, update cached track start/finish, update the UI'''
 
-  #   if self.__is_enabled:
-  #     # Initialize a new Scrobble object with the currently playing track data
-  #     # This will set the Scrobble's timestamp to the current date
-  #     self.__current_scrobble = Scrobble(new_media_player_state.track_title, new_media_player_state.artist_name, new_media_player_state.album_title)
+    if not self.__is_enabled:
+      return
 
-  #     logger.debug(f'Now playing: {new_media_player_state.artist_name} - {new_media_player_state.track_title} | {new_media_player_state.album_title}')
+    logger.debug(f'Now playing: {media_player_state.artist_name} - {media_player_state.track_title} | {media_player_state.album_title}')
+    
+    # Initialize a new Scrobble object with the updated media player state
+    self.__current_scrobble = Scrobble(
+      artist_name=media_player_state.artist_name,
+      track_title=media_player_state.track_title,
+      album_title=media_player_state.album_title,
+      timestamp=datetime.now()
+    )
 
-  #     # Update UI content in current scrobble sidebar item
-  #     self.current_scrobble_data_changed.emit()
+    # Update UI content in current scrobble sidebar item
+    self.current_scrobble_data_changed.emit()
 
-  #     # Tell Last.fm to update the user's now playing status
-  #     if self.is_submission_enabled:
-  #       QtCore.QThreadPool.globalInstance().start(UpdateNowPlayingTask(self.__application_reference.lastfm, self.__current_scrobble))
+    # Tell Last.fm to update the user's now playing status
+    if self.is_submission_enabled:
+      QtCore.QThreadPool.globalInstance().start(
+        UpdateNowPlayingTask(self.__application_reference.lastfm, self.__current_scrobble)
+      )
 
-  #     # Reset player position to temporary value until a new value can be recieved from the media player
-  #     self.__furthest_player_position_reached = 0
+    # Reset player position to temporary value until a new value can be recieved from the media player
+    self.__furthest_player_position_reached = 0
 
-  #     # Refresh selected_scrobble with new __current_scrobble object if the current scrobble is selected, because otherwise the selected scrobble will reflect old data
-  #     if self.__selected_scrobble_index == -1:
-  #       self.selected_scrobble = self.__current_scrobble
+    # Refresh selected_scrobble with new __current_scrobble object if the current scrobble is selected, because otherwise the selected scrobble will reflect old data
+    if self.__selected_scrobble_index == HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
+      self.selected_scrobble = self.__current_scrobble
 
-  #       # Update details pane view
-  #       self.selected_scrobble_changed.emit()
-  #     elif self.__selected_scrobble_index is None:
-  #       self.__selected_scrobble_index = -1
-  #       self.selected_scrobble = self.__current_scrobble
-        
-  #       # Update the current scrobble highlight and song details pane views
-  #       self.selected_scrobble_index_changed.emit()
+      # Update details pane view
+      self.selected_scrobble_changed.emit()
+    elif self.__selected_scrobble_index is None:
+      self.__selected_scrobble_index = HistoryViewModel.__CURRENT_SCROBBLE_INDEX
+      self.selected_scrobble = self.__current_scrobble
+      
+      # Update the current scrobble highlight and song details pane views
+      self.selected_scrobble_index_changed.emit()
 
-  #       # Update details pane view
-  #       self.selected_scrobble_changed.emit()
+      # Update details pane view
+      self.selected_scrobble_changed.emit()
 
-  #     # Update cached media player track playback data
-  #     self.__current_track_start = new_media_player_state.track_start
-  #     self.__current_track_finish = new_media_player_state.track_finish
+    # Update cached media player track playback data
+    self.__current_track_crop = media_player_state.track_crop
 
-  #     logger.trace(f'New media player state: {new_media_player_state}')
-
-  #     self.__load_additional_scrobble_data(self.__current_scrobble)
+    # Load Last.fm data and album art
+    self.__load_external_scrobble_data(self.__current_scrobble)
 
   # @QtCore.Slot()
   # def __fetch_new_media_player_position(self):
@@ -518,57 +540,65 @@ class HistoryViewModel(QtCore.QObject):
   #     # Update scrobble progress bar UI
   #     self.scrobble_percentage_changed.emit()
 
-  # def __handle_media_player_stopped(self):
-  #   '''Handle media player stop event (no track is loaded)'''
+  def __handle_media_player_stopped(self):
+    '''Handle media player stop event (no track is loaded)'''
 
-  #   if self.__is_enabled:
-  #     # Only handle this case if there was something playing previously
-  #     if self.__current_scrobble:
-  #       # Submit if the music player stops as well, not just when a new track starts
-  #       if self.__should_submit_current_scrobble:
-  #         self.__submit_scrobble(self.__current_scrobble)
+    if (
+      not self.__is_enabled
+      
+      # Don't do anything this case if there was nothing playing previously
+      or not self.__current_scrobble
+    ):
+      return
+    
+    # Submit if the music player stops as well, not just when a new track starts
+    # if self.__should_submit_current_scrobble:
+    #   self.__submit_scrobble(self.__current_scrobble)
 
-  #       self.__current_scrobble = None
+    # Reset current scrobble
+    self.__current_scrobble = None
 
-  #       # Update the UI in current scrobble sidebar item
-  #       self.current_scrobble_data_changed.emit()
+    # Update the UI in current scrobble sidebar item
+    self.current_scrobble_data_changed.emit()
 
-  #       # If the current scrobble is selected, deselect it
-  #       if self.__selected_scrobble_index == -1:
-  #         self.__selected_scrobble_index = None
-  #         self.selected_scrobble = None
-          
-  #         # Update the current scrobble highlight and song details pane views
-  #         self.selected_scrobble_index_changed.emit()
-  #         self.selected_scrobble_changed.emit()
+    # If the current scrobble is selected, deselect it
+    if self.__selected_scrobble_index == HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
+      self.__selected_scrobble_index = None
+      self.selected_scrobble = None
+      
+      # Update the current scrobble highlight and song details pane views
+      self.selected_scrobble_index_changed.emit()
+      self.selected_scrobble_changed.emit()
 
-  # def __handle_media_player_playing(self, new_media_player_state):
-  #   '''Handle media player play event'''
+  def __handle_media_player_playing(self, media_player_state: MediaPlayerState):
+    '''Handle media player play event'''
 
-  #   if self.__is_enabled:
-  #     # Update playback indicator
-  #     self.is_player_paused = False
-  #     self.is_player_paused_changed.emit()
+    if not self.__is_enabled:
+      return
+    
+    # Update playback indicator
+    self.is_player_paused = False
+    self.is_player_paused_changed.emit()
 
-  #     current_track_changed = not self.__current_scrobble or new_media_player_state.track_title != self.__current_scrobble.title or new_media_player_state.artist_name != self.__current_scrobble.artist.name or new_media_player_state.album_title != self.__current_scrobble.album.title
+    current_track_changed = (
+      not self.__current_scrobble
+      or not self.__current_scrobble.is_equal_to_media_player_state(media_player_state)
+    )
 
-  #     # Only run this code when the track changes (or the first track is loaded)
-  #     if current_track_changed:
-  #       # with open('._now_playing.txt', 'w+') as f:
-  #       #   f.write(f'{new_media_player_state.artist_name} - {new_media_player_state.track_title}')
+    # Only run this code when the track changes (or the first track is loaded)
+    if current_track_changed:
+      # Submit the previous track when the current track changes if it hit the scrobbling threshold
+      if self.__should_submit_current_scrobble:
+        self.__submit_scrobble(self.__current_scrobble)
 
-  #       # Submit the previous track when the current track changes if it hit the scrobbling threshold
-  #       if self.__should_submit_current_scrobble:
-  #         self.__submit_scrobble(self.__current_scrobble)
-
-  #       self.__update_scrobble_to_match_new_media_player_data(new_media_player_state)
+      self.__update_current_scrobble(media_player_state)
   
-  # def __handle_media_player_paused(self, new_media_player_state):
-  #   '''Handle media player pause event'''
+  def __handle_media_player_paused(self, new_media_player_state: MediaPlayerState) -> None:
+    '''Handle media player pause event'''
 
-  #   # Update playback indicator
-  #   self.is_player_paused = True
-  #   self.is_player_paused_changed.emit()
+    # Update playback indicator
+    self.is_player_paused = True
+    self.is_player_paused_changed.emit()
 
   # --- Qt Properties ---
   
@@ -586,8 +616,8 @@ class HistoryViewModel(QtCore.QObject):
   )
 
   currentScrobble = QtCore.Property(
-    type="QVariant",
-    fget=lambda self: self.__current_scrobble if self.__is_enabled else None,
+    type='QVariant',
+    fget=lambda self: asdict(self.__current_scrobble) if self.__current_scrobble else None,
     notify=current_scrobble_data_changed
   )
 

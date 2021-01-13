@@ -70,18 +70,28 @@ Item {
   // --- Current Scrobble ---
 
   CurrentScrobble {
+    property bool hasLastfmData: {
+      canDisplayCurrentScrobble ?
+        !!viewModel.currentScrobble.lastfm_track :
+        false
+    }
+    property bool hasAlbumArt: {
+      canDisplayCurrentScrobble ?
+          !!viewModel.currentScrobble.image_set :
+          false
+    }
+    
     id: currentScrobbleView
+    visible: canDisplayCurrentScrobble
 
     mediaPlayerName: viewModel ? viewModel.mediaPlayerName : ''
     percentage: viewModel ? viewModel.scrobblePercentage : 0
+    trackTitle: canDisplayCurrentScrobble ? viewModel.currentScrobble.track_title : ''
+    artistName: canDisplayCurrentScrobble ? viewModel.currentScrobble.artist_name : ''
+    lastfmIsLoved: hasLastfmData ? viewModel.currentScrobble.lastfm_track.is_loved : false
+    imageSource: hasAlbumArt ? viewModel.currentScrobble.image_set.small_url : ''
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
-    trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobble.trackTitle
-    artistName: canDisplayCurrentScrobble && viewModel.currentScrobble.artistName
-    lastfmIsLoved: canDisplayCurrentScrobble && viewModel.currentScrobble.lastfmIsLoved
-    canLove: canDisplayCurrentScrobble && viewModel.currentScrobble.hasLastfmData
-    visible: canDisplayCurrentScrobble
-
-    imageSource: canDisplayCurrentScrobble && viewModel.currentScrobble.albumImageUrl || ''
+    canLove: hasLastfmData
 
     // -1 represents the currently selected item in the scrobble history
     onSelect: viewModel.selectedScrobbleIndex = -1

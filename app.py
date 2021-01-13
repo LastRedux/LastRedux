@@ -48,6 +48,9 @@ logger.configure(
 )
 
 if __name__ == "__main__":
+  # TODO: Figure out how to debug QML
+  # QtQml.QQmlDebuggingEnabler()
+
   # Create QML components from Python classes
   # major_version and minor_version represent major and minor version numbers for when we import it in QML
   QtQml.qmlRegisterType(ApplicationViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ApplicationViewModel')

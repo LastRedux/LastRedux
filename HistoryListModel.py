@@ -87,23 +87,28 @@ class HistoryListModel(QtCore.QAbstractListModel):
   def data(self, index, role=QtCore.Qt.DisplayRole): # DisplayRole is a default role that returns the fallback value for the data function
     '''Provide data about items to each delegate view in the list'''
 
-    if self.__history_reference:
-      # Only check for value if it's in the current range of the list
-      if index.isValid():
-        scrobble = self.__history_reference.scrobble_history[index.row()]
+    if (
+      not self.__history_reference
 
-        if role == self.__TRACK_TITLE_ROLE:
-          return scrobble.lastfm_track.title
-        elif role == self.__ARTIST_NAME_ROLE:
-          return scrobble.lastfm_track.artist.name
-        elif role == self.__ALBUM_IMAGE_URL_ROLE:
-          return scrobble.image_set.small_url
-        elif role == self.__LASTFM_IS_LOVED_ROLE:
-          return scrobble.lastfm_track.is_loved
-        elif role == self.__TIMESTAMP_ROLE:
-          return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
-        elif role == self.__HAS_LASTFM_DATA:
-          return scrobble.lastfm_track is not None
+      # Prevent checking for value if it's outside the current range of the list
+      or not index.isValid()
+    ):
+      return
+
+    scrobble = self.__history_reference.scrobble_history[index.row()]
+
+    if role == self.__TRACK_TITLE_ROLE:
+      return scrobble.track_title
+    elif role == self.__ARTIST_NAME_ROLE:
+      return scrobble.artist_name
+    elif role == self.__ALBUM_IMAGE_URL_ROLE:
+      return scrobble.image_set.small_url if scrobble.image_set else ''
+    elif role == self.__LASTFM_IS_LOVED_ROLE:
+      return scrobble.lastfm_track.is_loved if scrobble.lastfm_track else False
+    elif role == self.__TIMESTAMP_ROLE:
+      return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
+    elif role == self.__HAS_LASTFM_DATA:
+      return scrobble.lastfm_track is not None
 
     # Return no data if we don't have a reference to the scrobble history view model
     return None

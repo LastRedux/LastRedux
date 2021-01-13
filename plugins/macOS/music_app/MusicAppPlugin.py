@@ -32,6 +32,9 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
   # --- Media Player Implementation ---
 
   def request_initial_state(self):
+
+    # import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
+
     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
     if (
       not self.__applescript_app.isRunning()
@@ -71,7 +74,10 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
   # Shows as unused because it has to be registered with pyobjc as a function name string
   def __handleNotificationFromMusic_(self, notification): # TODO: Add type annotation
     '''Handle Objective-C notifications for Music app events'''
+    
+    # import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
 
+    # TODO: Move validation logic to common function with request_initial_state
     self.__cached_notification_payload = notification.userInfo()
     player_state = self.__cached_notification_payload['Player State']
 
@@ -111,12 +117,17 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
     
     # Emit play signal early and skip AppleScript if the track is the same as the last one (if it exists)
     if self.__state:
-      if self.__state.track_title == track_title and self.__state.artist_name == artist_name and self.__state.album_title == album_title and self.__state.track_finish: # Check for track_finish so playing isn't emitted prematurely if track is play cycled repeatedly before AppleScript request can complete
+      if (
+        self.__state.track_title == track_title
+        and self.__state.artist_name == artist_name
+        and self.__state.album_title == album_title
+        and self.__state.track_crop.finish # Check for track_finish so playing isn't emitted prematurely if track is play cycled repeatedly before AppleScript request can complete
+      ):
         self.playing.emit(self.__state)
         return
     
     # Create new state object to store new track data
-    self.__state = MediaPlayerState(is_playing, track_title, artist_name, album_title)
+    self.__state = MediaPlayerState(artist_name, track_title, album_title, is_playing)
     
     # Fetch track crop data (start and finish timestamps)
     # Delay for 100ms to give enough time for AppleScript to update with new current track (Sometimes, AppleScript lags behind the notifications)
@@ -126,12 +137,16 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
     timer.start(100)
 
   def __launch_fetch_track_crop_task(self) -> None:
+    # import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
+
     get_library_track_crop = FetchTrackCrop(self.__applescript_app)
     get_library_track_crop.finished.connect(self.__handle_completion_of_get_track_crop_request)
     QtCore.QThreadPool.globalInstance().start(get_library_track_crop)
   
   def __handle_completion_of_get_track_crop_request(self, track_crop: TrackCrop) -> None:
     '''Figure out what to do with the results of the track crop request'''
+
+    # import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
 
     if track_crop.finish != 0:
       # A track finish was found, so we can use the actual crop values

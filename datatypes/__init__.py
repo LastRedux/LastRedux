@@ -6,5 +6,4 @@ from .ProfileStatistic import ProfileStatistic
 from .ProfileStatistics import ProfileStatistics
 from .SimpleTrack import SimpleTrack
 from .TrackCrop import TrackCrop
-from .CurrentScrobble import CurrentScrobble
 from .Scrobble import Scrobble

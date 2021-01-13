@@ -5,3 +5,4 @@ from .FetchFriendScrobbleArt import FetchFriendScrobbleArt
 from .FetchProfileStatistics import FetchProfileStatistics
 from .LoadExternalScrobbleData import LoadExternalScrobbleData
 from .FetchRecentScrobblesTask import FetchRecentScrobblesTask
+from .UpdateTrackLoveOnLastfm import UpdateTrackLoveOnLastfm
