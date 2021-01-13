@@ -1,3 +1,4 @@
+from .FetchFriendPlaysLeaderboard import FetchFriendPlaysLeaderboard
 from .FetchFriendsTask import FetchFriendsTask
 from .FetchFriendScrobble import FetchFriendScrobble
 from .FetchFriendScrobbleArt import FetchFriendScrobbleArt

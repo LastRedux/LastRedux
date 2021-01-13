@@ -157,10 +157,10 @@ class LastfmApiWrapper:
   
   # --- Info Request Wrappers ---
 
-  def get_artist_info(self, artist_name: str) -> LastfmArtist:
+  def get_artist_info(self, artist_name: str, username: str=None) -> LastfmArtist:
     return self.__lastfm_request({
         'method': 'artist.getInfo',
-        'username': self.username,
+        'username': username or self.username,
         'artist': artist_name
       },
       main_key_getter=lambda response: response['artist'],
@@ -181,10 +181,10 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_track_info(self, artist_name: str, track_title: str) -> LastfmTrack:
+  def get_track_info(self, artist_name: str, track_title: str, username: str=None) -> LastfmTrack:
     return self.__lastfm_request({
         'method': 'track.getInfo',
-        'username': self.username,
+        'username': username or self.username,
         'artist': artist_name,
         'track': track_title
       },
@@ -204,10 +204,10 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_album_info(self, artist_name: str, album_title: str) -> LastfmAlbum:
+  def get_album_info(self, artist_name: str, album_title: str, username: str=None) -> LastfmAlbum:
     return self.__lastfm_request({
         'method': 'album.getInfo',
-        'username': self.username,
+        'username': username or self.username,
         'artist': artist_name,
         'album': album_title
       },
@@ -258,7 +258,7 @@ class LastfmApiWrapper:
     return session
 
   def log_in_with_session(self, session: LastfmSession) -> None:
-    self.username = 'Ramen2x'#session.username
+    self.username = session.username
     self.__session_key = session.session_key
 
   # --- POST request wrappers ---
@@ -442,7 +442,7 @@ class LastfmApiWrapper:
     return None
 
   @staticmethod
-  def __generate_method_signature(payload):
+  def __generate_method_signature(payload: dict) -> str:
     '''
     Create an api method signature from the request payload (in alphabetical order by key) with the client secret
 

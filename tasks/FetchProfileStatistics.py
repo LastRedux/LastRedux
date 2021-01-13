@@ -35,11 +35,9 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
       return [
         ProfileStatistic(
           title=artist.name,
-          subtitle=None,
           plays=artist.plays,
           percentage=artist.plays / top_plays,
           lastfm_url=artist.url,
-          secondary_lastfm_url=None,
 
           # Try getting artist image from Spotify but handle a None response if not found
           image_url=getattr(self.spotify_api.get_artist(artist.name), 'image_url', None)
