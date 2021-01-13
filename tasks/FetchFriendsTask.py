@@ -11,7 +11,7 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
     self.lastfm = lastfm
     self.setAutoDelete(True)
 
-  def run(self):
+  def run(self) -> None:
     '''Fetch the user's Last.fm friends'''
     
     friends = self.lastfm.get_friends()

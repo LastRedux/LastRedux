@@ -16,7 +16,7 @@ class AlbumArtProvider:
 
     # 1. Try geting album art from Last.fm if there's an album to work with
     if album_title:
-      album_art = self.get_lastfm_album_art(artist_name, album_title)
+      album_art = self.__get_lastfm_album_art(artist_name, album_title)
 
     if album_art:
       logger.trace(f'Found album art for {track_title} on Last.fm')
@@ -40,7 +40,9 @@ class AlbumArtProvider:
 
     return album_art
 
-  def get_lastfm_album_art(self, artist_name: str, album_title: str) -> ImageSet:
+  # --- Private Methods ---
+
+  def __get_lastfm_album_art(self, artist_name: str, album_title: str) -> ImageSet:
     '''Get an album's artwork from Last.fm'''
 
     album_info = self.lastfm.get_album_info(artist_name, album_title)

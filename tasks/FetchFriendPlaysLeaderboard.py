@@ -13,7 +13,7 @@ class FetchFriendPlaysLeaderboard(QtCore.QObject, QtCore.QRunnable):
     self.track = track
     self.setAutoDelete(True)
 
-  def run(self):
+  def run(self) -> None:
     '''Fetch play statistics for the user's Last.fm friends'''
 
     def __generate_statistic(user: LastfmUser, plays: int) -> ProfileStatistic:

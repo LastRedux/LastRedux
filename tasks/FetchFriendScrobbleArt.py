@@ -14,7 +14,7 @@ class FetchFriendScrobbleArt(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
     self.row_in_friends_list = row_in_friends_list
 
-  def run(self):
+  def run(self) -> None:
     '''Fetch album art for the passed FriendScrobble'''
 
     album_art = self.album_art_provider.get_album_art(

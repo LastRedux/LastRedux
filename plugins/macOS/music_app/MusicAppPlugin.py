@@ -1,96 +1,65 @@
-from typing import Dict
-
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 from Foundation import NSDistributedNotificationCenter
 from loguru import logger
 
-from datatypes.MediaPlayerState import MediaPlayerState
+from plugins.macOS.MacMediaPlayerPlugin import MacMediaPlayerPlugin
+from datatypes import MediaPlayerState, TrackCrop
+from .FetchTrackCrop import FetchTrackCrop
 
-class FetchTrackCrop(QtCore.QObject, QtCore.QRunnable):
-  finished = QtCore.Signal(dict)
-
-  def __init__(self, applescript_music_app):
-    '''Use AppleScript to fetch the current track's start and finish timestamps (This often fails and returns 0.0 for both)'''
-
-    QtCore.QObject.__init__(self)
-    QtCore.QRunnable.__init__(self)
-    self.__applescript_music_app = applescript_music_app
-    self.setAutoDelete(True)
-
-  def run(self):
-    current_track = self.__applescript_music_app.currentTrack()
-
-    self.finished.emit({
-      'track_start': current_track.start(),
-      'track_finish': current_track.finish()
-    })
-
-class MusicAppPlugin(QtCore.QObject):
-  PLAYING_STATE = 1800426320 # From Music.app BridgeSupport enum definitions
-
-  # Media player signals
-  stopped = QtCore.Signal()
-  paused = QtCore.Signal(MediaPlayerState)
-  playing = QtCore.Signal(MediaPlayerState)
-
-  # Music app signals
+class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all MediaPlayers inherit from it
   does_not_have_artist_error = QtCore.Signal()
 
   def __init__(self):
-    QtCore.QObject.__init__(self)
-
-    # Store the current media player state
-    self.__state: MediaPlayerState = None
+    super().__init__()
 
     # Store reference to Music app in AppleScript
-    self.__applescript_music_app = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
+    self.__applescript_app = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
 
     # Set up NSNotificationCenter (refer to https://lethain.com/how-to-use-selectors-in-pyobjc)
     self.__default_center = NSDistributedNotificationCenter.defaultCenter()
     self.__default_center.addObserver_selector_name_object_(self, '__handleNotificationFromMusic:', 'com.apple.Music.playerInfo', None)
 
     # Store the latest notification from NSNotificationObserver
-    self.__cached_notification_payload = None
+    self.__cached_notification_payload: dict = None
+
+    # Store latest state
+    self.__state: MediaPlayerState = None
 
   def __str__(self):
     return 'Music'
 
   # --- Media Player Implementation ---
 
-  def get_player_position(self) -> float:
-    '''Use AppleScript to fetch the current Music app playback position'''
-
-    return self.__applescript_music_app.playerPosition()
-
-  def is_open(self):
-    return self.__applescript_music_app.isRunning()
-
   def request_initial_state(self):
     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-    if not self.__applescript_music_app.isRunning() or not self.__applescript_music_app.playerState() == MusicAppPlugin.PLAYING_STATE:
+    if (
+      not self.__applescript_music_app.isRunning()
+      or self.__applescript_music_app.playerState() != MusicAppPlugin.PLAYING_STATE
+    ):
       return
 
     track = self.__applescript_music_app.currentTrack()
     track_title = track.name()
     
     if not track_title:
-      # User is playing a non-library track, so we force a play notification
+      # User is playing a non-library track, so AppleScript can't see the data
+      # Instead, we have to force a play notification
       self.__applescript_music_app.pause()
       self.__applescript_music_app.playpause() # There is no play function for whatever reason
       return
-
-    album_title = track.album() or None # Prevent storing empty strings in album_title key
 
     self.__state = MediaPlayerState(
       is_playing=True,
       artist_name=track.artist(),
       track_title=track_title,
-      album_title=album_title, # TODO: Make sure this isn't going to cause problems without a fallback
-      track_start=0,
-      track_finish=track.duration() # In seconds
+      album_title=track.album() or None, # Prevent storing empty strings in album_title key
+      track_crop=TrackCrop(
+        finish=track.duration() # In seconds
+        # No start value since Apple Music doesn't allow non-library tracks to be cropped
+      )
     )
-        
+
     # Wait 1 second for the HistoryViewModel to load before sending initial playing signal
     timer = QtCore.QTimer(self)
     timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
@@ -99,7 +68,8 @@ class MusicAppPlugin(QtCore.QObject):
 
   # --- Private Methods ---
 
-  def __handleNotificationFromMusic_(self, notification):
+  # Shows as unused because it has to be registered with pyobjc as a function name string
+  def __handleNotificationFromMusic_(self, notification): # TODO: Add type annotation
     '''Handle Objective-C notifications for Music app events'''
 
     self.__cached_notification_payload = notification.userInfo()
@@ -155,18 +125,17 @@ class MusicAppPlugin(QtCore.QObject):
     timer.timeout.connect(self.__launch_fetch_track_crop_task)
     timer.start(100)
 
-  def __launch_fetch_track_crop_task(self):
+  def __launch_fetch_track_crop_task(self) -> None:
     get_library_track_crop = FetchTrackCrop(self.__applescript_music_app)
     get_library_track_crop.finished.connect(self.__handle_completion_of_get_track_crop_request)
     QtCore.QThreadPool.globalInstance().start(get_library_track_crop)
   
-  def __handle_completion_of_get_track_crop_request(self, track_crop):
+  def __handle_completion_of_get_track_crop_request(self, track_crop: TrackCrop) -> None:
     '''Figure out what to do with the results of the track crop request'''
 
-    if track_crop['track_finish'] != 0:
+    if track_crop.finish != 0:
       # A track finish was found, so we can use the actual crop values
-      self.__state.track_start = track_crop['track_start']
-      self.__state.track_finish = track_crop['track_finish']
+      self.__state.track_crop = track_crop
     else:
       # No track finish was found (most likely a non-library track), we'll use the total duration as the track finish instead
       total_time = self.__cached_notification_payload.get('Total Time')
@@ -176,7 +145,7 @@ class MusicAppPlugin(QtCore.QObject):
         # TODO: Alert the user to the fact that their track can't be scrobbled
         logger.error(f'Error getting track duration for {self.__cached_notification_payload}')
 
-      self.__state.track_finish = total_time / 1000 # Convert from ms to s
+      self.__state.track_crop.finish = total_time / 1000 # Convert from ms to s
     
     # Finally emit play/pause signal
     if self.__state.is_playing:

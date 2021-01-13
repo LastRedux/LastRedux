@@ -11,7 +11,7 @@ import './views'
 Window {
   id: application
 
-  property int currentTabIndex: 1
+  property int currentTabIndex: 0
   property bool hasAttemptedLogin: false
   property bool shouldShowProfileLoadingIndicator: true
   property bool shouldShowFriendsLoadingIndicator: true
@@ -211,12 +211,12 @@ Window {
 
   // // --- History Page ---
 
-  // HistoryViewModel {
-  //   id: historyViewModel
+  HistoryViewModel {
+    id: historyViewModel
 
-  //   applicationReference: applicationViewModel
-  //   onShowNotification: (title, message) => trayIcon.showMessage(title, message)
-  // }
+    applicationReference: applicationViewModel
+    onShowNotification: (title, message) => trayIcon.showMessage(title, message)
+  }
 
   // HistoryListModel {
   //   id: historyListModel

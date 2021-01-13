@@ -3,3 +3,4 @@ from .FetchFriendsTask import FetchFriendsTask
 from .FetchFriendScrobble import FetchFriendScrobble
 from .FetchFriendScrobbleArt import FetchFriendScrobbleArt
 from .FetchProfileStatistics import FetchProfileStatistics
+from .LoadExternalScrobbleData import LoadExternalScrobbleData

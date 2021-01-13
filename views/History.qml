@@ -12,14 +12,7 @@ Item {
   property HistoryListModel listModel
   property HistoryViewModel viewModel
 
-  property bool canDisplayCurrentScrobble: {
-    // Don't do just viewModel && viewModel.scrobbleData because we need to return a bool value instead of an undefined viewModel.scrobbleData
-    if (viewModel && viewModel.currentScrobbleData) {
-      return true
-    }
-
-    return false
-  }
+  property bool canDisplayCurrentScrobble: !!(viewModel && viewModel.currentScrobble)
 
   // --- Mock Player Plugin Controls ---
 
@@ -27,7 +20,7 @@ Item {
     id: mockPlayerPluginControls
 
     spacing: 8
-    visible: viewModel && viewModel.isUsingMockPlayerPlugin
+    visible: viewModel && viewModel.isUsingMockPlayer
 
     anchors {
       top: parent.top
@@ -77,18 +70,18 @@ Item {
   // --- Current Scrobble ---
 
   CurrentScrobble {
-    id: currentScrobble
+    id: currentScrobbleView
 
     mediaPlayerName: viewModel ? viewModel.mediaPlayerName : ''
-    percentage: viewModel ? viewModel.currentScrobblePercentage : 0
+    percentage: viewModel ? viewModel.scrobblePercentage : 0
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
-    trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobbleData.trackTitle
-    artistName: canDisplayCurrentScrobble && viewModel.currentScrobbleData.artistName
-    lastfmIsLoved: canDisplayCurrentScrobble && viewModel.currentScrobbleData.lastfmIsLoved
-    canLove: canDisplayCurrentScrobble && viewModel.currentScrobbleData.hasLastfmData
+    trackTitle: canDisplayCurrentScrobble && viewModel.currentScrobble.trackTitle
+    artistName: canDisplayCurrentScrobble && viewModel.currentScrobble.artistName
+    lastfmIsLoved: canDisplayCurrentScrobble && viewModel.currentScrobble.lastfmIsLoved
+    canLove: canDisplayCurrentScrobble && viewModel.currentScrobble.hasLastfmData
     visible: canDisplayCurrentScrobble
 
-    imageSource: canDisplayCurrentScrobble && viewModel.currentScrobbleData.albumImageUrl || ''
+    imageSource: canDisplayCurrentScrobble && viewModel.currentScrobble.albumImageUrl || ''
 
     // -1 represents the currently selected item in the scrobble history
     onSelect: viewModel.selectedScrobbleIndex = -1
@@ -117,13 +110,13 @@ Item {
     onReloadHistory: viewModel.reloadHistory()
 
     anchors {
-      top: currentScrobble.visible ? currentScrobble.bottom : currentScrobble.top
+      top: currentScrobbleView.visible ? currentScrobbleView.bottom : currentScrobbleView.top
       right: parent.right
       bottom: parent.bottom
       left: parent.left
 
       // When current scrobble is collapsed, remove margin so spacing isn't duplicated
-      topMargin: currentScrobble.visible ? 15 : 0
+      topMargin: currentScrobbleView.visible ? 15 : 0
     }
   }
 
@@ -131,7 +124,7 @@ Item {
     sequence: 'Ctrl+]'
     context: Qt.ApplicationShortcut
     onActivated: {
-      if (viewModel.selectedScrobbleIndex == -2 && !viewModel.currentScrobbleData) {
+      if (viewModel.selectedScrobbleIndex == -2 && !viewModel.currentScrobble) {
         // Select first history item if there is scrobble selected and no current scrobble
         viewModel.selectedScrobbleIndex = 0
       } else {

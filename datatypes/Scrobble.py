@@ -1,17 +1,15 @@
-from dataclasses import dataclass
-from datetime import datetime
+from __future__ import annotations
+from dataclasses import asdict, dataclass
 
-from datatypes.SimpleTrack import SimpleTrack
 from datatypes.ImageSet import ImageSet
+from util.lastfm.LastfmScrobble import LastfmScrobble
 from util.lastfm.LastfmTrackInfo import LastfmTrack
-from datatypes.MediaPlayerState import MediaPlayerState
 
 @dataclass
-class Scrobble(SimpleTrack):
-  timestamp: datetime
-  image_set: ImageSet
+class Scrobble(LastfmScrobble):
+  image_set: ImageSet = None
   lastfm_track: LastfmTrack = None
-  
-  @classmethod
-  def from_media_player_state(cls, state: MediaPlayerState):
-    return cls(datetime.now(), state.track_title, state.artist_name, state.album_title)
+
+  @staticmethod
+  def from_lastfm_scrobble(lastfm_scrobble: LastfmScrobble) -> Scrobble:
+    return Scrobble(**asdict(lastfm_scrobble))

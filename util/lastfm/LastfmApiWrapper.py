@@ -62,8 +62,9 @@ class LastfmApiWrapper:
           artist_name=track['artist']['#text'],
           track_title=track['name'],
           album_title=track['album']['#text'] or None,
-          timestamp=datetime.fromtimestamp(int(track['date']['uts'])) if not track.get('@attr', {}).get('nowplaying', False) else None # Now playing tracks don't have a date
-         ) for track in tracks],
+          timestamp=datetime.fromtimestamp(int(track['date']['uts']))
+         ) for track in tracks if not track.get('@attr') # Skip now playing tracks
+        ],
         attr_total=int(response['recenttracks']['@attr']['total'])
       )
     )
@@ -316,7 +317,7 @@ class LastfmApiWrapper:
       )
     )
 
-  # --- Other Methods ---
+  # --- Helper Methods ---
 
   def get_total_scrobbles_today(self) -> int:
     # Get the unix timestamp of 12am today

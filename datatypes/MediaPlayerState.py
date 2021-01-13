@@ -1,11 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .SimpleTrack import SimpleTrack
+from .TrackCrop import TrackCrop
 
 @dataclass
 class MediaPlayerState(SimpleTrack):
   is_playing: bool
-
-  # Track crop data (in seconds)
-  track_start: float = 0.0
-  track_finish: float = None
+  track_crop: TrackCrop = field(default_factory=TrackCrop)

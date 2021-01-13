@@ -16,8 +16,8 @@ if getattr(sys, 'frozen', False) or os.environ.get('ENABLE_SENTRY'):
 from platform_integrations.WindowStyle import WindowStyle
 from ApplicationViewModel import ApplicationViewModel
 from OnboardingViewModel import OnboardingViewModel
-# from HistoryViewModel import HistoryViewModel
-# from HistoryListModel import HistoryListModel
+from HistoryViewModel import HistoryViewModel
+from HistoryListModel import HistoryListModel
 from ProfileViewModel import ProfileViewModel
 from FriendsViewModel import FriendsViewModel
 from FriendsListModel import FriendsListModel
@@ -52,8 +52,8 @@ if __name__ == "__main__":
   # major_version and minor_version represent major and minor version numbers for when we import it in QML
   QtQml.qmlRegisterType(ApplicationViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ApplicationViewModel')
   QtQml.qmlRegisterType(OnboardingViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'OnboardingViewModel')
-  # QtQml.qmlRegisterType(HistoryViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryViewModel')
-  # QtQml.qmlRegisterType(HistoryListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryListModel')
+  QtQml.qmlRegisterType(HistoryViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryViewModel')
+  QtQml.qmlRegisterType(HistoryListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'HistoryListModel')
   QtQml.qmlRegisterType(ProfileViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ProfileViewModel')
   QtQml.qmlRegisterType(FriendsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsViewModel')
   QtQml.qmlRegisterType(FriendsListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsListModel')

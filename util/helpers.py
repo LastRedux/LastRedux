@@ -5,8 +5,19 @@ from typing import List
 
 from AppKit import NSScreen
 
-from util.lastfm import LastfmList, LastfmArtist
-from datatypes.ProfileStatistic import ProfileStatistic
+from util.lastfm.LastfmScrobble import LastfmScrobble
+
+def get_mock_recent_scrobbles(count: int) -> List[LastfmScrobble]:
+  return [
+    LastfmScrobble(
+      artist_name=mock_track['artist_name'],
+      track_title=mock_track['track_title'],
+      album_title=mock_track.get('album_title', None),
+      timestamp=datetime.datetime.now() - datetime.timedelta(minutes=3 * i)
+    ) for i, mock_track in enumerate(
+      json.load(open('mock_data/mock_tracks.json'))[1:count]
+    ) if mock_track.get('artist_name')
+  ]
 
 def generate_system_profile() -> dict:
   software_info = json.loads(subprocess.check_output('system_profiler SPSoftwareDataType -json', shell=True))['SPSoftwareDataType'][0]

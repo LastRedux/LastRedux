@@ -14,7 +14,7 @@ class FetchFriendScrobble(QtCore.QObject, QtCore.QRunnable):
     self.friend_index = friend_index
     self.setAutoDelete(True)
 
-  def run(self):
+  def run(self) -> None:
     '''Load the friend's most recent scrobble from Last.fm'''
 
     scrobble = self.lastfm.get_friend_track(self.username)

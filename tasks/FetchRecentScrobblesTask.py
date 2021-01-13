@@ -1,48 +1,26 @@
 import os
-import json
+
 from PySide2 import QtCore
 
-from util.LastfmApiWrapper import LastfmApiWrapper
+from util.helpers import get_mock_recent_scrobbles
+from util.lastfm import LastfmApiWrapper
 
 class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(list)
 
-  def __init__(self, lastfm_instance: LastfmApiWrapper, count):
+  def __init__(self, lastfm: LastfmApiWrapper, count: int) -> None:
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
-    self.lastfm_instance = lastfm_instance
-    self.setAutoDelete(True)
+    self.lastfm = lastfm
     self.count = count
+    self.setAutoDelete(True)
 
-  def run(self):
-    '''Return recent Last.fm scrobbles'''
+  def run(self) -> None:
+    recent_scrobbles = None
 
     if os.environ.get('MOCK'):
-      # Get the first n mock tracks in reverse order since that's how they would be added
-      mock_tracks = json.load(open('mock_data/mock_tracks.json'))[1:self.count]
-
-      mock_recent_scrobbles = []
-
-      # Map mock track keys to Last.fm recent scrobble keys
-      for i, mock_track in enumerate(mock_tracks):
-        # Skip tracks with no artists (one of the mock test cases)
-        if not mock_track.get('artist_name'):
-          continue
-
-        mock_recent_scrobbles.append({
-          'name': mock_track['track_title'],
-          'artist': {
-            'name': mock_track['artist_name']
-          },
-          'album': {
-            '#text': mock_track.get('album_title'),
-          },
-          'date': {
-            'uts': 1609653557 - (i * 180)
-          }
-        })
-
-      self.finished.emit(mock_recent_scrobbles)
+      recent_scrobbles = get_mock_recent_scrobbles(self.count)
     else:
-      recent_scrobbles = self.lastfm_instance.get_recent_scrobbles(count=self.count)
-      self.finished.emit(recent_scrobbles['recenttracks']['track'])
+      recent_scrobbles = self.lastfm.get_recent_scrobbles(self.count)
+    
+    self.finished.emit(recent_scrobbles)

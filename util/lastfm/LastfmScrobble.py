@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from datatypes import SimpleTrack
+from datatypes.SimpleTrack import SimpleTrack
 
 @dataclass
 class LastfmScrobble(SimpleTrack):
