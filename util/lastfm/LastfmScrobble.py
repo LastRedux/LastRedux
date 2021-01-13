@@ -7,7 +7,7 @@ from datatypes import SimpleTrack
 class LastfmScrobble(SimpleTrack):
   timestamp: datetime
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     string = super().__repr__() + ' '
     
     if self.timestamp:

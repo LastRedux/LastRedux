@@ -13,7 +13,7 @@ class SpotifyApiWrapper:
   CLIENT_ID = '26452cc6850d4d1abbd2adb5a6ffccb4'
   CLIENT_SECRET = 'b3aee1fc6a584eb89555582ea9bd9d66'
 
-  def __init__(self):
+  def __init__(self) -> None:
     # Store Spotify access token
     self.access_token: str = self.__get_access_token()
 

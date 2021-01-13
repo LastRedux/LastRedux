@@ -18,7 +18,7 @@ class LastfmArtist:
 
   def __str__(self) -> str:
     return '\n'.join((
-      f'{self.name} [{self.plays}]',
+      repr(self),
       f'Global Listeners: {self.global_listeners}',
       f'Global Plays: {self.global_plays}',
       f'Tags: {self.tags}',
@@ -26,4 +26,4 @@ class LastfmArtist:
     ))
 
   def __repr__(self):
-    return self.name
+    return self.name + (f' [{self.plays} plays]' if self.plays else '')
