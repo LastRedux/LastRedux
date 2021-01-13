@@ -34,19 +34,19 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
   def request_initial_state(self):
     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
     if (
-      not self.__applescript_music_app.isRunning()
-      or self.__applescript_music_app.playerState() != MusicAppPlugin.PLAYING_STATE
+      not self.__applescript_app.isRunning()
+      or self.__applescript_app.playerState() != MusicAppPlugin.PLAYING_STATE
     ):
       return
 
-    track = self.__applescript_music_app.currentTrack()
+    track = self.__applescript_app.currentTrack()
     track_title = track.name()
     
     if not track_title:
       # User is playing a non-library track, so AppleScript can't see the data
       # Instead, we have to force a play notification
-      self.__applescript_music_app.pause()
-      self.__applescript_music_app.playpause() # There is no play function for whatever reason
+      self.__applescript_app.pause()
+      self.__applescript_app.playpause() # There is no play function for whatever reason
       return
 
     self.__state = MediaPlayerState(
@@ -126,7 +126,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
     timer.start(100)
 
   def __launch_fetch_track_crop_task(self) -> None:
-    get_library_track_crop = FetchTrackCrop(self.__applescript_music_app)
+    get_library_track_crop = FetchTrackCrop(self.__applescript_app)
     get_library_track_crop.finished.connect(self.__handle_completion_of_get_track_crop_request)
     QtCore.QThreadPool.globalInstance().start(get_library_track_crop)
   

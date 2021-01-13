@@ -85,11 +85,11 @@ class FriendsViewModel(QtCore.QObject):
     self.__friends_with_track_loaded_count = 0
 
     # Load each friend's most recent/currently playing track
-    for index, friend in enumerate(self.friends):
+    for i, friend in enumerate(self.friends):
       load_friend_scrobble_task = FetchFriendScrobble(
         lastfm=self.__application_reference.lastfm, 
         username=friend.username, 
-        index=index
+        friend_index=i
       )
       load_friend_scrobble_task.finished.connect(self.__handle_friend_scrobble_fetched)
       QtCore.QThreadPool.globalInstance().start(load_friend_scrobble_task)

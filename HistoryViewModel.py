@@ -2,6 +2,7 @@ from dataclasses import asdict
 import os
 from datetime import datetime
 from typing import List
+from util.lastfm import LastfmList
 from util.lastfm.LastfmScrobble import LastfmScrobble
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
@@ -75,9 +76,9 @@ class HistoryViewModel(QtCore.QObject):
         self.media_player = self.__music_app_plugin
         self.set_is_scrobble_submission_enabled(True)
 
-    self.media_player.stopped.connect(self.__handle_media_player_stopped)
-    self.media_player.playing.connect(self.__handle_media_player_playing)
-    self.media_player.paused.connect(self.__handle_media_player_paused)
+    # self.media_player.stopped.connect(self.__handle_media_player_stopped)
+    # self.media_player.playing.connect(self.__handle_media_player_playing)
+    # self.media_player.paused.connect(self.__handle_media_player_paused)
     self.media_player_name_changed.emit()
 
     # Settings
@@ -87,14 +88,14 @@ class HistoryViewModel(QtCore.QObject):
     self.is_player_paused = False
 
     # Start polling interval to check for new media player position
-    self.__timer = QtCore.QTimer(self)
-    self.__timer.timeout.connect(self.__fetch_new_media_player_position)
+    # self.__timer = QtCore.QTimer(self)
+    # self.__timer.timeout.connect(self.__fetch_new_media_player_position)
 
     self.reset_state()
   
   def reset_state(self) -> None:
     # Store Scrobble objects that have been submitted
-    self.scrobble_history = []
+    self.scrobble_history: List[Scrobble] = []
 
     # Keep track of whether the history view is loading data
     self.__should_show_loading_indicator = False
@@ -172,9 +173,6 @@ class HistoryViewModel(QtCore.QObject):
         self.selected_scrobble = self.__current_scrobble
       else:
         self.selected_scrobble = self.scrobble_history[new_index]
-
-        # Load additional scrobble data if it isn't already present
-        self.__load_additional_scrobble_data(self.selected_scrobble)
       
       # Tell the UI that the selected scrobble was changed, so views like the scrobble details pane can update accordingly
       self.selected_scrobble_changed.emit()
@@ -190,8 +188,8 @@ class HistoryViewModel(QtCore.QObject):
     if is_enabled:
       self.reset_state()
       self.media_player.request_initial_state()
-      polling_interval = 100 if os.environ.get('MOCK') else 1000
-      self.__timer.start(polling_interval)
+      # polling_interval = 100 if os.environ.get('MOCK') else 1000
+      # self.__timer.start(polling_interval)
 
       # Load in recent scrobbles from Last.fm and process them
       if self.__INITIAL_SCROBBLE_HISTORY_COUNT > 0:
@@ -313,18 +311,19 @@ class HistoryViewModel(QtCore.QObject):
 
   # --- Private Methods ---
 
-  def __handle_recent_scrobbles_fetched(self, recent_scrobbles: List[LastfmScrobble]):
+  def __handle_recent_scrobbles_fetched(self, recent_scrobbles: LastfmList[LastfmScrobble]):
     # Tell the history list model that we are going to change the data it relies on
     self.begin_refresh_history.emit()
 
     # Convert scrobbles from history into scrobble objects
-    for recent_scrobble in recent_scrobbles:
+    for i, recent_scrobble in enumerate(recent_scrobbles.items):
       self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
 
       # TODO: Find a way to avoid loading duplicate scrobble data (two of the same scrobble in the list will have identical external data)
-      self.__load_external_scrobble_data(recent_scrobble)
+      self.__load_external_scrobble_data(self.scrobble_history[i]) # Pass reference to scrobble in list
 
-  def __load_external_scrobble_data(self, scrobble: Scrobble):
+  def __load_external_scrobble_data(self, scrobble: Scrobble) -> None:
+
     load_external_scrobble_data_task = LoadExternalScrobbleData(
       lastfm=self.__application_reference.lastfm,
       art_provider=self.__application_reference.album_art_provider,
@@ -338,19 +337,22 @@ class HistoryViewModel(QtCore.QObject):
     )
     QtCore.QThreadPool.globalInstance().start(load_external_scrobble_data_task)
 
-  def __handle_recent_scrobble_external_data_loaded(self):
+  def __handle_recent_scrobble_external_data_loaded(self) -> None:
+
     if not self.__is_enabled:
       return
 
     self.__scrobbles_with_external_data_count += 1
 
     if self.__scrobbles_with_external_data_count == len(self.scrobble_history):
+      print('pog')
       # All scrobbles have loaded their additional data
       self.__should_show_loading_indicator = False
       self.should_show_loading_indicator_changed.emit()
       self.end_refresh_history.emit()
 
-  def __emit_scrobble_ui_update_signals(self, scrobble):
+  def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
+
     if not self.__is_enabled:
       return
     

@@ -36,23 +36,23 @@ Window {
   width: 957
   height: 600
 
-  // function switchToTab(tabIndex, isSameTab) {
-  //   if (historyViewModel.isEnabled) {
-  //     if (currentTabIndex !== tabIndex || isSameTab) {
-  //       currentTabIndex = tabIndex
+  function switchToTab(tabIndex, isSameTab) {
+    if (historyViewModel.isEnabled) {
+      if (currentTabIndex !== tabIndex || isSameTab) {
+        currentTabIndex = tabIndex
 
-  //       switch (tabIndex) {
-  //       case 1:
-  //         profileViewModel.loadProfile(shouldShowProfileLoadingIndicator)
-  //         shouldShowProfileLoadingIndicator = false
-  //         break
-  //       case 2:
-  //         friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
-  //         shouldShowFriendsLoadingIndicator = false
-  //       }
-  //     }
-  //   }
-  // }
+        switch (tabIndex) {
+        case 1:
+          profileViewModel.loadProfile(shouldShowProfileLoadingIndicator)
+          shouldShowProfileLoadingIndicator = false
+          break
+        case 2:
+          friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
+          shouldShowFriendsLoadingIndicator = false
+        }
+      }
+    }
+  }
 
   onActiveChanged: {
     if (active) {
@@ -64,7 +64,7 @@ Window {
 
       shouldShowProfileLoadingIndicator = true
       shouldShowFriendsLoadingIndicator = true
-      // switchToTab(currentTabIndex, true)
+      switchToTab(currentTabIndex, true)
     }
   }
 
@@ -218,11 +218,11 @@ Window {
     onShowNotification: (title, message) => trayIcon.showMessage(title, message)
   }
 
-  // HistoryListModel {
-  //   id: historyListModel
+  HistoryListModel {
+    id: historyListModel
 
-  //   historyReference: historyViewModel
-  // }
+    historyReference: historyViewModel
+  }
 
   // --- Profile Page ---
 
@@ -269,15 +269,15 @@ Window {
         left: parent.left
       }
 
-      // History {
-      //   id: history
+      History {
+        id: history
 
-      //   listModel: historyListModel
-      //   viewModel: historyViewModel
-      //   visible: currentTabIndex === 0
+        listModel: historyListModel
+        viewModel: historyViewModel
+        visible: currentTabIndex === 0
 
-      //   anchors.fill: parent
-      // }
+        anchors.fill: parent
+      }
 
       Profile {
         id: profile
@@ -323,13 +323,13 @@ Window {
 
           anchors.centerIn: parent
 
-          // TabBarItem {
-          //   iconName: 'history'
-          //   shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
-          //   isSelected: currentTabIndex === 0
+          TabBarItem {
+            iconName: 'history'
+            shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
+            isSelected: currentTabIndex === 0
 
-          //   onClicked: switchToTab(0)
-          // }
+            onClicked: switchToTab(0)
+          }
 
           TabBarItem {
             iconName: 'profile'
@@ -344,28 +344,28 @@ Window {
             shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
             isSelected: currentTabIndex === 2
 
-            // onClicked: switchToTab(2)
+            onClicked: switchToTab(2)
           }
         }
       }
     }
   }
 
-  // Shortcut {
-  //   sequence: 'Ctrl+1'
-  //   context: Qt.ApplicationShortcut
-  //   onActivated: switchToTab(0)
-  // }
+  Shortcut {
+    sequence: 'Ctrl+1'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(0)
+  }
 
-  // Shortcut {
-  //   sequence: 'Ctrl+2'
-  //   context: Qt.ApplicationShortcut
-  //   onActivated: switchToTab(1)
-  // }
+  Shortcut {
+    sequence: 'Ctrl+2'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(1)
+  }
 
-  // Shortcut {
-  //   sequence: 'Ctrl+3'
-  //   context: Qt.ApplicationShortcut
-  //   onActivated: switchToTab(2)
-  // }
+  Shortcut {
+    sequence: 'Ctrl+3'
+    context: Qt.ApplicationShortcut
+    onActivated: switchToTab(2)
+  }
 }

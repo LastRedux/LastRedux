@@ -18,7 +18,8 @@ from .LastfmTag import LastfmTag
 from .LastfmTrackInfo import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
-from datatypes import ImageSet, FriendScrobble
+from datatypes.ImageSet import ImageSet
+from datatypes.FriendScrobble import FriendScrobble
 
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'

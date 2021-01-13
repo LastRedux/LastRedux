@@ -25,7 +25,6 @@ class ProfileViewModel(QtCore.QObject):
 
     self.__profile_statistics: ProfileStatistics = None
     self.__is_loading: bool = False
-    self.loadProfile()
 
   # --- Slots ---
   

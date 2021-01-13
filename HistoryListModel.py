@@ -42,7 +42,7 @@ class HistoryListModel(QtCore.QAbstractListModel):
     if new_reference:
       # Tell the list model that the entirety of the list will be replaced (not just change one item)
       self.beginResetModel()
-      self.__history_reference = new_reference
+      self.__history_reference: HistoryViewModel = new_reference
       self.endResetModel()
       
       # Tell Qt that a new row at the top of the list will be added
@@ -93,17 +93,17 @@ class HistoryListModel(QtCore.QAbstractListModel):
         scrobble = self.__history_reference.scrobble_history[index.row()]
 
         if role == self.__TRACK_TITLE_ROLE:
-          return scrobble.title
+          return scrobble.lastfm_track.title
         elif role == self.__ARTIST_NAME_ROLE:
-          return scrobble.artist.name
+          return scrobble.lastfm_track.artist.name
         elif role == self.__ALBUM_IMAGE_URL_ROLE:
-          return scrobble.album.image_url_small
+          return scrobble.image_set.small_url
         elif role == self.__LASTFM_IS_LOVED_ROLE:
-          return scrobble.lastfm_is_loved
+          return scrobble.lastfm_track.is_loved
         elif role == self.__TIMESTAMP_ROLE:
           return scrobble.timestamp.strftime('%-m/%-d/%y %-I:%M:%S %p')
         elif role == self.__HAS_LASTFM_DATA:
-          return scrobble.loading_state == 'LASTFM_TRACK_LOADED'
+          return scrobble.lastfm_track is not None
 
     # Return no data if we don't have a reference to the scrobble history view model
     return None
