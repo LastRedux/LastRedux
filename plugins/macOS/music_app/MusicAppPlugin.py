@@ -11,10 +11,10 @@ class MusicAppPlugin(MacMediaPlayerPlugin): # QObject not needed since all Media
   does_not_have_artist_error = QtCore.Signal()
 
   def __init__(self):
-    super().__init__()
-
     # Store reference to Music app in AppleScript
     self.__applescript_app = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
+    
+    super().__init__(self.__applescript_app)
 
     # Set up NSNotificationCenter (refer to https://lethain.com/how-to-use-selectors-in-pyobjc)
     self.__default_center = NSDistributedNotificationCenter.defaultCenter()

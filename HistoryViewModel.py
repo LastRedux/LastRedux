@@ -92,8 +92,8 @@ class HistoryViewModel(QtCore.QObject):
     self.is_player_paused = False
 
     # Start polling interval to check for new media player position
-    # self.__timer = QtCore.QTimer(self)
-    # self.__timer.timeout.connect(self.__fetch_new_media_player_position)
+    self.__timer = QtCore.QTimer(self)
+    self.__timer.timeout.connect(self.__fetch_new_media_player_position)
 
     self.reset_state()
   
@@ -199,8 +199,8 @@ class HistoryViewModel(QtCore.QObject):
       self.reset_state()
       self.media_player.request_initial_state()
       self.reloadHistory()
-      # polling_interval = 100 if os.environ.get('MOCK') else 1000
-      # self.__timer.start(polling_interval)
+      polling_interval = 100 if os.environ.get('MOCK') else 1000
+      self.__timer.start(polling_interval)
     else:
       self.begin_refresh_history.emit()
       self.reset_state()
@@ -389,75 +389,49 @@ class HistoryViewModel(QtCore.QObject):
         # No break just in case track is somehow scrobbled twice before image loads
         # TODO: Figure out if this is actually possible ^
 
-  # def __submit_scrobble(self, scrobble):
-  #   '''Add a scrobble object to the history array and submit it to Last.fm'''
+  def __submit_scrobble(self, scrobble: Scrobble) -> None:
+    '''Add a scrobble object to the history array and submit it to Last.fm'''
     
-  #   if self.__is_enabled:
-  #     # Tell scrobble history list model that a change will be made
-  #     self.pre_append_scrobble.emit()
-
-  #     # Prepend the new scrobble to the scrobble_history array in the view model
-  #     self.scrobble_history.insert(0, scrobble)
-
-  #     # Tell scrobble history list model that a change was made in the view model
-  #     # The list model will call the data function in the background to get the new data
-  #     self.post_append_scrobble.emit()
-
-  #     if self.__selected_scrobble_index:
-  #       # Shift down the selected scrobble index if new scrobble has been added to the top
-  #       # This is because if the user has a scrobble in the history selected and a new scrobble is submitted, it will display the wrong data if the index isn't updated
-  #       # Change __selected_scrobble_index instead of calling set___selected_scrobble_index because the selected scrobble shouldn't be redundantly set to itself and still emit selected_scrobble_changed (wasting resources)
-  #       if self.__selected_scrobble_index > HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
-  #         # Shift down the selected scrobble index by 1
-  #         self.__selected_scrobble_index += 1
-
-  #         # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
-  #         self.selected_scrobble_index_changed.emit()
-
-  #     # Submit scrobble to Last.fm in background thread task
-  #     if self.is_submission_enabled:
-  #       submit_scrobble_task = SubmitScrobbleTask(self.__application_reference.lastfm, self.__current_scrobble)
-  #       QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
-
-  #     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
-  #     if scrobble.loading_state == 'LASTFM_TRACK_LOADED':
-  #       scrobble.lastfm_plays += 1
-  #       scrobble.artist.lastfm_plays += 1
-
-  #       # Refresh scrobble details pane if the submitted scrobble is selected
-  #       if self.selected_scrobble == scrobble:
-  #         self.selected_scrobble_changed.emit()
-
-  #     # Reset flag so new scrobble can later be submitted
-  #     self.__should_submit_current_scrobble = False
-
-  # def __determine_current_scrobble_percentage(self):
-  #   '''Determine the percentage of the track that has played compared to a user-set percentage of the track length'''
-
-  #   if not self.__is_enabled or not self.__current_scrobble:
-  #     return 0
-
-  #   # Compensate for custom track start and end times
-  #   # TODO: Only do this if the media player is the mac Music app
-  #   relative_position = self.__furthest_player_position_reached - self.__current_track_start
-  #   relative_track_length = self.__current_track_finish - self.__current_track_start
-  #   min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database
+    if not self.__is_enabled:
+      return
     
-  #   # Prevent scenarios where the relative position is negative
-  #   relative_position = max(0, relative_position)
+    # Tell scrobble history list model that a change will be made
+    self.pre_append_scrobble.emit()
 
-  #   scrobble_percentage = relative_position / min_scrobble_length
+    # Prepend the new scrobble to the scrobble_history array in the view model
+    self.scrobble_history.insert(0, scrobble)
 
-  #   # Prevent scenarios where the relative player position is greater than the relative track length (don't let the percentage by greater than 1)
-  #   scrobble_percentage = min(scrobble_percentage, 1)
+    # Tell scrobble history list model that a change was made in the view model
+    # The list model will call the data function in the background to get the new data
+    self.post_append_scrobble.emit()
 
-  #   # Submit current scrobble if the scrobble percentage (progress towards the scrobble threshold) is 100%
-  #   if not self.__should_submit_current_scrobble and scrobble_percentage == 1:
-  #     # TODO: Only submit when the song changes or the app is closed
-  #     self.__should_submit_current_scrobble = True
-  #     logger.debug(f'{self.__current_scrobble.title}: Ready for submission to Last.fm')
+    if self.__selected_scrobble_index:
+      # Shift down the selected scrobble index if new scrobble has been added to the top
+      # This is because if the user has a scrobble in the history selected and a new scrobble is submitted, it will display the wrong data if the index isn't updated
+      # Change __selected_scrobble_index instead of calling set___selected_scrobble_index because the selected scrobble shouldn't be redundantly set to itself and still emit selected_scrobble_changed (wasting resources)
+      if self.__selected_scrobble_index > HistoryViewModel.__CURRENT_SCROBBLE_INDEX:
+        # Shift down the selected scrobble index by 1
+        self.__selected_scrobble_index += 1
 
-  #   return scrobble_percentage
+        # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
+        self.selected_scrobble_index_changed.emit()
+
+    # Submit scrobble to Last.fm in background thread task
+    # if self.is_submission_enabled:
+    #   submit_scrobble_task = SubmitScrobbleTask(self.__application_reference.lastfm, self.__current_scrobble)
+    #   QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
+
+    # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
+    if scrobble.lastfm_track:
+      scrobble.lastfm_track.plays += 1
+      scrobble.lastfm_track.artist.plays += 1
+
+      # Refresh scrobble details pane if the submitted scrobble is selected
+      if scrobble == self.selected_scrobble:
+        self.selected_scrobble_changed.emit()
+
+    # Reset flag so new scrobble can later be submitted
+    self.__should_submit_current_scrobble = False
 
   def __update_current_scrobble(self, media_player_state: MediaPlayerState) -> None:
     '''Replace the current scrobble, update cached track start/finish, update the UI'''
@@ -509,38 +483,69 @@ class HistoryViewModel(QtCore.QObject):
     # Load Last.fm data and album art
     self.__load_external_scrobble_data(self.__current_scrobble)
 
-  # @QtCore.Slot()
-  # def __fetch_new_media_player_position(self):
-  #   '''Fetch the current player position from the media player (timestamp that the user is at in the song)'''
+  def __fetch_new_media_player_position(self) -> None:
+    '''Fetch the current player position timestamp from the selected media player'''
     
-  #   if self.__is_enabled:
-  #     # Skip fetching if there isn't a track playing
-  #     if self.__current_scrobble:
-  #       # Create thread task with reference to the media player
-  #       fetch_new_media_player_position = FetchPlayerPosition(self.media_player)
+    if (
+      not self.__is_enabled
 
-  #       # Process the new media player position after the data is returned
-  #       fetch_new_media_player_position.finished.connect(self.__process_new_media_player_position)
+      # Skip fetching if there isn't a track playing
+      or not self.__current_scrobble
+    ):
+      return
 
-  #       # Add task to global thread pool and run it
-  #       QtCore.QThreadPool.globalInstance().start(fetch_new_media_player_position)
+    fetch_player_position_task = FetchPlayerPosition(self.media_player)
+    fetch_player_position_task.finished.connect(self.__handle_player_position_fetched)
+    QtCore.QThreadPool.globalInstance().start(fetch_player_position_task)
 
-  # def __process_new_media_player_position(self, player_position):
-  #   '''Update furthest player position reached if appropriate based on the latest player position data'''
+  def __handle_player_position_fetched(self, player_position: float) -> None:
+    '''Update furthest player position reached if needed based on player position data'''
     
-  #   if self.__is_enabled:
-  #     # Only update the furthest reached position in the track if it's further than the last recorded furthest position
-  #     # This is because if the user scrubs backward in the track, the scrobble progress bar will stop moving until they reach the previous furthest point reached in the track
-  #     # TODO: Add support for different scrobble submission styles such as counting seconds of playback
-  #     if player_position >= self.__furthest_player_position_reached:
-  #       self.__furthest_player_position_reached = player_position
-      
-  #     self.__current_scrobble_percentage = self.__determine_current_scrobble_percentage()
+    if not self.__is_enabled:
+      return
+    
+    # Only update the furthest reached position in the track if it's further than the last recorded furthest position
+    # This is because if the user scrubs backward in the track, the scrobble progress bar will stop moving until they reach the previous furthest point reached in the track
+    # TODO: Add support for different scrobble submission styles such as counting seconds of playback
+    if player_position >= self.__furthest_player_position_reached:
+      self.__furthest_player_position_reached = player_position
+    
+    self.__current_scrobble_percentage = self.__determine_current_scrobble_percentage()
 
-  #     # Update scrobble progress bar UI
-  #     self.scrobble_percentage_changed.emit()
+    # Update scrobble progress bar UI
+    self.scrobble_percentage_changed.emit()
 
-  def __handle_media_player_stopped(self):
+  def __determine_current_scrobble_percentage(self) -> None:
+    '''Determine the percentage of the track that has played'''
+
+    if not self.__is_enabled or not self.__current_scrobble:
+      return 0
+
+    # Skip calculations if the track has already reached the scrobble threshold
+    if self.__should_submit_current_scrobble:
+      return 1
+
+    # Compensate for custom track start and end times
+    # TODO: Only do this if the media player is the mac Music app
+    relative_position = self.__furthest_player_position_reached - self.__current_track_crop.start
+    relative_track_length = self.__current_track_crop.finish - self.__current_track_crop.start
+    min_scrobble_length = relative_track_length * 0.75 # TODO: Grab the percentage from the settings database
+    
+    # Prevent scenarios where the relative position is negative
+    relative_position = max(0, relative_position)
+    scrobble_percentage = relative_position / min_scrobble_length
+
+    # Prevent scenarios where the relative player position is greater than the relative track length (don't let the percentage by greater than 1)
+    scrobble_percentage = min(scrobble_percentage, 1)
+
+    # Submit current scrobble if the progress towards the scrobble threshold is 100%
+    if scrobble_percentage == 1:
+      self.__should_submit_current_scrobble = True
+      logger.debug(f'{repr(self.__current_scrobble.track_title)}: Ready for submission to Last.fm')
+
+    return scrobble_percentage
+
+  def __handle_media_player_stopped(self) -> None:
     '''Handle media player stop event (no track is loaded)'''
 
     if (
@@ -552,8 +557,8 @@ class HistoryViewModel(QtCore.QObject):
       return
     
     # Submit if the music player stops as well, not just when a new track starts
-    # if self.__should_submit_current_scrobble:
-    #   self.__submit_scrobble(self.__current_scrobble)
+    if self.__should_submit_current_scrobble:
+      self.__submit_scrobble(self.__current_scrobble)
 
     # Reset current scrobble
     self.__current_scrobble = None
@@ -570,7 +575,7 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble_index_changed.emit()
       self.selected_scrobble_changed.emit()
 
-  def __handle_media_player_playing(self, media_player_state: MediaPlayerState):
+  def __handle_media_player_playing(self, media_player_state: MediaPlayerState) -> None:
     '''Handle media player play event'''
 
     if not self.__is_enabled:

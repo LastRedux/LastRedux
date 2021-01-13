@@ -6,3 +6,4 @@ from .FetchProfileStatistics import FetchProfileStatistics
 from .LoadExternalScrobbleData import LoadExternalScrobbleData
 from .FetchRecentScrobblesTask import FetchRecentScrobblesTask
 from .UpdateTrackLoveOnLastfm import UpdateTrackLoveOnLastfm
+from .FetchPlayerPosition import FetchPlayerPosition

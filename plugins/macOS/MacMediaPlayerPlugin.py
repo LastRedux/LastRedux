@@ -8,8 +8,10 @@ class MacMediaPlayerPlugin(MediaPlayerPlugin):
   # Constants
   PLAYING_STATE = 1800426320 # From BridgeSupport enum definitions, used by Music.app and Spotify
 
-  def __init__(self) -> None:
+  def __init__(self, applescript_app) -> None:
     super().__init__()
+
+    self.__applescript_app = applescript_app
 
   # --- Media Player Implementation ---
 

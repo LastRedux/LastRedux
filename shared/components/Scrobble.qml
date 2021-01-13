@@ -77,7 +77,7 @@ Item {
 
     isActive: lastfmIsLoved
 
-    onClicked: toggleLastfmIsLoved()
+    onClicked: canLove && toggleLastfmIsLoved()
 
     y: 6
     x: parent.width - 15 - width
