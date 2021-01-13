@@ -6,7 +6,7 @@ from PySide2 import QtCore
 from util.helpers import get_mock_recent_scrobbles
 from util.lastfm import LastfmApiWrapper
 
-class FetchRecentScrobblesTask(QtCore.QObject, QtCore.QRunnable):
+class FetchRecentScrobbles(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(LastfmList)
 
   def __init__(self, lastfm: LastfmApiWrapper, count: int) -> None:

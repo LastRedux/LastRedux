@@ -8,7 +8,7 @@ Column {
   spacing: 8
 
   property string mediaPlayerName
-  property alias percentage: scrobbleMeter.percentage
+  property var scrobblePercentage
 
   // Passthrough properties to scrobble view
   property alias isSelected: scrobbleView.isSelected
@@ -41,6 +41,9 @@ Column {
 
     ScrobbleMeter {
       id: scrobbleMeter
+
+      percentage: scrobblePercentage
+      visible: scrobblePercentage >= 0 // Don't show while loading track crop/length
 
       anchors {
         right: parent.right

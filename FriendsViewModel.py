@@ -3,7 +3,7 @@ from typing import List
 from PySide2 import QtCore
 
 from ApplicationViewModel import ApplicationViewModel
-from tasks import FetchFriendsTask, FetchFriendScrobble, FetchFriendScrobbleArt
+from tasks import FetchFriends, FetchFriendScrobble, FetchFriendScrobbleArt
 from util.lastfm import LastfmUser
 from datatypes import Friend, FriendScrobble
 
@@ -51,7 +51,7 @@ class FriendsViewModel(QtCore.QObject):
       self.__is_loading = True
       self.is_loading_changed.emit()
 
-      fetch_friends_task = FetchFriendsTask(lastfm=self.__application_reference.lastfm)
+      fetch_friends_task = FetchFriends(lastfm=self.__application_reference.lastfm)
       fetch_friends_task.finished.connect(self.__handle_fetched_lastfm_friends)
       QtCore.QThreadPool.globalInstance().start(fetch_friends_task)
 

@@ -19,6 +19,9 @@ class MediaPlayerPlugin(QtCore.QObject):
   '''Emitted when the media player is playing with an updated state'''
   playing = QtCore.Signal(MediaPlayerState)
 
+  '''Emitted when the current track can't be scrobbled'''
+  cannot_scrobble_error = QtCore.Signal(str)
+
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
 

@@ -85,7 +85,7 @@ Item {
     visible: canDisplayCurrentScrobble
 
     mediaPlayerName: viewModel ? viewModel.mediaPlayerName : ''
-    percentage: viewModel ? viewModel.scrobblePercentage : 0
+    scrobblePercentage: viewModel ? viewModel.scrobblePercentage : undefined
     trackTitle: canDisplayCurrentScrobble ? viewModel.currentScrobble.track_title : ''
     artistName: canDisplayCurrentScrobble ? viewModel.currentScrobble.artist_name : ''
     lastfmIsLoved: hasLastfmData ? viewModel.currentScrobble.lastfm_track.is_loved : false

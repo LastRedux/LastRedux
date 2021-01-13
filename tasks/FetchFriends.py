@@ -2,7 +2,7 @@ from PySide2 import QtCore
 
 from util.lastfm import LastfmApiWrapper
 
-class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
+class FetchFriends(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(list)
 
   def __init__(self, lastfm: LastfmApiWrapper):
@@ -12,7 +12,5 @@ class FetchFriendsTask(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self) -> None:
-    '''Fetch the user's Last.fm friends'''
-    
     friends = self.lastfm.get_friends()
     self.finished.emit(friends)

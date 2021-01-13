@@ -12,7 +12,7 @@ from loguru import logger
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 
-from tasks import FetchPlayerPosition, LoadExternalScrobbleData, UpdateTrackLoveOnLastfm, FetchRecentScrobblesTask, SubmitScrobbleTask, UpdateNowPlayingTask
+from tasks import FetchPlayerPosition, LoadExternalScrobbleData, UpdateTrackLoveOnLastfm, FetchRecentScrobbles, SubmitScrobble, UpdateNowPlaying
 from plugins.macOS.music_app import MusicAppPlugin
 from plugins.macOS.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.SpotifyPlugin import SpotifyPlugin
@@ -57,7 +57,7 @@ class HistoryViewModel(QtCore.QObject):
     self.__is_enabled: bool = False
     
     # Initialize media player plugins
-    # self.__spotify_plugin = SpotifyPlugin()
+    self.__spotify_plugin = SpotifyPlugin()
     self.__music_app_plugin = MusicAppPlugin()
     self.media_player: MediaPlayerPlugin = None
     
@@ -111,20 +111,20 @@ class HistoryViewModel(QtCore.QObject):
     self.__current_scrobble: Scrobble = None
     
     # Hold the index of the selected scrobble in the sidebar
-    self.__selected_scrobble_index = None
+    self.__selected_scrobble_index: int = None
     
     # Hold the Scrobble object at the __selected_scrobble_index
     # This can either be a copy of the current scrobble or one in the history
-    self.selected_scrobble = None
+    self.selected_scrobble: Scrobble = None
 
-    # Keep track of whether the current scrobble has hit the threshold for scrobbling (to submit when current track changes)
-    self.__current_scrobble_percentage = 0
-    self.__should_submit_current_scrobble = None
+    # Keep track of whether the current scrobble has hit the threshold for submission
+    self.__current_scrobble_percentage: float = -1 # -1 represents no value since None turns into 0 when QML sees it as a float
+    self.__should_submit_current_scrobble = False
   
-    # Keep track of furthest position reached in a song to allow moving back without losing progress
-    self.__furthest_player_position_reached = None
+    # Keep track of furthest position reached in a song
+    self.__furthest_player_position_reached: float = None
 
-    # Keep track of the current track's crop values since they aren't saved to the scrobble object
+    # Store the current track's crop values since they aren't part of the scrobble object
     self.__current_track_crop: TrackCrop = None
 
   # --- Qt Property Getters and Setters ---
@@ -240,7 +240,7 @@ class HistoryViewModel(QtCore.QObject):
     self.__scrobbles_with_external_data_count = 0
 
     # Fetch and load recent scrobbles
-    fetch_recent_scrobbles_task = FetchRecentScrobblesTask(
+    fetch_recent_scrobbles_task = FetchRecentScrobbles(
       lastfm=self.__application_reference.lastfm, 
       count=self.__INITIAL_SCROBBLE_HISTORY_COUNT
     )
@@ -249,8 +249,7 @@ class HistoryViewModel(QtCore.QObject):
     
   @QtCore.Slot(int)
   def toggleLastfmIsLoved(self, scrobble_index: int) -> None:
-    # import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
-
+    
     if not self.__is_enabled:
       return
 
@@ -289,37 +288,40 @@ class HistoryViewModel(QtCore.QObject):
     self.is_in_mini_mode = not self.is_in_mini_mode
     self.is_in_mini_mode_changed.emit()
 
-  # @QtCore.Slot(str)
-  # def switchToMediaPlugin(self, media_plugin_name):
-  #   # Fake stopped event to unload the current scrobble
-  #   self.__handle_media_player_stopped()
+  @QtCore.Slot(str)
+  def switchToMediaPlugin(self, media_plugin_name: str) -> None:
+    # Fake stopped event to un-load the current scrobble
+    self.__handle_media_player_stopped()
 
-  #   # Disconnect event signals
-  #   self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
-  #   self.media_player.playing.disconnect(self.__handle_media_player_playing)
-  #   self.media_player.paused.disconnect(self.__handle_media_player_paused)
+    # Reset scrobble percentage
+    self.__current_scrobble_percentage = -1
 
-  #   if media_plugin_name == 'spotify':
-  #     self.media_player = self.__spotify_plugin
-  #     self.set_is_scrobble_submission_enabled(False)
-  #     logger.success('Switched media player to Spotify')
-  #   elif media_plugin_name == 'musicApp':
-  #     self.media_player = self.__music_app_plugin
-  #     self.set_is_scrobble_submission_enabled(True)
-  #     logger.success('Switched media player to Music app')
+    # Disconnect event signals
+    self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
+    self.media_player.playing.disconnect(self.__handle_media_player_playing)
+    self.media_player.paused.disconnect(self.__handle_media_player_paused)
 
-  #   # Reconnect event signals
-  #   self.media_player.stopped.connect(self.__handle_media_player_stopped)
-  #   self.media_player.playing.connect(self.__handle_media_player_playing)
-  #   self.media_player.paused.connect(self.__handle_media_player_paused)
+    if media_plugin_name == 'spotify':
+      self.media_player = self.__spotify_plugin
+      self.set_is_scrobble_submission_enabled(False)
+      logger.success('Switched media player to Spotify')
+    elif media_plugin_name == 'musicApp':
+      self.media_player = self.__music_app_plugin
+      self.set_is_scrobble_submission_enabled(True)
+      logger.success('Switched media player to Music app')
 
-  #   # Load initial track from newly selected media player without a notification
-  #   if self.media_player.is_open():
-  #     # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-  #     self.media_player.request_initial_state()
+    # Reconnect event signals
+    self.media_player.stopped.connect(self.__handle_media_player_stopped)
+    self.media_player.playing.connect(self.__handle_media_player_playing)
+    self.media_player.paused.connect(self.__handle_media_player_paused)
+
+    # Load initial track from newly selected media player without a notification
+    if self.media_player.is_open():
+      # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
+      self.media_player.request_initial_state()
     
-  #   # Update 'Listening on X'  text in history view for current scrobble
-  #   self.media_player_name_changed.emit()
+    # Update 'Listening on X'  text in history view for current scrobble
+    self.media_player_name_changed.emit()
 
   @QtCore.Slot(str)
   def mock_event(self, event_name):
@@ -455,7 +457,7 @@ class HistoryViewModel(QtCore.QObject):
     # Tell Last.fm to update the user's now playing status
     if self.is_submission_enabled:
       QtCore.QThreadPool.globalInstance().start(
-        UpdateNowPlayingTask(self.__application_reference.lastfm, self.__current_scrobble)
+        UpdateNowPlaying(self.__application_reference.lastfm, self.__current_scrobble)
       )
 
     # Reset player position to temporary value until a new value can be recieved from the media player
@@ -515,11 +517,11 @@ class HistoryViewModel(QtCore.QObject):
     # Update scrobble progress bar UI
     self.scrobble_percentage_changed.emit()
 
-  def __determine_current_scrobble_percentage(self) -> None:
+  def __determine_current_scrobble_percentage(self) -> int:
     '''Determine the percentage of the track that has played'''
 
     if not self.__is_enabled or not self.__current_scrobble:
-      return 0
+      return None
 
     # Skip calculations if the track has already reached the scrobble threshold
     if self.__should_submit_current_scrobble:
@@ -598,12 +600,18 @@ class HistoryViewModel(QtCore.QObject):
 
       self.__update_current_scrobble(media_player_state)
   
-  def __handle_media_player_paused(self, new_media_player_state: MediaPlayerState) -> None:
+  def __handle_media_player_paused(self, media_player_state: MediaPlayerState) -> None:
+    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
+
     '''Handle media player pause event'''
 
     # Update playback indicator
     self.is_player_paused = True
     self.is_player_paused_changed.emit()
+
+    # Load scrobble if it's new
+    if not self.__current_scrobble:
+      self.__update_current_scrobble(media_player_state)
 
   # --- Qt Properties ---
   
@@ -628,7 +636,7 @@ class HistoryViewModel(QtCore.QObject):
 
   scrobblePercentage = QtCore.Property(
     type=float,
-    fget=lambda self: self.__current_scrobble_percentage if self.__is_enabled else 0,
+    fget=lambda self: self.__current_scrobble_percentage,
     notify=scrobble_percentage_changed
   )
 

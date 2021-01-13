@@ -5,8 +5,10 @@ from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 class MacMediaPlayerPlugin(MediaPlayerPlugin):
   __metaclass__ = ABCMeta
 
-  # Constants
-  PLAYING_STATE = 1800426320 # From BridgeSupport enum definitions, used by Music.app and Spotify
+  # Constants from BridgeSupport enum definitions used by the Music.app and Spotify AppleScript APIs
+  PLAYING_STATE = 1800426320
+  STOPPED_STATE = 1800426323
+  PAUSED_STATE = 1800426352
 
   def __init__(self, applescript_app) -> None:
     super().__init__()

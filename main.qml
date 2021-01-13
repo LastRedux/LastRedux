@@ -116,17 +116,17 @@ Window {
       //   onTriggered: historyViewModel.toggleMiniMode()
       // }
 
-      // MenuItem {
-      //   text: qsTr('Use Music App as Media Player')
+      MenuItem {
+        text: qsTr('Use Music App as Media Player')
 
-      //   onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
-      // }
+        onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
+      }
 
-      // MenuItem {
-      //   text: qsTr('Use Spotify as Media Player')
+      MenuItem {
+        text: qsTr('Use Spotify as Media Player')
 
-      //   onTriggered: historyViewModel.switchToMediaPlugin('spotify')
-      // }
+        onTriggered: historyViewModel.switchToMediaPlugin('spotify')
+      }
 
       MenuSeparator { }
       
