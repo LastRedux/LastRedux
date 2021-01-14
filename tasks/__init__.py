@@ -8,3 +8,4 @@ from .FetchRecentScrobbles import FetchRecentScrobbles
 from .UpdateTrackLoveOnLastfm import UpdateTrackLoveOnLastfm
 from .FetchPlayerPosition import FetchPlayerPosition
 from .UpdateNowPlaying import UpdateNowPlaying
+from .SubmitScrobble import SubmitScrobble

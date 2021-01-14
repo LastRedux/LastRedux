@@ -123,7 +123,7 @@ Window {
       MenuSeparator { }
       
       MenuItem {
-        text: qsTr('LastRedux Private Beta 1')
+        text: qsTr('LastRedux Private Beta 2')
         enabled: false
       }
 
@@ -165,7 +165,6 @@ Window {
 
     color: '#1f1f1f'
     modality: Qt.WindowModal
-    // visible: true
 
     minimumWidth: 632
     minimumHeight: 427
@@ -302,7 +301,7 @@ Window {
 
       Item {
         clip: true
-        visible: true //historyViewModel.isEnabled
+        visible: true
 
         anchors {
           fill: parent

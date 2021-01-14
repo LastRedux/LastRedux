@@ -59,6 +59,11 @@ class HistoryViewModel(QtCore.QObject):
     self.__spotify_plugin = SpotifyPlugin()
     self.__music_app_plugin = MusicAppPlugin()
     self.media_player: MediaPlayerPlugin = None
+
+    # Settings
+    # TODO: Move these properties to an App view model
+    self.__is_submission_enabled: bool = None
+    self.is_player_paused = False
     
     if os.environ.get('MOCK'):
       self.media_player = MockPlayerPlugin()
@@ -72,22 +77,15 @@ class HistoryViewModel(QtCore.QObject):
           use_spotify = True
       
       if use_spotify:
-        self.media_player = self.__spotify_plugin
-        self.set_is_scrobble_submission_enabled(False)
+        self.switchToMediaPlugin('spotify')
       else:
         # Use Music app plugin in all other cases since every Mac has it
-        self.media_player = self.__music_app_plugin
-        self.set_is_scrobble_submission_enabled(True)
+        self.switchToMediaPlugin('musicApp')
 
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
     self.media_player.paused.connect(self.__handle_media_player_paused)
     self.media_player_name_changed.emit()
-
-    # Settings
-    # TODO: Move these properties to an App view model
-    self.is_submission_enabled: bool = None
-    self.is_player_paused = False
 
     # Start polling interval to check for new media player position
     self.__timer = QtCore.QTimer(self)
@@ -116,7 +114,7 @@ class HistoryViewModel(QtCore.QObject):
     self.selected_scrobble: Scrobble = None
 
     # Keep track of whether the current scrobble has hit the threshold for submission
-    self.__current_scrobble_percentage: float = -1 # -1 represents no value since None turns into 0 when QML sees it as a float
+    self.__current_scrobble_percentage: float = None
     self.__should_submit_current_scrobble = False
   
     # Keep track of furthest position reached in a song
@@ -135,15 +133,6 @@ class HistoryViewModel(QtCore.QObject):
     self.__application_reference.is_logged_in_changed.connect(
       lambda: self.set_is_enabled(self.__application_reference.is_logged_in)
     )
-    
-  def set_is_scrobble_submission_enabled(self, value: bool) -> None:
-    if not os.environ.get('DISABLE_SUBMISSION'):
-      self.is_submission_enabled = value
-
-    if self.is_submission_enabled:
-      logger.debug('Scrobble submission is enabled')
-    else:
-      logger.debug('Scrobble submission is disabled')
     
   def get_selected_scrobble_index(self):
     '''Make the private selected scrobble index variable available to the UI'''
@@ -281,21 +270,22 @@ class HistoryViewModel(QtCore.QObject):
     self.__handle_media_player_stopped()
 
     # Reset scrobble percentage
-    self.__current_scrobble_percentage = -1
+    self.__current_scrobble_percentage = 0
 
     # Disconnect event signals
-    self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
-    self.media_player.playing.disconnect(self.__handle_media_player_playing)
-    self.media_player.paused.disconnect(self.__handle_media_player_paused)
+    if self.media_player:
+      self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
+      self.media_player.playing.disconnect(self.__handle_media_player_playing)
+      self.media_player.paused.disconnect(self.__handle_media_player_paused)
 
     if media_plugin_name == 'spotify':
       self.media_player = self.__spotify_plugin
-      self.set_is_scrobble_submission_enabled(False)
-      logger.success('Switched media player to Spotify')
+      self.__set_is_scrobble_submission_enabled(False)
     elif media_plugin_name == 'musicApp':
       self.media_player = self.__music_app_plugin
-      self.set_is_scrobble_submission_enabled(True)
-      logger.success('Switched media player to Music app')
+      self.__set_is_scrobble_submission_enabled(True)
+
+    logger.success(f'Switched media player to {self.media_player}')
 
     # Reconnect event signals
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
@@ -405,10 +395,13 @@ class HistoryViewModel(QtCore.QObject):
         # Tell the UI that the selected index changed, so it can update the selection highlight in the sidebar to the correct index
         self.selected_scrobble_index_changed.emit()
 
-    # Submit scrobble to Last.fm in background thread task
-    # if self.is_submission_enabled:
-    #   submit_scrobble_task = SubmitScrobbleTask(self.__application_reference.lastfm, self.__current_scrobble)
-    #   QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
+    # Submit scrobble to Last.fm
+    if self.__is_submission_enabled:
+      submit_scrobble_task = SubmitScrobble(
+        lastfm=self.__application_reference.lastfm,
+        scrobble=self.__current_scrobble
+      )
+      QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
     if scrobble.lastfm_track:
@@ -442,7 +435,7 @@ class HistoryViewModel(QtCore.QObject):
     self.current_scrobble_data_changed.emit()
 
     # Tell Last.fm to update the user's now playing status
-    if self.is_submission_enabled:
+    if self.__is_submission_enabled:
       QtCore.QThreadPool.globalInstance().start(
         UpdateNowPlaying(self.__application_reference.lastfm, self.__current_scrobble)
       )
@@ -508,7 +501,7 @@ class HistoryViewModel(QtCore.QObject):
     '''Determine the percentage of the track that has played'''
 
     if not self.__is_enabled or not self.__current_scrobble:
-      return None
+      return 0
 
     # Skip calculations if the track has already reached the scrobble threshold
     if self.__should_submit_current_scrobble:
@@ -533,6 +526,15 @@ class HistoryViewModel(QtCore.QObject):
       logger.debug(f'{repr(self.__current_scrobble.track_title)}: Ready for submission to Last.fm')
 
     return scrobble_percentage
+
+  def __set_is_scrobble_submission_enabled(self, value: bool) -> None:
+    # Ignore any changes to is_submission_enabled if it's disabled globally
+    if os.environ.get('DISABLE_SUBMISSION'):
+      self.__is_submission_enabled = False
+    else:
+      self.__is_submission_enabled = value
+
+    logger.info(f'Scrobble submission is set to {self.__is_submission_enabled}')
 
   def __handle_media_player_stopped(self) -> None:
     '''Handle media player stop event (no track is loaded)'''
@@ -588,8 +590,6 @@ class HistoryViewModel(QtCore.QObject):
       self.__update_current_scrobble(media_player_state)
   
   def __handle_media_player_paused(self, media_player_state: MediaPlayerState) -> None:
-    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
-
     '''Handle media player pause event'''
 
     # Update playback indicator

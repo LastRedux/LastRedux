@@ -10,7 +10,7 @@ def connect():
   db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
 
   if getattr(sys, 'frozen', False):
-    db.setDatabaseName(QtCore.QDir.homePath() + '/LastRedux-db-private-beta-1.sqlite')
+    db.setDatabaseName(QtCore.QDir.homePath() + '/LastRedux-db-private-beta-2.sqlite')
   else:
     db.setDatabaseName('db.sqlite')
 

@@ -43,7 +43,6 @@ Column {
       id: scrobbleMeter
 
       percentage: scrobblePercentage
-      visible: scrobblePercentage >= 0 // Don't show while loading track crop/length
 
       anchors {
         right: parent.right

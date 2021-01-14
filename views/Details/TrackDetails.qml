@@ -197,13 +197,13 @@ PictureBackground {
       shouldAbbreviate: false
     }
     
-    Statistic {
-      isShadowEnabled: false
-      title: albumLastfmPlays === 1 ? 'Album play in Library' : 'Album plays in Library'
-      value: albumLastfmPlays === 0 ? 0 : (albumLastfmPlays || null)
+    // Statistic {
+    //   isShadowEnabled: false
+    //   title: albumLastfmPlays === 1 ? 'Album play in Library' : 'Album plays in Library'
+    //   value: albumLastfmPlays === 0 ? 0 : (albumLastfmPlays || null)
       
-      shouldAbbreviate: false
-    }
+    //   shouldAbbreviate: false
+    // }
   }
 
   // --- Tags ---

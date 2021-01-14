@@ -45,20 +45,20 @@ class ArtProvider:
     '''Get Spotify artist images and album art'''
 
     # 1. Try getting artist images and album art from Spotify
-    # spotify_data = self.spotify_api.get_track_images(artist_name, track_title, album_title)
+    spotify_data = self.spotify_api.get_track_images(artist_name, track_title, album_title)
     
     # 2. Try getting album art from Last.fm (we prefer Last.fm art to Spotify art if it exists)
     album_art = self.__get_lastfm_album_art(artist_name, album_title)
 
-    # if not album_art:
-    #   if spotify_data.album_art:
-    #     # 3. Use Spotify album art if there is any
-    #     album_art = spotify_data.album_art
-    #   else:
-    #     # 4. Try getting art from the iTunes Store api
-    #     album_art = itunes_store.get_album_art(artist_name, track_title, album_title)
+    if not album_art:
+      if spotify_data.album_art:
+        # 3. Use Spotify album art if there is any
+        album_art = spotify_data.album_art
+      else:
+        # 4. Try getting art from the iTunes Store api
+        album_art = itunes_store.get_album_art(artist_name, track_title, album_title)
 
-    return ScrobbleImages(album_art, None)#spotify_data.artists)
+    return ScrobbleImages(album_art, spotify_data.artists)
 
   # --- Private Methods ---
 

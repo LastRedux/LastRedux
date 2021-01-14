@@ -39,14 +39,6 @@ MODULE_NAME = 'Kale'
 MAJOR_VERSION = 1
 MINOR_VERSION = 0
 
-# Configure loguru
-logger.configure(
-  handlers=[{
-    'sink': sys.stderr,
-    'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>'
-  }]
-)
-
 if __name__ == "__main__":
   # TODO: Figure out how to debug QML
   # QtQml.QQmlDebuggingEnabler()

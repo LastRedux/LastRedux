@@ -24,7 +24,7 @@ from datatypes.FriendScrobble import FriendScrobble
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
   CLIENT_SECRET = 'a643753f16e5c147a0416ecb7bb66eca'
-  USER_AGENT = 'LastRedux v0.0.0'
+  USER_AGENT = 'LastRedux v0.0.0' # TODO: Update this on release
   MAX_RETRIES = 3
   NOT_FOUND_ERRORS = ['The artist you supplied could not be found', 'Track not found', 'Album not found']
 
@@ -184,8 +184,6 @@ class LastfmApiWrapper:
     )
 
   def get_track_info(self, artist_name: str, track_title: str, username: str=None) -> LastfmTrack:
-    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
-
     return self.__lastfm_request({
         'method': 'track.getInfo',
         'username': username or self.username,
