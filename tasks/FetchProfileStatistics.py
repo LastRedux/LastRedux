@@ -27,7 +27,6 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
   def run(self) -> None:
     '''Fetch user info, top artists and generate user statistics'''
 
-
     def __artists_to_profile_statistics(artists: List[LastfmArtist]):  
       top_plays = artists[0].plays
       

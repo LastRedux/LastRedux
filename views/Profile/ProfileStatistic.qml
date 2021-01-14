@@ -107,7 +107,7 @@ Item {
     style: kTitleTertiary
     text: `${plays} plays`
 
-    width: 62
+    width: plays > 999 ? 70 : 62
 
     anchors {
       verticalCenter: playsProgressBar.verticalCenter

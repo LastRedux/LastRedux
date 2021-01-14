@@ -1,5 +1,6 @@
 import QtQuick 2.14
 
+import '../Profile'
 import '../../shared/components'
 
 Item {
@@ -23,7 +24,18 @@ Item {
   // var to support lists
   property var lastfmTags
 
-  height: hasMultipleArtists ? Math.max(column.y + column.height + 30, multipleArtistImagesView.y + multipleArtistImagesView.height + 30) : Math.max(column.y + column.height + 30, singularArtistImageView.y + singularArtistImageView.height + 30)
+  height: (
+    hasMultipleArtists ? 
+      Math.max(
+        column.y + column.height + 30,
+        multipleArtistImagesView.y + multipleArtistImagesView.height + 30
+      ) :
+      Math.max(
+        column.y + column.height + 30,
+        friendArtistLeaderboard.y + friendArtistLeaderboard.height + 30
+        // singularArtistImageView.y + singularArtistImageView.height + 30
+      )
+  )
   
   // --- Artist Information ---
 
@@ -151,6 +163,75 @@ Item {
 
         Placeholder {
           width: Math.floor(parent.width / 4)
+        }
+      }
+    }
+
+    // --- Friend Artist Leaderboard ---
+
+    Column {
+      id: friendArtistLeaderboard
+      spacing: 8
+      visible: !isInMiniMode
+
+      width: parent.width
+
+      Label {
+        text: 'Friend Leaderboard'
+        style: kTitleTertiary
+      }
+
+      Column {
+        spacing: 10
+
+        width: parent.width
+        visible: (
+          hasLastfmData
+          && !!viewModel.scrobble.friend_artist_leaderboard
+          && viewModel.scrobble.friend_artist_leaderboard.length
+        )
+
+        Repeater {
+          model: (
+            hasLastfmData
+            && !!viewModel.scrobble.friend_artist_leaderboard
+            && viewModel.scrobble.friend_artist_leaderboard
+          )
+
+          delegate: ProfileStatistic {
+            imageSource: modelData.image_url
+            lastfmUrl: modelData.lastfm_url
+            title: modelData.title
+            plays: modelData.plays
+            playsPercentage: modelData.percentage
+
+            width: parent.width
+          }
+        }
+      }
+
+      // --- Leaderboard Placeholder ---
+
+      Column {
+        spacing: 2
+        visible: !hasLastfmData || !viewModel.scrobble.friend_artist_leaderboard
+
+        width: parent.width
+
+        Placeholder {
+          width: parent.width
+        }
+
+        Placeholder {
+          width: parent.width - 40
+        }
+        
+        Placeholder {
+          width: parent.width - 60
+        }
+
+        Placeholder {
+          width: parent.width - 80
         }
       }
     }

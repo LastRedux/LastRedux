@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import asdict, dataclass
+from datatypes.ProfileStatistic import ProfileStatistic
 from typing import List
 
 from datatypes import MediaPlayerState, ImageSet
@@ -13,6 +14,7 @@ class Scrobble(LastfmScrobble):
   spotify_artists: List[SpotifyArtist] = None
   is_loading: bool = True
   lastfm_album_url: str = None # This is needed since the track info request doesn't give us an album
+  friend_artist_leaderboard: List[ProfileStatistic] = None
 
   @staticmethod
   def from_lastfm_scrobble(lastfm_scrobble: LastfmScrobble) -> Scrobble:

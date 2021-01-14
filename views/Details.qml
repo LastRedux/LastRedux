@@ -17,8 +17,7 @@ Item {
   // Check if all remote scrobble data from Last.fm has loaded
   property bool hasLastfmData: (
     canDisplayScrobble
-    && !!viewModel.scrobble.lastfm_track
-    && !!viewModel.scrobble.lastfm_track.artist.plays
+    && !viewModel.scrobble.is_loading
   )
   property bool isTrackNotFound: (
     canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
