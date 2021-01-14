@@ -11,7 +11,7 @@ Item {
   property string username
   property string userRealName
 
-  property string trackImage
+  property var trackImage
   property var trackTitle
   property var trackArtistName
   property alias trackLastfmUrl: trackTitleLabel.address

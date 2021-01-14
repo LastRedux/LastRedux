@@ -1,1 +1,2 @@
 from .SpotifyApiWrapper import SpotifyApiWrapper
+from .SpotifyArtist import SpotifyArtist

@@ -11,12 +11,18 @@ Item {
   // Store reference to view model counterpart that can be set from main.qml
   property DetailsViewModel viewModel
 
-  // Don't do just viewModel && viewModel.scrobbleTrackData because we need to return a bool value instead of an undefined viewModel.scrobbleTrackData
-  property bool canDisplayScrobble: (viewModel && viewModel.scrobbleTrackData) ? true : false
+  // Don't do just viewModel && viewModel.scrobble because we need to return a bool value instead of an undefined viewModel.scrobble
+  property bool canDisplayScrobble: !!(viewModel && viewModel.scrobble)
 
   // Check if all remote scrobble data from Last.fm has loaded
-  property bool hasLastfmData: canDisplayScrobble && viewModel.scrobbleTrackData.loading_state === 'LASTFM_TRACK_LOADED'
-  property bool isTrackNotFound: canDisplayScrobble && viewModel.scrobbleTrackData.loading_state === 'LASTFM_TRACK_NOT_FOUND'
+  property bool hasLastfmData: (
+    canDisplayScrobble
+    && !!viewModel.scrobble.lastfm_track
+    && !!viewModel.scrobble.lastfm_track.artist.plays
+  )
+  property bool isTrackNotFound: (
+    canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
+  )
 
   signal switchToCurrentScrobble
 
@@ -91,26 +97,32 @@ Item {
         }
 
         TrackDetails {
+          property bool hasLastfmAlbum: (
+            canDisplayScrobble
+            && !!viewModel.scrobble.lastfm_track
+            && !!viewModel.scrobble.lastfm_track.album
+          )
+          
           id: trackDetails
 
-          property bool hasAlbum: canDisplayScrobble && !!viewModel.scrobbleTrackData.album.title
-
           isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble
-          title: canDisplayScrobble && viewModel.scrobbleTrackData.title
-          lastfmUrl: hasLastfmData && viewModel.scrobbleTrackData.lastfm_url
-          lastfmGlobalListeners: hasLastfmData && viewModel.scrobbleTrackData.lastfm_global_listeners
-          lastfmGlobalPlays: hasLastfmData && viewModel.scrobbleTrackData.lastfm_global_plays
-          lastfmPlays: hasLastfmData && viewModel.scrobbleTrackData.lastfm_plays
-          lastfmTags: hasLastfmData ? viewModel.scrobbleTrackData.lastfm_tags : []
-
-          artistName: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          artistLastfmUrl: hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_url
-
-          albumTitle: hasAlbum ? viewModel.scrobbleTrackData.album.title : '' // Use blank string as fallback because the Text element used to render the album title won't accept undefined
-          albumLastfmUrl: hasAlbum && hasLastfmData && viewModel.scrobbleTrackData.album.lastfm_url
-          albumImageUrl: canDisplayScrobble ? (viewModel.scrobbleTrackData.album.image_url || '') : '' // Fall back to empty string if loading or if there is no image_url (Not tied to hasAlbum because we can still show art for tracks that aren't on Last.fm)
+          title: canDisplayScrobble && viewModel.scrobble.track_title
+          lastfmUrl: hasLastfmData && viewModel.scrobble.lastfm_track.url
+          lastfmGlobalListeners: hasLastfmData && viewModel.scrobble.lastfm_track.global_listeners
+          lastfmGlobalPlays: hasLastfmData && viewModel.scrobble.lastfm_track.global_plays
+          lastfmPlays: hasLastfmData && viewModel.scrobble.lastfm_track.plays
+          lastfmTags: hasLastfmData && viewModel.scrobble.lastfm_track.tags
+          artistName: canDisplayScrobble && viewModel.scrobble.artist_name
+          artistLastfmUrl: hasLastfmData && viewModel.scrobble.lastfm_track.artist.url
+          albumTitle: canDisplayScrobble && viewModel.scrobble.album_title
+          albumLastfmUrl: hasLastfmAlbum && hasLastfmData && viewModel.scrobble.lastfm_track.album.url
+          albumLastfmPlays: hasLastfmAlbum && hasLastfmData && viewModel.scrobble.lastfm_track.album.plays
+          albumImageUrl: (
+            canDisplayScrobble
+            && !!viewModel.scrobble.image_set
+            && viewModel.scrobble.image_set.medium_url
+          )
           isTrackNotFound: root.isTrackNotFound
-
           isPlayerPaused: viewModel.isPlayerPaused
           isInMiniMode: viewModel.isInMiniMode
 
@@ -120,19 +132,19 @@ Item {
         ArtistDetails {
           visible: !isTrackNotFound
 
-          name: canDisplayScrobble && viewModel.scrobbleTrackData.artist.name
-          bio: root.hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_bio : null
-          imageUrl: root.hasLastfmData ? viewModel.scrobbleTrackData.artist.image_url : ''
-          
-          lastfmUrl: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_url
-          lastfmGlobalListeners: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_listeners
-          lastfmGlobalPlays: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_global_plays
-          lastfmPlays: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_plays
-          lastfmTags: root.hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_tags : []
-          
-          spotifyArtists: root.hasLastfmData ? viewModel.scrobbleTrackData.spotify_artists : []
-          
-          isReadMoreLinkVisible: root.hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_bio
+          name: canDisplayScrobble && viewModel.scrobble.artist_name
+          bio: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.bio
+          lastfmUrl: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.url
+          lastfmGlobalListeners: (
+            root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.global_listeners
+          )
+          lastfmGlobalPlays: (
+            root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.global_plays
+          )
+          lastfmPlays: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.plays
+          lastfmTags: root.hasLastfmData ? viewModel.scrobble.lastfm_track.artist.tags : []
+          spotifyArtists: canDisplayScrobble && viewModel.scrobble.spotify_artists
+          isReadMoreLinkVisible: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.bio
           hasLastfmData: root.hasLastfmData
           isInMiniMode: viewModel.isInMiniMode
 
@@ -142,7 +154,11 @@ Item {
         // --- Similar Artists ---
 
         Item {
-          visible: !isInMiniMode && hasLastfmData && viewModel.scrobbleTrackData.artist.lastfm_similar_artists.length
+          visible: (
+            !isInMiniMode
+            && hasLastfmData
+            && !!viewModel.scrobble.lastfm_track.artist.similar_artists
+          )
 
           width: column.width
           height: similarArtists.y + similarArtists.height + 30
@@ -195,11 +211,11 @@ Item {
             }
 
             Repeater {
-              model: hasLastfmData ? viewModel.scrobbleTrackData.artist.lastfm_similar_artists : []
+              model: hasLastfmData && viewModel.scrobble.lastfm_track.artist.similar_artists
 
               delegate: Tag {
                 name: modelData.name
-                address: modelData.lastfm_url
+                address: modelData.url
               }
             }
           }

@@ -24,7 +24,7 @@ class MacMediaPlayerPlugin(MediaPlayerPlugin):
     return self.__applescript_app.isRunning()
 
   @abstractmethod
-  def force_initial_notification(self) -> None:
+  def request_initial_state(self) -> None:
     '''Get a MediaPlayerState object without any system notification from the media player'''
 
     pass

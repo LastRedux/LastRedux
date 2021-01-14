@@ -16,23 +16,15 @@ Window {
   property bool shouldShowProfileLoadingIndicator: true
   property bool shouldShowFriendsLoadingIndicator: true
 
-  // property bool isInMiniMode: {
-  //   if (detailsViewModel) {
-  //     if (detailsViewModel.isInMiniMode) {
-  //       return true
-  //     }
-  //   }
-
-  //   return false
-  // }
+  property bool isInMiniMode: (detailsViewModel && detailsViewModel.isInMiniMode) || false
 
   color: '#171717'
   flags: Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint // Disable fullscreen on macOS
   title: 'LastRedux'
   visible: true
 
-  // minimumWidth: isInMiniMode ? 0 : 755
-  // minimumHeight: isInMiniMode ? 0 : 470
+  minimumWidth: isInMiniMode ? 0 : 755
+  minimumHeight: isInMiniMode ? 0 : 470
   width: 957
   height: 600
 
@@ -110,11 +102,11 @@ Window {
 
       MenuSeparator { }
 
-      // MenuItem {
-      //   text: qsTr('Toggle Mini Mode')
+      MenuItem {
+        text: qsTr('Toggle Mini Mode')
 
-      //   onTriggered: historyViewModel.toggleMiniMode()
-      // }
+        onTriggered: detailsViewModel.toggleMiniMode()
+      }
 
       MenuItem {
         text: qsTr('Use Music App as Media Player')
@@ -189,25 +181,25 @@ Window {
 
   // --- Details ---
   
-  // DetailsViewModel {
-  //   id: detailsViewModel
+  DetailsViewModel {
+    id: detailsViewModel
 
-  //   historyReference: historyViewModel
-  // }
+    historyReference: historyViewModel
+  }
 
-  // Details {
-  //   id: details
+  Details {
+    id: details
 
-  //   viewModel: detailsViewModel
-  //   onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
+    viewModel: detailsViewModel
+    onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
 
-  //   anchors {
-  //     top: parent.top
-  //     right: parent.right
-  //     bottom: parent.bottom
-  //     left: isInMiniMode ? parent.left : sidebar.right
-  //   }
-  // }
+    anchors {
+      top: parent.top
+      right: parent.right
+      bottom: parent.bottom
+      left: isInMiniMode ? parent.left : sidebar.right
+    }
+  }
 
   // // --- History Page ---
 
@@ -251,7 +243,7 @@ Window {
   SidebarBackground {
     id: sidebar
 
-    visible: true //isInMiniMode ? false : true
+    visible: isInMiniMode ? false : true
 
     anchors {
       top: parent.top
@@ -367,5 +359,11 @@ Window {
     sequence: 'Ctrl+3'
     context: Qt.ApplicationShortcut
     onActivated: switchToTab(2)
+  }
+
+  Shortcut {
+    sequence: 'Ctrl+m'
+    context: Qt.ApplicationShortcut
+    onActivated: detailsViewModel.toggleMiniMode()
   }
 }

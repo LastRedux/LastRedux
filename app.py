@@ -21,7 +21,7 @@ from HistoryListModel import HistoryListModel
 from ProfileViewModel import ProfileViewModel
 from FriendsViewModel import FriendsViewModel
 from FriendsListModel import FriendsListModel
-# from DetailsViewModel import DetailsViewModel
+from DetailsViewModel import DetailsViewModel
 from shared.components.NetworkImage import NetworkImage
 
 # Get the built application path
@@ -60,7 +60,7 @@ if __name__ == "__main__":
   QtQml.qmlRegisterType(ProfileViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ProfileViewModel')
   QtQml.qmlRegisterType(FriendsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsViewModel')
   QtQml.qmlRegisterType(FriendsListModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'FriendsListModel')
-  # QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
+  QtQml.qmlRegisterType(DetailsViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'DetailsViewModel')
   QtQml.qmlRegisterType(NetworkImage, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'NetworkImage')
 
   # Enable retina support

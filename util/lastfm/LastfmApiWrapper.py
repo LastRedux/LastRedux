@@ -15,7 +15,7 @@ from .LastfmScrobble import LastfmScrobble
 from .LastfmSession import LastfmSession
 from .LastfmSubmissionStatus import LastfmSubmissionStatus
 from .LastfmTag import LastfmTag
-from .LastfmTrackInfo import LastfmTrack
+from .LastfmTrack import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
 from datatypes.ImageSet import ImageSet
@@ -184,6 +184,8 @@ class LastfmApiWrapper:
     )
 
   def get_track_info(self, artist_name: str, track_title: str, username: str=None) -> LastfmTrack:
+    import pydevd; pydevd.connected = True; pydevd.settrace(suspend=False)
+
     return self.__lastfm_request({
         'method': 'track.getInfo',
         'username': username or self.username,

@@ -49,25 +49,17 @@ class ProfileViewModel(QtCore.QObject):
     self.__top_tracks = []
     self.__top_albums = []
     
-    fetch_user_stats_top_artists_task = FetchProfileStatistics(
+    fetch_profile_statistics_task = FetchProfileStatistics(
       lastfm=self.__application_reference.lastfm,
       spotify_api=self.__application_reference.spotify_api,
-      album_art_provider=self.__application_reference.album_art_provider
+      art_provider=self.__application_reference.art_provider
     )
-    fetch_user_stats_top_artists_task.finished.connect(self.__handle_user_statistics_top_artists_fetched)
-    QtCore.QThreadPool.globalInstance().start(fetch_user_stats_top_artists_task)
-
-    # fetch_top_tracks_task = FetchTopTracksTask(self.__application_reference.lastfm)
-    # fetch_top_tracks_task.finished.connect(self.__handle_top_tracks_fetched)
-    # QtCore.QThreadPool.globalInstance().start(fetch_top_tracks_task)
-    
-    # fetch_top_albums_task = FetchTopAlbumsTask(self.__application_reference.lastfm)
-    # fetch_top_albums_task.finished.connect(self.__handle_top_albums_fetched)
-    # QtCore.QThreadPool.globalInstance().start(fetch_top_albums_task)
+    fetch_profile_statistics_task.finished.connect(self.__handle_profile_statistics_fetched)
+    QtCore.QThreadPool.globalInstance().start(fetch_profile_statistics_task)
 
   # --- Private Methods ---
 
-  def __handle_user_statistics_top_artists_fetched(self, profile_statistics: ProfileStatistics):
+  def __handle_profile_statistics_fetched(self, profile_statistics: ProfileStatistics):
     if not self.__is_enabled:
       return
     

@@ -6,7 +6,6 @@ Item {
   id: root
 
   property bool isInMiniMode
-  property url imageUrl
   property string name
   property bool isReadMoreLinkVisible
   property bool hasLastfmData
@@ -19,7 +18,7 @@ Item {
   property var spotifyArtists
   property var bio
 
-  property bool hasMultipleArtists: spotifyArtists.length > 1
+  property bool hasMultipleArtists: !!spotifyArtists && spotifyArtists.length > 1
 
   // var to support lists
   property var lastfmTags
@@ -36,10 +35,10 @@ Item {
     anchors {
       top: hasMultipleArtists ? multipleArtistImagesView.top : singularArtistImageView.top
       right: hasMultipleArtists ? multipleArtistImagesView.left : parent.right
-      left: spotifyArtists.length ? (hasMultipleArtists ? parent.left : singularArtistImageView.right) : parent.left
+      left: !!spotifyArtists ? (hasMultipleArtists ? parent.left : singularArtistImageView.right) : parent.left
 
-      topMargin: (spotifyArtists.length && !isInMiniMode) ? (hasMultipleArtists ? 0 : 10) : 0
-      leftMargin: spotifyArtists.length ? (hasMultipleArtists ? 30 : 20) : 30
+      topMargin: (!!spotifyArtists && !isInMiniMode) ? (hasMultipleArtists ? 0 : 10) : 0
+      leftMargin: !!spotifyArtists ? (hasMultipleArtists ? 30 : 20) : 30
       rightMargin: hasMultipleArtists ? 20 : 30
     }
 
@@ -186,7 +185,7 @@ Item {
           type: kArtist
           shouldBlankOnNewSource: true
           
-          source: modelData.image_url
+          source: modelData.image_url || ''
 
           width: 52
           height: 52
@@ -212,7 +211,7 @@ Item {
         Link {
           text: modelData.name
 
-          address: modelData.spotify_url
+          address: modelData.url
           
           maximumLineCount: 2
           wrapMode: Text.Wrap
@@ -235,7 +234,7 @@ Item {
 
   Item {
     id: singularArtistImageView
-    visible: spotifyArtists.length && !hasMultipleArtists
+    visible: !!spotifyArtists && !hasMultipleArtists
     width: singularArtistImage.width
     height: spotifyName.y + spotifyName.height
 
@@ -251,7 +250,7 @@ Item {
 
       type: kArtist
 
-      source: spotifyArtists.length ? spotifyArtists[0].image_url : ''
+      source: !!spotifyArtists ? spotifyArtists[0].image_url : ''
 
       width: isInMiniMode ? 107 : 139
       height: width
@@ -280,8 +279,8 @@ Item {
     Link {
       id: spotifyName
 
-      text: spotifyArtists.length ? spotifyArtists[0].name : ''
-      address: spotifyArtists.length ? spotifyArtists[0].spotify_url : ''
+      text: !!spotifyArtists ? spotifyArtists[0].name : ''
+      address: !!spotifyArtists ? spotifyArtists[0].url : ''
     
       wrapMode: Text.Wrap
 

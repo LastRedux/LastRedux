@@ -4,9 +4,6 @@ from PySide2 import QtCore
 
 from datatypes import MediaPlayerState
 
-# class FinalMeta(QtCore.QObject, ABCMeta):
-#   pass
-
 class MediaPlayerPlugin(QtCore.QObject):
   __metaclass__ = ABCMeta
 
@@ -38,7 +35,7 @@ class MediaPlayerPlugin(QtCore.QObject):
     pass
 
   @abstractmethod
-  def force_initial_notification(self) -> None:
+  def request_initial_state(self) -> None:
     '''Get a MediaPlayerState object without any system notification from the media player'''
 
     pass

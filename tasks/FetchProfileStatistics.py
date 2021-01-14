@@ -1,9 +1,9 @@
 from dataclasses import asdict
 from typing import List
 from util.lastfm.LastfmAlbum import LastfmAlbum
-from util.lastfm.LastfmTrackInfo import LastfmTrack
+from util.lastfm.LastfmTrack import LastfmTrack
 from util.lastfm.LastfmArtist import LastfmArtist
-from util.AlbumArtProvider import AlbumArtProvider
+from util.art_provider import ArtProvider
 from datatypes.ProfileStatistic import ProfileStatistic
 from datetime import datetime
 
@@ -16,12 +16,12 @@ from datatypes.ProfileStatistics import ProfileStatistics
 class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(ProfileStatistics)
 
-  def __init__(self, lastfm: LastfmApiWrapper, spotify_api: SpotifyApiWrapper, album_art_provider: AlbumArtProvider) -> None:
+  def __init__(self, lastfm: LastfmApiWrapper, spotify_api: SpotifyApiWrapper, art_provider: ArtProvider) -> None:
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
     self.lastfm = lastfm
     self.spotify_api = spotify_api
-    self.album_art_provider = album_art_provider
+    self.art_provider = art_provider
     self.setAutoDelete(True)
 
   def run(self) -> None:
@@ -54,10 +54,9 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
           percentage=track.plays / top_plays,
           lastfm_url=track.url,
           secondary_lastfm_url=track.artist.url,
-          image_url=self.album_art_provider.get_album_art(
+          image_url=self.art_provider.get_album_art(
             artist_name=track.artist.name,
-            track_title=track.title, 
-            album_title=track.album.title if track.album else None
+            track_title=track.title
           ).small_url
         ) for track in tracks
       ]
@@ -73,7 +72,7 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
           percentage=album.plays / top_plays,
           lastfm_url=album.url,
           secondary_lastfm_url=album.artist.url,
-          image_url=album.image_set.small_url or self.album_art_provider.get_album_art(
+          image_url=album.image_set.small_url or self.art_provider.get_album_art(
             artist_name=album.artist.name, 
             album_title=album.album.title
           )

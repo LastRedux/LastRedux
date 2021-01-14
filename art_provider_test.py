@@ -6,7 +6,7 @@ from loguru import logger
 from util.lastfm import LastfmApiWrapper
 from util.spotify_api import SpotifyApiWrapper
 import util.db_helper as db_helper
-from util.AlbumArtProvider import AlbumArtProvider
+from util.art_provider import ArtProvider
 
 lastfm = LastfmApiWrapper()
 
@@ -23,7 +23,7 @@ else:
   logger.error('No login details saved, run lastfm_api_test.py to save a session key and username to the database')
   sys.exit(1)
 
-album_art_provider = AlbumArtProvider(lastfm)
+art_provider = ArtProvider(lastfm)
 spotify_api = SpotifyApiWrapper()
 
 print('\n***** SPOTIFY ARTISTS *****\n')
@@ -46,7 +46,7 @@ for mock_track in json.load(open('mock_data/mock_tracks.json')):
   if 'album_title' not in mock_track:
     continue
 
-  image_set = album_art_provider.get_album_art(**mock_track)
+  image_set = art_provider.get_album_art(**mock_track)
 
   print('\nAlbum art results:')
   if image_set:

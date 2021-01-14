@@ -156,7 +156,7 @@ class FriendsViewModel(QtCore.QObject):
           continue
 
         fetch_album_art_task = FetchFriendScrobbleArt(
-          album_art_provider=self.applicationReference.album_art_provider,
+          art_provider=self.applicationReference.art_provider,
           friend_scrobble=friend.last_scrobble,
           row_in_friends_list=row
         )

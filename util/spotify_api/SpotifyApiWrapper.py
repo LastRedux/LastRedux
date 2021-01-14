@@ -6,7 +6,7 @@ from loguru import logger
 import requests
 
 from datatypes.ImageSet import ImageSet
-from .SpotifyImages import SpotifyImages
+from .SpotifySongData import SpotifySongData
 from .SpotifyArtist import SpotifyArtist
 
 class SpotifyApiWrapper:
@@ -40,7 +40,10 @@ class SpotifyApiWrapper:
     track_title: str,
     album_title: str=None,
     only_album_art: bool=False
-  ) -> SpotifyImages:
+  ) -> SpotifySongData:
+    # Create empty return type
+    spotify_data = SpotifySongData(None, None)
+
     results = self.__search(
       query='{} {} {}'.format(
         SpotifyApiWrapper.__simplify_artist_name(artist_name),
@@ -50,38 +53,31 @@ class SpotifyApiWrapper:
       media_type='track'
     )['tracks']['items']
 
-    if not len(results):
-      return None
+    if len(results):
+      track = self.__find_track_match(results, artist_name)
 
-    track = self.__find_track_match(results, artist_name)
+      # Find track with matching artists
+      if track:
+        spotify_data.album_art = ImageSet(
+          small_url=track['album']['images'][-1]['url'],
+          medium_url=track['album']['images'][-2]['url'] #TODO: Get the index right
+        )
 
-    # Find track with matching artists
-    if not track:
-      return None
+        if not only_album_art:
+          artists = self.__get_artists_by_id(track['artists'])
 
-    album_art = ImageSet(
-      small_url=track['album']['images'][-1]['url'],
-      medium_url=track['album']['images'][-2]['url'] #TODO: Get the index right
-    )
+          spotify_data.artists = [
+            SpotifyArtist(
+              name=artist['name'],
+              url=artist['external_urls']['spotify'],
+              image_url=(
+                # Get small image if there is more than one artist
+                artist['images'][-1]['url'] if len(artists) > 1 else artist['images'][-2]['url']
+              ) if artist['images'] else None
+            ) for artist in artists
+          ]
 
-    if only_album_art:
-      return album_art
-
-    artists = self.__get_artists_by_id(track['artists'])
-
-    return SpotifyImages(
-      artists=[
-        SpotifyArtist(
-          name=artist['name'],
-          url=artist['external_urls']['spotify'],
-          image_url=(
-            # Get small image if there is more than one artist
-            artist['images'][-1]['url'] if len(artists) > 1 else artist['images'][-2]['url']
-          ) if artist['images'] else None
-        ) for artist in artists
-      ],
-      album_art=album_art
-    )
+    return spotify_data
     
   # --- Private Methods ---
 

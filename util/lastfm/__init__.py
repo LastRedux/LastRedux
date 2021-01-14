@@ -1,6 +1,6 @@
 from .LastfmApiWrapper import LastfmApiWrapper
 from .LastfmList import LastfmList
-from .LastfmTrackInfo import LastfmTrack
+from .LastfmTrack import LastfmTrack
 from .LastfmArtist import LastfmArtist
 from .LastfmScrobble import LastfmScrobble
 from .LastfmSession import LastfmSession

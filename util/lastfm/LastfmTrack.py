@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from .LastfmAlbum import LastfmAlbum
 from .LastfmArtist import LastfmArtist
+from .LastfmAlbum import LastfmAlbum
 from .LastfmTag import LastfmTag
 
 @dataclass

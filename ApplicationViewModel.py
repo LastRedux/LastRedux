@@ -3,7 +3,7 @@ from shared.components.NetworkImage import NetworkImage
 from PySide2 import QtCore, QtNetwork
 
 from util.lastfm import LastfmApiWrapper, LastfmSession
-from util.AlbumArtProvider import AlbumArtProvider
+from util.art_provider import ArtProvider
 from util import db_helper
 
 class ApplicationViewModel(QtCore.QObject):
@@ -20,7 +20,7 @@ class ApplicationViewModel(QtCore.QObject):
     # Initialize helper classes
     self.lastfm = LastfmApiWrapper()
     self.spotify_api = SpotifyApiWrapper()
-    self.album_art_provider = AlbumArtProvider(self.lastfm, self.spotify_api)
+    self.art_provider = ArtProvider(self.lastfm, self.spotify_api)
     self.is_logged_in = False
     
     # Create network request manager and expose it to all NetworkImage instances

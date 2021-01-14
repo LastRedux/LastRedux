@@ -11,25 +11,23 @@ PictureBackground {
   property bool isCurrentlyScrobbling
   property bool isPlayerPaused
   property bool isTrackNotFound
-  property string title
+  property var title
   property var lastfmUrl
   
-  // var to support undefined
   property var lastfmGlobalListeners 
   property var lastfmGlobalPlays 
   property var lastfmPlays
-
-  // var to support lists
   property var lastfmTags
 
-  property string artistName
+  property var artistName
   property var artistLastfmUrl
 
   property var albumTitle
   property var albumLastfmUrl
-  property url albumImageUrl
+  property var albumImageUrl
+  property var albumLastfmPlays
 
-  source: albumImageUrl
+  source: albumImageUrl || ''
 
   height: {
     if (isInMiniMode) {
@@ -45,7 +43,7 @@ PictureBackground {
   Picture {
     id: albumImageView
 
-    source: albumImageUrl
+    source: albumImageUrl || ''
     shouldBlankOnNewSource: true
 
     width: isInMiniMode ? 139 : 181
@@ -106,7 +104,7 @@ PictureBackground {
 
     elide: Text.ElideRight
     isShadowEnabled: false
-    text: artistName
+    text: artistName || ''
     address: artistLastfmUrl
 
     anchors {
@@ -150,7 +148,7 @@ PictureBackground {
 
       elide: Text.ElideRight
       isShadowEnabled: false
-      text: albumTitle
+      text: albumTitle || ''
       address: albumLastfmUrl
 
       // Position to the right of leading text
@@ -195,6 +193,14 @@ PictureBackground {
       isShadowEnabled: false
       title: lastfmPlays === 1 ? 'Play in Library' : 'Plays in Library'
       value: lastfmPlays === 0 ? 0 : (lastfmPlays || null)
+      
+      shouldAbbreviate: false
+    }
+    
+    Statistic {
+      isShadowEnabled: false
+      title: albumLastfmPlays === 1 ? 'Album play in Library' : 'Album plays in Library'
+      value: albumLastfmPlays === 0 ? 0 : (albumLastfmPlays || null)
       
       shouldAbbreviate: false
     }

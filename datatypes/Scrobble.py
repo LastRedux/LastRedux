@@ -1,14 +1,18 @@
 from __future__ import annotations
 from dataclasses import asdict, dataclass
+from typing import List
 
-from datatypes.ImageSet import ImageSet
-from util.lastfm.LastfmScrobble import LastfmScrobble
-from util.lastfm.LastfmTrackInfo import LastfmTrack
+from datatypes import MediaPlayerState, ImageSet
+from util.lastfm import LastfmScrobble, LastfmTrack
+from util.spotify_api import SpotifyArtist
 
 @dataclass
 class Scrobble(LastfmScrobble):
   image_set: ImageSet = None
   lastfm_track: LastfmTrack = None
+  spotify_artists: List[SpotifyArtist] = None
+  is_loading: bool = True
+  lastfm_album_url: str = None # This is needed since the track info request doesn't give us an album
 
   @staticmethod
   def from_lastfm_scrobble(lastfm_scrobble: LastfmScrobble) -> Scrobble:

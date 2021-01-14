@@ -25,12 +25,11 @@ class HistoryViewModel(QtCore.QObject):
   __CURRENT_SCROBBLE_INDEX = -1
   __NO_SELECTION_INDEX = -2
 
-  # Qt Property signals
+  # Qt Property changed signals
   is_enabled_changed = QtCore.Signal()
   current_scrobble_data_changed = QtCore.Signal()
   scrobble_percentage_changed = QtCore.Signal()
   is_using_mock_player_changed = QtCore.Signal()
-  is_in_mini_mode_changed = QtCore.Signal()
   is_player_paused_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
@@ -88,7 +87,6 @@ class HistoryViewModel(QtCore.QObject):
     # Settings
     # TODO: Move these properties to an App view model
     self.is_submission_enabled: bool = None
-    self.is_in_mini_mode = False
     self.is_player_paused = False
 
     # Start polling interval to check for new media player position
@@ -187,9 +185,6 @@ class HistoryViewModel(QtCore.QObject):
     # Update details view
     self.selected_scrobble_changed.emit()
 
-  def get_is_enabled(self) -> bool: # Function instead of lambda because DetailsViewModel uses this
-    return self.__is_enabled
-
   def set_is_enabled(self, is_enabled: bool) -> None:
     self.__is_enabled = is_enabled
     self.is_enabled_changed.emit()
@@ -280,14 +275,6 @@ class HistoryViewModel(QtCore.QObject):
       )
     )
 
-  @QtCore.Slot()
-  def toggleMiniMode(self) -> None:
-    if not self.__is_enabled:
-      return
-
-    self.is_in_mini_mode = not self.is_in_mini_mode
-    self.is_in_mini_mode_changed.emit()
-
   @QtCore.Slot(str)
   def switchToMediaPlugin(self, media_plugin_name: str) -> None:
     # Fake stopped event to un-load the current scrobble
@@ -347,7 +334,7 @@ class HistoryViewModel(QtCore.QObject):
   def __load_external_scrobble_data(self, scrobble: Scrobble) -> None:
     load_external_scrobble_data_task = LoadExternalScrobbleData(
       lastfm=self.__application_reference.lastfm,
-      art_provider=self.__application_reference.album_art_provider,
+      art_provider=self.__application_reference.art_provider,
       scrobble=scrobble
     )
     load_external_scrobble_data_task.update_ui_for_scrobble.connect(
@@ -623,7 +610,7 @@ class HistoryViewModel(QtCore.QObject):
 
   isEnabled = QtCore.Property(
     type=bool,
-    fget=get_is_enabled,
+    fget=lambda self: self.__is_enabled,
     fset=set_is_enabled,
     notify=is_enabled_changed
   )
