@@ -74,7 +74,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       MediaPlayerState(
         artist_name=self.__cached_notification_payload.get('Artist'),
         track_title=self.__cached_notification_payload.get('Name'),
-        album_title=self.__cached_notification_payload['Album'] or None, # Prevent empty strings
+        album_title=self.__cached_notification_payload.get('Album', None), # Prevent empty strings
         is_playing=self.__cached_notification_payload['Player State'] == 'Playing'
       )
     )

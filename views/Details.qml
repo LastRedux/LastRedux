@@ -157,7 +157,7 @@ Item {
           visible: (
             !isInMiniMode
             && hasLastfmData
-            && !!viewModel.scrobble.lastfm_track.artist.similar_artists
+            && viewModel.scrobble.lastfm_track.artist.similar_artists.length
           )
 
           width: column.width

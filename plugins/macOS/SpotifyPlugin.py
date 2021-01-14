@@ -69,7 +69,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
       MediaPlayerState(
         artist_name=notification_payload.get('Artist'),
         track_title=notification_payload.get('Name'),
-        album_title=notification_payload['Album'] or None, # Prevent empty strings
+        album_title=notification_payload.get('Album', None), # Prevent empty strings
         is_playing=notification_payload['Player State'] == 'Playing',
         track_crop=TrackCrop(
           # Spotify tracks can't be cropped so we use duration
