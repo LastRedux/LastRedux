@@ -15,7 +15,8 @@ class FriendsListModel(QtCore.QAbstractListModel):
   __TRACK_ARTIST_URL_ROLE = QtCore.Qt.UserRole + 7
   __TRACK_IMAGE_URL = QtCore.Qt.UserRole + 8
   __IS_TRACK_PLAYING_ROLE = QtCore.Qt.UserRole + 9
-  __IS_LOADING_ROLE = QtCore.Qt.UserRole + 10
+  __IS_TRACK_LOVED_ROLE = QtCore.Qt.UserRole + 10
+  __IS_LOADING_ROLE = QtCore.Qt.UserRole + 11
 
   def __int__(self, parent=None):
     QtCore.QAbstractListModel.__init__(self, parent)
@@ -61,6 +62,7 @@ class FriendsListModel(QtCore.QAbstractListModel):
       self.__TRACK_ARTIST_URL_ROLE: b'trackArtistLastfmUrl',
       self.__TRACK_IMAGE_URL: b'trackAlbumImageUrl',
       self.__IS_TRACK_PLAYING_ROLE: b'isTrackPlaying',
+      self.__IS_TRACK_LOVED_ROLE: b'isTrackLoved',
       self.__IS_LOADING_ROLE: b'isLoading'
     }
 
@@ -103,6 +105,8 @@ class FriendsListModel(QtCore.QAbstractListModel):
           return friend.last_scrobble.image_url if friend.last_scrobble else ''
         elif role == self.__IS_TRACK_PLAYING_ROLE:
           return friend.last_scrobble.is_playing if friend.last_scrobble else False
+        elif role == self.__IS_TRACK_LOVED_ROLE:
+          return friend.last_scrobble.is_loved if friend.last_scrobble else False
         elif role == self.__IS_LOADING_ROLE:
           return friend.is_loading
 

@@ -31,6 +31,7 @@ Item {
       trackArtistName: model.trackArtistName
       trackArtistLastfmUrl: model.trackArtistLastfmUrl
       isTrackPlaying: model.isTrackPlaying
+      isTrackLoved: model.isTrackLoved
       isLoading: model.isLoading
       isContextMenuEnabled: !viewModel.isLoading // Prevent crash by disabling context menu when the list view is about to be refreshed
       z: listView.count - model.index // Topmost items should appear highest in the z stack so shadows are not covered by subsequent items

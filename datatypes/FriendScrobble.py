@@ -8,3 +8,4 @@ class FriendScrobble(SimpleTrack):
   artist_url: str
   image_url: str
   is_playing: bool
+  is_loved: bool

@@ -42,9 +42,9 @@ class FriendsViewModel(QtCore.QObject):
       return
     
     # Enable loading indicator if there are no friends (initial page load) or the window was refocused
-    if not self.friends or was_app_refocused:
-      self.__should_show_loading_indicator = True
-      self.should_show_loading_indicator_changed.emit()
+    # if not self.friends or was_app_refocused:
+    #   self.__should_show_loading_indicator = True
+    #   self.should_show_loading_indicator_changed.emit()
 
     # Fetch friends if they aren't already being fetched
     if not self.__is_loading:

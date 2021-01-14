@@ -44,8 +44,9 @@ class HistoryViewModel(QtCore.QObject):
   begin_refresh_history = QtCore.Signal()
   end_refresh_history = QtCore.Signal()
 
-  # Signals called from QML
+  # Signals handled from QML
   showNotification = QtCore.Signal(str, str)
+  preloadProfileAndFriends = QtCore.Signal()
 
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
@@ -85,6 +86,9 @@ class HistoryViewModel(QtCore.QObject):
     self.media_player.stopped.connect(self.__handle_media_player_stopped)
     self.media_player.playing.connect(self.__handle_media_player_playing)
     self.media_player.paused.connect(self.__handle_media_player_paused)
+    self.media_player.cannot_scrobble_error.connect(
+      lambda message: self.showNotification.emit('The track you\'re playing cannot be scrobbled', message)
+    )
     self.media_player_name_changed.emit()
 
     # Start polling interval to check for new media player position
@@ -346,6 +350,9 @@ class HistoryViewModel(QtCore.QObject):
       self.__should_show_loading_indicator = False
       self.should_show_loading_indicator_changed.emit()
       self.end_refresh_history.emit()
+
+      # Pre-load profile and friends pages
+      self.preloadProfileAndFriends.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
     if not self.__is_enabled:

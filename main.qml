@@ -200,13 +200,17 @@ Window {
     }
   }
 
-  // // --- History Page ---
+  // --- History Page ---
 
   HistoryViewModel {
     id: historyViewModel
 
     applicationReference: applicationViewModel
     onShowNotification: (title, message) => trayIcon.showMessage(title, message)
+    onPreloadProfileAndFriends: {
+      profileViewModel.loadProfile(false)
+      friendsViewModel.loadFriends(false)
+    }
   }
 
   HistoryListModel {

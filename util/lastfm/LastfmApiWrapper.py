@@ -347,6 +347,7 @@ class LastfmApiWrapper:
         artist_url=track['artist']['url'],
         album_title=track['album']['#text'] or None,
         image_url=None, # Will be populated later
+        is_loved=bool(int(track['loved'])),
         is_playing=is_playing
       )
 
