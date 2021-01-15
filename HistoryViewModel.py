@@ -185,8 +185,8 @@ class HistoryViewModel(QtCore.QObject):
     if is_enabled:
       # Reset view model
       self.reset_state()
-      self.media_player.request_initial_state()
       self.reloadHistory()
+      self.media_player.request_initial_state()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
     else:
@@ -297,7 +297,7 @@ class HistoryViewModel(QtCore.QObject):
     self.media_player.paused.connect(self.__handle_media_player_paused)
 
     # Load initial track from newly selected media player without a notification
-    if self.media_player.is_open():
+    if self.media_player.is_open() and self.__is_enabled:
       # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
       self.media_player.request_initial_state()
     
@@ -425,8 +425,8 @@ class HistoryViewModel(QtCore.QObject):
   def __update_current_scrobble(self, media_player_state: MediaPlayerState) -> None:
     '''Replace the current scrobble, update cached track start/finish, update the UI'''
 
-    if not self.__is_enabled:
-      return
+    # if not self.__is_enabled:
+    #   return
 
     logger.debug(f'Now playing: {media_player_state.artist_name} - {media_player_state.track_title} | {media_player_state.album_title}')
     
@@ -576,8 +576,8 @@ class HistoryViewModel(QtCore.QObject):
   def __handle_media_player_playing(self, media_player_state: MediaPlayerState) -> None:
     '''Handle media player play event'''
 
-    if not self.__is_enabled:
-      return
+    # if not self.__is_enabled:
+    #   return
     
     # Update playback indicator
     self.is_player_paused = False

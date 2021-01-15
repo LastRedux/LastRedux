@@ -59,25 +59,6 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     )
 
   # --- Private Methods ---
-
-  # Shows as unused because it has to be registered with pyobjc as a function name string
-  def __handleNotificationFromMusic_(self, notification) -> None: # TODO: Add type annotation
-    '''Handle Objective-C notifications for Music app events'''
-    
-    self.__cached_notification_payload = notification.userInfo()
-
-    if self.__cached_notification_payload['Player State'] == 'Stopped':
-      self.stopped.emit()
-      return
-
-    self.__handle_new_state(
-      MediaPlayerState(
-        artist_name=self.__cached_notification_payload.get('Artist'),
-        track_title=self.__cached_notification_payload.get('Name'),
-        album_title=self.__cached_notification_payload.get('Album', None), # Prevent empty strings
-        is_playing=self.__cached_notification_payload['Player State'] == 'Playing'
-      )
-    )
     
   def __handle_new_state(self, new_state: MediaPlayerState) -> None:
     # Ignore notification if there's no track title (Usually happens with radio stations)
@@ -145,3 +126,24 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       self.playing.emit(self.__state)
     else:
       self.paused.emit(self.__state)
+
+  # Shows as unused because it has to be registered with pyobjc as a function name string
+  def __handleNotificationFromMusic_(self, notification) -> None: # TODO: Add type annotation
+    '''Handle Objective-C notifications for Music app events'''
+    
+    self.__cached_notification_payload = notification.userInfo()
+
+    logger.trace(f'New notification from Music.app: {self.__cached_notification_payload}')
+
+    if self.__cached_notification_payload['Player State'] == 'Stopped':
+      self.stopped.emit()
+      return
+
+    self.__handle_new_state(
+      MediaPlayerState(
+        artist_name=self.__cached_notification_payload.get('Artist'),
+        track_title=self.__cached_notification_payload.get('Name'),
+        album_title=self.__cached_notification_payload.get('Album', None), # Prevent empty strings
+        is_playing=self.__cached_notification_payload['Player State'] == 'Playing'
+      )
+    )

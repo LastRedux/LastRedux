@@ -59,7 +59,7 @@ Item {
           target: bar
           property: 'height'
           to: width
-          duration: 175
+          duration: bar.height * 10
         }
       }
 

@@ -382,10 +382,6 @@ class LastfmApiWrapper:
     if http_method == 'POST' or args.get('method') == 'auth.getSession':
       params['api_sig'] = self.__generate_method_signature(params)
 
-    # Prevent accidental usage without logging in
-    # if params.get('username') and not self.username:
-    #   raise Exception('Not logged in, use LastfmApiWrapper.set_login')
-
     # Make the request with automatic retries up to a limit
     for _ in range(LastfmApiWrapper.MAX_RETRIES):
       resp = None
@@ -435,8 +431,9 @@ class LastfmApiWrapper:
           return_object = return_value_builder(main_key_getter(resp_json), resp_json)
         else:
           return_object = return_value_builder(resp_json)
-      except KeyError:
+      except KeyError as err:
         # There's a missing key, run the request again by continuing the for loop
+        logger.warning(f'Failed Last.fm request: {str(err)} with response: {resp_json}')
         continue
 
       # The object creation succeeded, so we can break out of the for loop and return
