@@ -299,11 +299,12 @@ class LastfmApiWrapper:
       )
     )
   
-  def update_now_playing(self, artist_name: str, track_title: str, album_title: str=None) -> LastfmSubmissionStatus:
+  def update_now_playing(self, artist_name: str, track_title: str, duration: float, album_title: str=None) -> LastfmSubmissionStatus:
     args = {
       'method': 'track.updateNowPlaying',
       'artist': artist_name,
-      'track': track_title
+      'track': track_title,
+      'duration': duration
     }
 
     if album_title:
@@ -433,7 +434,7 @@ class LastfmApiWrapper:
           return_object = return_value_builder(resp_json)
       except KeyError as err:
         # There's a missing key, run the request again by continuing the for loop
-        logger.warning(f'Failed Last.fm request: {str(err)} with response: {resp_json}')
+        logger.warning(f'Failed Last.fm request: {str(err)} for request: {args}')
         continue
 
       # The object creation succeeded, so we can break out of the for loop and return

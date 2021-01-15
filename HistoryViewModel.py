@@ -447,10 +447,14 @@ class HistoryViewModel(QtCore.QObject):
     # Update UI content in current scrobble sidebar item
     self.current_scrobble_data_changed.emit()
 
-    # Tell Last.fm to update the user's now playing status
+    # Update now playing on Last.fm
     if self.__is_submission_enabled:
       QtCore.QThreadPool.globalInstance().start(
-        UpdateNowPlaying(self.__application_reference.lastfm, self.__current_scrobble)
+        UpdateNowPlaying(
+          lastfm=self.__application_reference.lastfm, 
+          scrobble=self.__current_scrobble,
+          duration=media_player_state.track_crop.finish - media_player_state.track_crop.start
+        )
       )
 
     # Reset player position to temporary value until a new value can be recieved from the media player
@@ -606,7 +610,7 @@ class HistoryViewModel(QtCore.QObject):
         large_text='Playing on Music',
         small_image='lastredux-logo',
         small_text='Scrobbling on LastRedux',
-        start=(datetime.now() - timedelta(seconds=media_player_state.track_crop.start + media_player_state.position)).timestamp()
+        start=(datetime.now() - timedelta(seconds=media_player_state.position)).timestamp() # Don't include track start to accurately reflect timestamp in uncropped track
       )
     
     # Update playback indicator
