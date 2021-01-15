@@ -95,7 +95,7 @@ class DetailsViewModel(QtCore.QObject):
   mediaPlayerName = QtCore.Property(
     type=str,
     fget=lambda self: (
-      str(self.__history_reference.media_player) 
+      self.__history_reference.mediaPlayerName
       if self.__history_reference else None
     ),
     notify=media_player_name_changed

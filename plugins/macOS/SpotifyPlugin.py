@@ -10,6 +10,10 @@ from plugins.macOS.MacMediaPlayerPlugin import MacMediaPlayerPlugin
 from datatypes.MediaPlayerState import MediaPlayerState
 
 class SpotifyPlugin(MacMediaPlayerPlugin):
+  MEDIA_PLAYER_NAME = 'Spotify'
+  MEDIA_PLAYER_ID = MEDIA_PLAYER_NAME
+  IS_SUBMISSION_ENABLED = True
+
   def __init__(self) -> None:
     # Store reference to Spotify app in AppleScript
     self.__applescript_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
@@ -28,9 +32,6 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     # Store the current media player state
     self.__state: MediaPlayerState = None
 
-  def __str__(self) -> str:
-    return 'Spotify'
-
   # --- Mac Media Player Implementation ---
 
   def request_initial_state(self) -> None:
@@ -44,6 +45,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     self.__handle_new_state(
       MediaPlayerState(
         is_playing=self.__applescript_app.playerState() == SpotifyPlugin.PLAYING_STATE,
+        position=self.get_player_position(),
         artist_name=track.artist(),
         track_title=track.name(),
         album_title=album_title,
@@ -71,6 +73,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
         track_title=notification_payload.get('Name'),
         album_title=notification_payload.get('Album', None), # Prevent empty strings
         is_playing=notification_payload['Player State'] == 'Playing',
+        position=self.get_player_position(),
         track_crop=TrackCrop(
           # Spotify tracks can't be cropped so we use duration
           finish=notification_payload['Duration'] / 1000 # Convert from ms to s

@@ -8,6 +8,10 @@ from datatypes import MediaPlayerState, TrackCrop
 from .FetchTrackCrop import FetchTrackCrop
 
 class MusicAppPlugin(MacMediaPlayerPlugin):
+  MEDIA_PLAYER_NAME = 'Music'
+  MEDIA_PLAYER_ID = 'musicApp'
+  IS_SUBMISSION_ENABLED = True
+
   def __init__(self) -> None:
     # Store reference to Music app in AppleScript
     self.__applescript_app = SBApplication.applicationWithBundleIdentifier_('com.apple.Music')
@@ -28,9 +32,6 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
     # Store latest state
     self.__state: MediaPlayerState = None
-
-  def __str__(self) -> str:
-    return 'Music'
 
   # --- Mac Media Player Implementation ---
 
@@ -54,7 +55,8 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         artist_name=track.artist(),
         track_title=track_title,
         album_title=track.album() or None, # Prevent storing empty strings in album_title key
-        is_playing=self.__applescript_app.playerState() == MusicAppPlugin.PLAYING_STATE
+        is_playing=self.__applescript_app.playerState() == MusicAppPlugin.PLAYING_STATE,
+        position=self.get_player_position()
       )
     )
 
@@ -144,6 +146,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         artist_name=self.__cached_notification_payload.get('Artist'),
         track_title=self.__cached_notification_payload.get('Name'),
         album_title=self.__cached_notification_payload.get('Album', None), # Prevent empty strings
-        is_playing=self.__cached_notification_payload['Player State'] == 'Playing'
+        is_playing=self.__cached_notification_payload['Player State'] == 'Playing',
+        position=self.get_player_position()
       )
     )

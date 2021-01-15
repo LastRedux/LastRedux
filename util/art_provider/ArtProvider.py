@@ -15,7 +15,7 @@ class ArtProvider:
   def get_album_art(self, artist_name: str, track_title: str, album_title: str=None) -> ImageSet:
     '''Get album art from whichever source can find it'''
 
-    album_art = None
+    album_art = ImageSet(None, None)
 
     # 1. Try geting album art from Last.fm if there's an album title to work with
     if album_title:

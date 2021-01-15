@@ -7,6 +7,10 @@ from datatypes import MediaPlayerState
 class MediaPlayerPlugin(QtCore.QObject):
   __metaclass__ = ABCMeta
 
+  MEDIA_PLAYER_NAME: str = None
+  MEDIA_PLAYER_ID: str = None
+  IS_SUBMISSION_ENABLED: bool = None
+
   '''Emitted when the media player is not playing anything'''
   stopped = QtCore.Signal()
 

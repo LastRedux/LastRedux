@@ -80,7 +80,8 @@ class MockPlayerPlugin(QtCore.QObject):
     mock_track = MockPlayerPlugin.MOCK_TRACKS[self.__track_index % len(MockPlayerPlugin.MOCK_TRACKS)]
 
     self.__state = MediaPlayerState(
-      is_playing=True, 
+      is_playing=True,
+      position=0,
       track_title=mock_track['track_title'], 
       artist_name=mock_track.get('artist_name'),
       album_title=mock_track.get('album_title'), 

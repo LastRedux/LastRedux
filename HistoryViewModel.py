@@ -2,7 +2,7 @@ from dataclasses import asdict
 from datatypes.TrackCrop import TrackCrop
 from datatypes.MediaPlayerState import MediaPlayerState
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from util.lastfm import LastfmList
 from util.lastfm.LastfmScrobble import LastfmScrobble
@@ -11,6 +11,7 @@ from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 from loguru import logger
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
+from pypresence import Presence
 
 from tasks import FetchPlayerPosition, LoadExternalScrobbleData, UpdateTrackLoveOnLastfm, FetchRecentScrobbles, SubmitScrobble, UpdateNowPlaying
 from plugins.macOS.music_app import MusicAppPlugin
@@ -59,7 +60,8 @@ class HistoryViewModel(QtCore.QObject):
     # Initialize media player plugins
     self.__spotify_plugin = SpotifyPlugin()
     self.__music_app_plugin = MusicAppPlugin()
-    self.media_player: MediaPlayerPlugin = None
+    self.__discord_rpc = Presence('799678908819439646')
+    self.__media_player: MediaPlayerPlugin = None
 
     # Settings
     # TODO: Move these properties to an App view model
@@ -67,7 +69,7 @@ class HistoryViewModel(QtCore.QObject):
     self.is_player_paused = False
     
     if os.environ.get('MOCK'):
-      self.media_player = MockPlayerPlugin()
+      self.__media_player = MockPlayerPlugin()
     else:
       use_spotify = False
       spotify_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
@@ -83,10 +85,10 @@ class HistoryViewModel(QtCore.QObject):
         # Use Music app plugin in all other cases since every Mac has it
         self.switchToMediaPlugin('musicApp')
 
-    self.media_player.stopped.connect(self.__handle_media_player_stopped)
-    self.media_player.playing.connect(self.__handle_media_player_playing)
-    self.media_player.paused.connect(self.__handle_media_player_paused)
-    self.media_player.cannot_scrobble_error.connect(
+    self.__media_player.stopped.connect(self.__handle_media_player_stopped)
+    self.__media_player.playing.connect(self.__handle_media_player_playing)
+    self.__media_player.paused.connect(self.__handle_media_player_paused)
+    self.__media_player.cannot_scrobble_error.connect(
       lambda message: self.showNotification.emit('The track you\'re playing cannot be scrobbled', message)
     )
     self.media_player_name_changed.emit()
@@ -186,7 +188,8 @@ class HistoryViewModel(QtCore.QObject):
       # Reset view model
       self.reset_state()
       self.reloadHistory()
-      self.media_player.request_initial_state()
+      self.__media_player.request_initial_state()
+      self.__discord_rpc.connect()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
     else:
@@ -277,29 +280,28 @@ class HistoryViewModel(QtCore.QObject):
     self.__current_scrobble_percentage = 0
 
     # Disconnect event signals
-    if self.media_player:
-      self.media_player.stopped.disconnect(self.__handle_media_player_stopped)
-      self.media_player.playing.disconnect(self.__handle_media_player_playing)
-      self.media_player.paused.disconnect(self.__handle_media_player_paused)
+    if self.__media_player:
+      self.__media_player.stopped.disconnect(self.__handle_media_player_stopped)
+      self.__media_player.playing.disconnect(self.__handle_media_player_playing)
+      self.__media_player.paused.disconnect(self.__handle_media_player_paused)
 
     if media_plugin_name == 'spotify':
-      self.media_player = self.__spotify_plugin
-      self.__set_is_scrobble_submission_enabled(False)
+      self.__media_player = self.__spotify_plugin
     elif media_plugin_name == 'musicApp':
-      self.media_player = self.__music_app_plugin
-      self.__set_is_scrobble_submission_enabled(True)
+      self.__media_player = self.__music_app_plugin
 
-    logger.success(f'Switched media player to {self.media_player}')
+    self.__set_is_scrobble_submission_enabled(self.__media_player.IS_SUBMISSION_ENABLED)
+    logger.success(f'Switched media player to {self.__media_player.MEDIA_PLAYER_NAME}')
 
     # Reconnect event signals
-    self.media_player.stopped.connect(self.__handle_media_player_stopped)
-    self.media_player.playing.connect(self.__handle_media_player_playing)
-    self.media_player.paused.connect(self.__handle_media_player_paused)
+    self.__media_player.stopped.connect(self.__handle_media_player_stopped)
+    self.__media_player.playing.connect(self.__handle_media_player_playing)
+    self.__media_player.paused.connect(self.__handle_media_player_paused)
 
     # Load initial track from newly selected media player without a notification
-    if self.media_player.is_open() and self.__is_enabled:
+    if self.__media_player.is_open() and self.__is_enabled:
       # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-      self.media_player.request_initial_state()
+      self.__media_player.request_initial_state()
     
     # Update 'Listening on X'  text in history view for current scrobble
     self.media_player_name_changed.emit()
@@ -308,7 +310,7 @@ class HistoryViewModel(QtCore.QObject):
   def mock_event(self, event_name):
     '''Allow mock player events to be triggered from QML'''
 
-    self.media_player.mock_event(event_name)
+    self.__media_player.mock_event(event_name)
 
   # --- Private Methods ---
 
@@ -483,7 +485,7 @@ class HistoryViewModel(QtCore.QObject):
     ):
       return
 
-    fetch_player_position_task = FetchPlayerPosition(self.media_player)
+    fetch_player_position_task = FetchPlayerPosition(self.__media_player)
     fetch_player_position_task.finished.connect(self.__handle_player_position_fetched)
     QtCore.QThreadPool.globalInstance().start(fetch_player_position_task)
 
@@ -553,6 +555,8 @@ class HistoryViewModel(QtCore.QObject):
       or not self.__current_scrobble
     ):
       return
+
+    self.__discord_rpc.clear()
     
     # Submit if the music player stops as well, not just when a new track starts
     if self.__should_submit_current_scrobble:
@@ -578,6 +582,17 @@ class HistoryViewModel(QtCore.QObject):
 
     # if not self.__is_enabled:
     #   return
+
+    if isinstance(self.__media_player, MusicAppPlugin) and os.environ.get('RPC'):
+      self.__discord_rpc.update(
+        details=media_player_state.track_title,
+        state=media_player_state.artist_name + (' | ' + media_player_state.album_title or ''),
+        large_image='music-logo',
+        large_text='Playing on Music',
+        small_image='lastredux-logo',
+        small_text='Scrobbling on LastRedux',
+        start=(datetime.now() - timedelta(seconds=media_player_state.track_crop.start + media_player_state.position)).timestamp()
+      )
     
     # Update playback indicator
     self.is_player_paused = False
@@ -636,7 +651,7 @@ class HistoryViewModel(QtCore.QObject):
 
   isUsingMockPlayer = QtCore.Property(
     type=bool,
-    fget=lambda self: isinstance(self.media_player, MockPlayerPlugin),
+    fget=lambda self: isinstance(self.__media_player, MockPlayerPlugin),
     notify=is_using_mock_player_changed
   )
 
@@ -655,6 +670,6 @@ class HistoryViewModel(QtCore.QObject):
 
   mediaPlayerName = QtCore.Property(
     type=str,
-    fget=lambda self: str(self.media_player),
+    fget=lambda self: self.__media_player.MEDIA_PLAYER_NAME,
     notify=media_player_name_changed
   )
