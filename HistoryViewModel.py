@@ -126,6 +126,10 @@ class HistoryViewModel(QtCore.QObject):
     # Keep track of furthest position reached in a song
     self.__furthest_player_position_reached: float = None
 
+    # Keep track of how many poll ticks have passed since the playback position changed
+    self.__cached_playback_position: float = None
+    self.__ticks_since_position_change: int = None
+
     # Store the current track's crop values since they aren't part of the scrobble object
     self.__current_track_crop: TrackCrop = None
 
@@ -501,6 +505,17 @@ class HistoryViewModel(QtCore.QObject):
     if player_position >= self.__furthest_player_position_reached:
       self.__furthest_player_position_reached = player_position
     
+    # Count how many ticks have passed since the playback position changed (used for Discord RPC)
+    if player_position == self.__cached_playback_position:
+      self.__ticks_since_position_change += 1
+
+      # Clear discord status if paused for more than 60 seconds
+      if self.__ticks_since_position_change > 60:
+        self.__discord_rpc.clear()
+    else:
+      self.__ticks_since_position_change = 0
+    
+    self.__cached_playback_position = player_position
     self.__current_scrobble_percentage = self.__determine_current_scrobble_percentage()
 
     # Update scrobble progress bar UI
@@ -583,7 +598,7 @@ class HistoryViewModel(QtCore.QObject):
     # if not self.__is_enabled:
     #   return
 
-    if isinstance(self.__media_player, MusicAppPlugin) and os.environ.get('RPC'):
+    if isinstance(self.__media_player, MusicAppPlugin) and os.environ.get('DISCORD_PRESENCE'):
       self.__discord_rpc.update(
         details=media_player_state.track_title,
         state=media_player_state.artist_name + (' | ' + media_player_state.album_title or ''),
