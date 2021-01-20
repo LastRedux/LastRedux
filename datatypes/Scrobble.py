@@ -6,11 +6,15 @@ from typing import List
 from datatypes import MediaPlayerState, ImageSet
 from util.lastfm import LastfmScrobble, LastfmTrack
 from util.spotify_api import SpotifyArtist
+from util.lastfm.LastfmAlbum import LastfmAlbum
+from util.lastfm.LastfmArtist import LastfmArtist
 
 @dataclass
 class Scrobble(LastfmScrobble):
   image_set: ImageSet = None
   lastfm_track: LastfmTrack = None
+  lastfm_artist: LastfmArtist = None
+  lastfm_album: LastfmAlbum = None
   spotify_artists: List[SpotifyArtist] = None
   is_loading: bool = True
   lastfm_album_url: str = None # This is needed since the track info request doesn't give us an album

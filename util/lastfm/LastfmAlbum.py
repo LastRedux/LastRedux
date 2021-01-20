@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from .LastfmArtist import LastfmArtist
+from .LastfmArtistReference import LastfmArtistReference
 from .LastfmTag import LastfmTag
 from datatypes import ImageSet
 
@@ -9,7 +9,7 @@ from datatypes import ImageSet
 class LastfmAlbum:
   url: str
   title: str
-  artist: LastfmArtist
+  artist: LastfmArtistReference
   image_set: ImageSet
   plays: int
 

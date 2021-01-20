@@ -13,7 +13,7 @@ class UpdateTrackLoveOnLastfm(QtCore.QRunnable):
   
   def run(self):
     self.lastfm.set_track_is_loved(
-      artist_name=self.scrobble.lastfm_track.artist.name,
+      artist_name=self.scrobble.lastfm_artist.name,
       track_title=self.scrobble.lastfm_track.title,
       is_loved=self.value
     )

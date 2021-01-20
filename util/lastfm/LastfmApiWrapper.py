@@ -1,6 +1,5 @@
 import hashlib
 import json
-import sys
 import time
 from datetime import datetime, time
 from typing import List
@@ -18,6 +17,7 @@ from .LastfmTag import LastfmTag
 from .LastfmTrack import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
+from .LastfmArtistReference import LastfmArtistReference
 from datatypes.ImageSet import ImageSet
 from datatypes.FriendScrobble import FriendScrobble
 
@@ -126,7 +126,7 @@ class LastfmApiWrapper:
         LastfmTrack(
           url=track['url'],
           title=track['name'],
-          artist=LastfmArtist(
+          artist_reference=LastfmArtistReference(
             url=track['artist']['url'],
             name=track['artist']['name']
           ),
@@ -194,7 +194,7 @@ class LastfmApiWrapper:
       return_value_builder=lambda track, response: LastfmTrack(
         url=track['url'],
         title=track['name'],
-        artist=LastfmArtist(
+        artist_reference=LastfmArtistReference(
           name=track['artist']['name'],
           url=track['artist']['url']
         ),
@@ -371,6 +371,7 @@ class LastfmApiWrapper:
   # --- Private Methods ---
 
   def __lastfm_request(self, args, main_key_getter=None, return_value_builder=None, http_method='GET'):
+    # print('req ' + str(args))
     params = {
       'api_key': LastfmApiWrapper.API_KEY, 
       'format': 'json',
@@ -398,14 +399,14 @@ class LastfmApiWrapper:
         )
       except requests.exceptions.ConnectionError:
         logger.critical(f'Connection error: {params}')
-        # TODO: Notify the user that the app is closing through QML
-        # TODO: In the future don't do this though, keep the app open and handle the error
-        sys.exit()
+
+        # Retry request
+        continue
 
       try:
         resp_json = resp.json()
       except json.decoder.JSONDecodeError:
-        logger.critical(f'Last.fm returned non-JSON response: {resp.text}')
+        logger.critical(f'Last.fm returned non-JSON response (code {resp.status_code})): {resp.text}')
         return
 
       if not resp.status_code == 200:
@@ -434,7 +435,7 @@ class LastfmApiWrapper:
           return_object = return_value_builder(resp_json)
       except KeyError as err:
         # There's a missing key, run the request again by continuing the for loop
-        logger.warning(f'Failed Last.fm request: {str(err)} for request: {args}')
+        logger.warning(f'Mising key in Last.fm request: {str(err)} for request {args}')
         continue
 
       # The object creation succeeded, so we can break out of the for loop and return

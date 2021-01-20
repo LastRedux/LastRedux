@@ -4,6 +4,7 @@ import json
 from typing import List
 
 from AppKit import NSScreen
+import psutil
 
 from util.lastfm.LastfmScrobble import LastfmScrobble
 
@@ -43,3 +44,9 @@ def generate_system_profile() -> dict:
 
 def is_within_24_hours(date: datetime) -> bool:
   return (datetime.now() - date).total_seconds() <= 86400 # 24 hours = 86400 seconds
+
+def is_discord_open() -> bool:
+  '''Check if there is a process named Discord running'''
+
+  # TODO: Find a way to make this less fallible (ie. fake Discord app will crash LastRedux)
+  return 'Discord' in [process.name() for process in psutil.process_iter()]

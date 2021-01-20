@@ -172,7 +172,7 @@ Item {
     Column {
       id: friendArtistLeaderboard
       spacing: 8
-      visible: !isInMiniMode
+      visible: false //!isInMiniMode
 
       width: parent.width
 
@@ -214,7 +214,7 @@ Item {
 
       Column {
         spacing: 2
-        visible: !hasLastfmData || !viewModel.scrobble.friend_artist_leaderboard
+        visible: false//!hasLastfmData || !viewModel.scrobble.friend_artist_leaderboard
 
         width: parent.width
 

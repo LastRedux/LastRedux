@@ -19,6 +19,7 @@ from plugins.macOS.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.SpotifyPlugin import SpotifyPlugin
 from ApplicationViewModel import ApplicationViewModel
 from datatypes import Scrobble
+import util.helpers as helpers
 
 class HistoryViewModel(QtCore.QObject):
   # Constants
@@ -60,8 +61,16 @@ class HistoryViewModel(QtCore.QObject):
     # Initialize media player plugins
     self.__spotify_plugin = SpotifyPlugin()
     self.__music_app_plugin = MusicAppPlugin()
-    self.__discord_rpc = Presence('799678908819439646')
     self.__media_player: MediaPlayerPlugin = None
+    
+    # Set up Discord presence
+    self.__is_discord_rpc_enabled = bool(os.environ.get('DISCORD_PRESENCE'))
+    self.__discord_rpc = Presence('799678908819439646')
+
+    if self.__is_discord_rpc_enabled and  helpers.is_discord_open():
+      self.__discord_rpc.connect()
+
+    logger.info(f'Discord RPC is set to {self.__is_discord_rpc_enabled}')
 
     # Settings
     # TODO: Move these properties to an App view model
@@ -191,9 +200,8 @@ class HistoryViewModel(QtCore.QObject):
     if is_enabled:
       # Reset view model
       self.reset_state()
-      self.reloadHistory()
       self.__media_player.request_initial_state()
-      self.__discord_rpc.connect()
+      self.reloadHistory()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
     else:
@@ -326,8 +334,7 @@ class HistoryViewModel(QtCore.QObject):
     for i, recent_scrobble in enumerate(recent_scrobbles.items):
       self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
 
-      # TODO: Find a way to avoid loading duplicate scrobble data (two of the same scrobble in the list will have identical external data)
-      self.__load_external_scrobble_data(self.scrobble_history[i]) # Pass reference to scrobble in list
+      self.__load_external_scrobble_data(self.scrobble_history[i])
 
     self.end_refresh_history.emit()
 
@@ -351,7 +358,7 @@ class HistoryViewModel(QtCore.QObject):
 
     self.__scrobbles_with_external_data_count += 1
 
-    if self.__scrobbles_with_external_data_count == len(self.scrobble_history):
+    if self.__scrobbles_with_external_data_count == self.__INITIAL_SCROBBLE_HISTORY_COUNT:
       # All scrobbles have loaded their additional data
       self.__should_show_loading_indicator = False
       self.should_show_loading_indicator_changed.emit()
@@ -418,8 +425,13 @@ class HistoryViewModel(QtCore.QObject):
 
     # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
     if scrobble.lastfm_track:
-      scrobble.lastfm_track.plays += 1
-      scrobble.lastfm_track.artist.plays += 1
+      try:
+        scrobble.lastfm_track.plays += 1
+        scrobble.lastfm_artist.plays += 1
+      except TypeError:
+        print('error incrementing plays ' + str(scrobble))
+        print(scrobble.lastfm_track)
+        print(scrobble.lastfm_artist)
 
       # Refresh scrobble details pane if the submitted scrobble is selected
       if scrobble == self.selected_scrobble:
@@ -446,16 +458,6 @@ class HistoryViewModel(QtCore.QObject):
 
     # Update UI content in current scrobble sidebar item
     self.current_scrobble_data_changed.emit()
-
-    # Update now playing on Last.fm
-    if self.__is_submission_enabled:
-      QtCore.QThreadPool.globalInstance().start(
-        UpdateNowPlaying(
-          lastfm=self.__application_reference.lastfm, 
-          scrobble=self.__current_scrobble,
-          duration=media_player_state.track_crop.finish - media_player_state.track_crop.start
-        )
-      )
 
     # Reset player position to temporary value until a new value can be recieved from the media player
     self.__furthest_player_position_reached = 0
@@ -514,15 +516,15 @@ class HistoryViewModel(QtCore.QObject):
       self.__ticks_since_position_change += 1
 
       # Clear discord status if paused for more than 60 seconds
-      if self.__ticks_since_position_change > 60:
-        self.__discord_rpc.clear()
+      if self.__ticks_since_position_change > 60 and self.__is_discord_rpc_enabled:
+        # Skip next check since they have a cost
+        if helpers.is_discord_open():
+          self.__discord_rpc.clear()
     else:
       self.__ticks_since_position_change = 0
     
     self.__cached_playback_position = player_position
     self.__current_scrobble_percentage = self.__determine_current_scrobble_percentage()
-
-    # Update scrobble progress bar UI
     self.scrobble_percentage_changed.emit()
 
   def __determine_current_scrobble_percentage(self) -> int:
@@ -551,7 +553,6 @@ class HistoryViewModel(QtCore.QObject):
     # Submit current scrobble if the progress towards the scrobble threshold is 100%
     if scrobble_percentage == 1:
       self.__should_submit_current_scrobble = True
-      logger.debug(f'{repr(self.__current_scrobble.track_title)}: Ready for submission to Last.fm')
 
     return scrobble_percentage
 
@@ -575,7 +576,8 @@ class HistoryViewModel(QtCore.QObject):
     ):
       return
 
-    self.__discord_rpc.clear()
+    if self.__is_discord_rpc_enabled and helpers.is_discord_open():
+      self.__discord_rpc.clear()
     
     # Submit if the music player stops as well, not just when a new track starts
     if self.__should_submit_current_scrobble:
@@ -602,10 +604,24 @@ class HistoryViewModel(QtCore.QObject):
     # if not self.__is_enabled:
     #   return
 
-    if isinstance(self.__media_player, MusicAppPlugin) and os.environ.get('DISCORD_PRESENCE'):
+
+    # Update now playing on Last.fm
+    if self.__is_submission_enabled:
+      QtCore.QThreadPool.globalInstance().start(
+        UpdateNowPlaying(
+          lastfm=self.__application_reference.lastfm, 
+          scrobble=self.__current_scrobble,
+          duration=media_player_state.track_crop.finish - media_player_state.track_crop.start
+        )
+      )
+
+    # Update Discord rich presence
+    if self.__is_discord_rpc_enabled and helpers.is_discord_open():
       self.__discord_rpc.update(
         details=media_player_state.track_title,
-        state=media_player_state.artist_name + (' | ' + media_player_state.album_title or ''),
+        state=media_player_state.artist_name + (
+          ' | ' + media_player_state.album_title
+        ) if media_player_state.album_title else '',
         large_image='music-logo',
         large_text='Playing on Music',
         small_image='lastredux-logo',

@@ -24,10 +24,10 @@ class SpotifyApiWrapper:
       query=SpotifyApiWrapper.__simplify_artist_name(artist_name),
       media_type='artist',
       limit=1
-    )['artists']['items']
+    )
 
-    if not len(results):
-      return None
+    if not results:
+      return
 
     return SpotifyArtist(
       url=results[0]['external_urls']['spotify'],
@@ -51,9 +51,9 @@ class SpotifyApiWrapper:
         SpotifyApiWrapper.__simplify_title(album_title) if album_title else ''
       ),
       media_type='track'
-    )['tracks']['items']
+    )
 
-    if len(results):
+    if results:
       track = self.__find_track_match(results, artist_name)
 
       # Find track with matching artists
@@ -89,19 +89,31 @@ class SpotifyApiWrapper:
         'type': media_type,
         'limit': limit
       }
-    )
+    ).get(f'{media_type}s', {}).get('items')
 
-  def __request(self, url: str, args: dict) -> dict:
+  def __request(self, url: str, args: dict, is_retry=False) -> dict:
     '''Make a request to Spotify and handle the potential errors'''
 
-    resp_json = requests.get(
-      url=url,
-      params=args, 
-      headers={
-        'Accept': 'application/json',
-        'Authorization': f'Bearer {self.access_token}'
-      }
-    ).json()
+    resp = None
+    
+    try:
+      resp = requests.get(
+        url=url,
+        params=args, 
+        headers={
+          'Accept': 'application/json',
+          'Authorization': f'Bearer {self.access_token}'
+        }
+      )
+    except:
+      # Retry one time (Spotify doesn't usually have connection problems)
+      if not is_retry:
+        self.__request(url, args, is_retry=True)
+      else:
+        logger.critical('Could not connect to Spotify')
+        return
+
+    resp_json = resp.json()
 
     if 'error' in resp_json:
       if resp_json['error']['message'] == 'The access token expired':

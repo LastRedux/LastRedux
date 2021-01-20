@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from .LastfmArtist import LastfmArtist
+from .LastfmArtistReference import LastfmArtistReference
 from .LastfmAlbum import LastfmAlbum
 from .LastfmTag import LastfmTag
 
@@ -9,8 +9,9 @@ from .LastfmTag import LastfmTag
 class LastfmTrack:
   url: str
   title: str
-  artist: LastfmArtist
-  album: LastfmAlbum = None
+  artist_reference: LastfmArtistReference
+
+  # Optional data
   plays: int = None
   is_loved: bool = None
   global_listeners: int = None
@@ -27,9 +28,4 @@ class LastfmTrack:
     ))
 
   def __repr__(self) -> str:
-    string =  f'{self.artist.name} - {self.title}'
-    
-    if self.album:
-      string += f' | {self.album.title}'
-
-    return string
+    return f'{self.artist_reference.name} - {self.title}'

@@ -115,13 +115,16 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       # No track finish was found (most likely a non-library track), we'll use the total duration as the track finish instead
       total_time = self.__cached_notification_payload.get('Total Time')
 
-      # Sometimes even this fails, there's nothing we can do
-      if not total_time:
+      if total_time:
+        self.__state.track_crop.finish = total_time / 1000 # Convert from ms to s
+      else:
+        # Sometimes even this fails, there's nothing we can do
         self.stopped.emit()
         self.cannot_scrobble_error.emit('Music did not provide a track length')
         logger.error(f'Error getting track duration for {self.__cached_notification_payload}')
 
-      self.__state.track_crop.finish = total_time / 1000 # Convert from ms to s
+        # Don't emit play signal
+        return
     
     # Finally emit play/pause signal
     if self.__state.is_playing:

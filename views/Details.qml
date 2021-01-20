@@ -15,9 +15,14 @@ Item {
   property bool canDisplayScrobble: !!(viewModel && viewModel.scrobble)
 
   // Check if all remote scrobble data from Last.fm has loaded
-  property bool hasLastfmData: (
-    canDisplayScrobble
-    && !viewModel.scrobble.is_loading
+  property bool hasLastfmTrackData: (
+    canDisplayScrobble && !!viewModel.scrobble.lastfm_track
+  )
+  property bool hasLastfmArtistData: (
+    canDisplayScrobble && !!viewModel.scrobble.lastfm_artist
+  )
+  property bool hasAllLastfmData: (
+    canDisplayScrobble && !viewModel.scrobble.is_loading
   )
   property bool isTrackNotFound: (
     canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
@@ -99,23 +104,23 @@ Item {
           property bool hasLastfmAlbum: (
             canDisplayScrobble
             && !!viewModel.scrobble.lastfm_track
-            && !!viewModel.scrobble.lastfm_track.album
+            && !!viewModel.scrobble.lastfm_album
           )
           
           id: trackDetails
 
           isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble
           title: canDisplayScrobble && viewModel.scrobble.track_title
-          lastfmUrl: hasLastfmData && viewModel.scrobble.lastfm_track.url
-          lastfmGlobalListeners: hasLastfmData && viewModel.scrobble.lastfm_track.global_listeners
-          lastfmGlobalPlays: hasLastfmData && viewModel.scrobble.lastfm_track.global_plays
-          lastfmPlays: hasLastfmData && viewModel.scrobble.lastfm_track.plays
-          lastfmTags: hasLastfmData && viewModel.scrobble.lastfm_track.tags
+          lastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.url
+          lastfmGlobalListeners: hasLastfmTrackData && viewModel.scrobble.lastfm_track.global_listeners
+          lastfmGlobalPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.global_plays
+          lastfmPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.plays
+          lastfmTags: hasLastfmTrackData && viewModel.scrobble.lastfm_track.tags
           artistName: canDisplayScrobble && viewModel.scrobble.artist_name
-          artistLastfmUrl: hasLastfmData && viewModel.scrobble.lastfm_track.artist.url
+          artistLastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.artist_reference.url
           albumTitle: canDisplayScrobble && viewModel.scrobble.album_title
-          albumLastfmUrl: hasLastfmAlbum && hasLastfmData && viewModel.scrobble.lastfm_track.album.url
-          albumLastfmPlays: hasLastfmAlbum && hasLastfmData && viewModel.scrobble.lastfm_track.album.plays
+          albumLastfmUrl: hasLastfmAlbum && hasAllLastfmData && viewModel.scrobble.lastfm_album.url
+          albumLastfmPlays: hasLastfmAlbum && hasAllLastfmData && viewModel.scrobble.lastfm_album.plays
           albumImageUrl: (
             canDisplayScrobble
             && !!viewModel.scrobble.image_set
@@ -129,22 +134,22 @@ Item {
         }
 
         ArtistDetails {
-          visible: !isTrackNotFound
+          // visible: !isTrackNotFound
 
           name: canDisplayScrobble && viewModel.scrobble.artist_name
-          bio: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.bio
-          lastfmUrl: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.url
+          bio: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.bio
+          lastfmUrl: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.url
           lastfmGlobalListeners: (
-            root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.global_listeners
+            hasLastfmArtistData && viewModel.scrobble.lastfm_artist.global_listeners
           )
           lastfmGlobalPlays: (
-            root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.global_plays
+            hasLastfmArtistData && viewModel.scrobble.lastfm_artist.global_plays
           )
-          lastfmPlays: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.plays
-          lastfmTags: root.hasLastfmData ? viewModel.scrobble.lastfm_track.artist.tags : []
+          lastfmPlays: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.plays
+          lastfmTags: hasLastfmArtistData ? viewModel.scrobble.lastfm_artist.tags : []
           spotifyArtists: canDisplayScrobble && viewModel.scrobble.spotify_artists
-          isReadMoreLinkVisible: root.hasLastfmData && viewModel.scrobble.lastfm_track.artist.bio
-          hasLastfmData: root.hasLastfmData
+          isReadMoreLinkVisible: root.hasAllLastfmData && viewModel.scrobble.lastfm_artist.bio
+          hasLastfmData: hasLastfmArtistData
           isInMiniMode: viewModel.isInMiniMode
 
           width: column.width
@@ -155,8 +160,8 @@ Item {
         Item {
           visible: (
             !isInMiniMode
-            && hasLastfmData
-            && viewModel.scrobble.lastfm_track.artist.similar_artists.length
+            && hasAllLastfmData
+            && viewModel.scrobble.lastfm_artist.similar_artists.length
           )
 
           width: column.width
@@ -210,7 +215,7 @@ Item {
             }
 
             Repeater {
-              model: hasLastfmData && viewModel.scrobble.lastfm_track.artist.similar_artists
+              model: hasAllLastfmData && viewModel.scrobble.lastfm_artist.similar_artists
 
               delegate: Tag {
                 name: modelData.name
