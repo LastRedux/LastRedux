@@ -48,13 +48,13 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
       return [
         ProfileStatistic(
           title=track.title,
-          subtitle=track.artist_reference.name,
+          subtitle=track.artist_link.name,
           plays=track.plays,
           percentage=track.plays / top_plays,
           lastfm_url=track.url,
-          secondary_lastfm_url=track.artist_reference.url,
+          secondary_lastfm_url=track.artist_link.url,
           image_url=self.art_provider.get_album_art(
-            artist_name=track.artist_reference.name,
+            artist_name=track.artist_link.name,
             track_title=track.title
           ).small_url
         ) for track in tracks
@@ -66,15 +66,15 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
       return [
         ProfileStatistic(
           title=album.title,
-          subtitle=album.artist.name,
+          subtitle=album.artist_link.name,
           plays=album.plays,
           percentage=album.plays / top_plays,
           lastfm_url=album.url,
-          secondary_lastfm_url=album.artist.url,
+          secondary_lastfm_url=album.artist_link.url,
           image_url=album.image_set.small_url or self.art_provider.get_album_art(
-            artist_name=album.artist.name, 
-            album_title=album.album.title
-          )
+            artist_name=album.artist_link.name,
+            album_title=album.title
+          ).small_url
         ) for album in albums
       ]
 

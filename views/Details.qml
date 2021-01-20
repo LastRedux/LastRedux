@@ -117,7 +117,7 @@ Item {
           lastfmPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.plays
           lastfmTags: hasLastfmTrackData && viewModel.scrobble.lastfm_track.tags
           artistName: canDisplayScrobble && viewModel.scrobble.artist_name
-          artistLastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.artist_reference.url
+          artistLastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.artist_link.url
           albumTitle: canDisplayScrobble && viewModel.scrobble.album_title
           albumLastfmUrl: hasLastfmAlbum && hasAllLastfmData && viewModel.scrobble.lastfm_album.url
           albumLastfmPlays: hasLastfmAlbum && hasAllLastfmData && viewModel.scrobble.lastfm_album.plays

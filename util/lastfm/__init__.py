@@ -9,4 +9,4 @@ from .LastfmTag import LastfmTag
 from .LastfmUserInfo import LastfmUserInfo
 from .LastfmUser import LastfmUser
 from .LastfmAlbum import LastfmAlbum
-from .LastfmArtistReference import LastfmArtistReference
+from .LastfmArtistLink import LastfmArtistLink

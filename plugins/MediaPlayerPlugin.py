@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 from PySide2 import QtCore
 
-from datatypes import MediaPlayerState
+from datatypes.MediaPlayerState import MediaPlayerState
 
 class MediaPlayerPlugin(QtCore.QObject):
   __metaclass__ = ABCMeta

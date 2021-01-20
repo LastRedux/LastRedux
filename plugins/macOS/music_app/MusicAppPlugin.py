@@ -4,7 +4,8 @@ from Foundation import NSDistributedNotificationCenter
 from loguru import logger
 
 from plugins.macOS.MacMediaPlayerPlugin import MacMediaPlayerPlugin
-from datatypes import MediaPlayerState, TrackCrop
+from datatypes.MediaPlayerState import MediaPlayerState
+from datatypes.TrackCrop import TrackCrop
 from .FetchTrackCrop import FetchTrackCrop
 
 class MusicAppPlugin(MacMediaPlayerPlugin):

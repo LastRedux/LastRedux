@@ -105,13 +105,14 @@ class SpotifyApiWrapper:
           'Authorization': f'Bearer {self.access_token}'
         }
       )
-    except:
+    except (ConnectionResetError, ConnectionError):
       # Retry one time (Spotify doesn't usually have connection problems)
       if not is_retry:
         self.__request(url, args, is_retry=True)
       else:
         logger.critical('Could not connect to Spotify')
-        return
+      
+      return
 
     resp_json = resp.json()
 

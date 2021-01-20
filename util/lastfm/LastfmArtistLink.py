@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
 @dataclass
-class LastfmArtistReference:
+class LastfmArtistLink:
   url: str
   name: str

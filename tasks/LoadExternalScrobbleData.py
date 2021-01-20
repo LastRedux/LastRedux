@@ -1,7 +1,6 @@
-from datatypes import ProfileStatistic
 from PySide2 import QtCore
 
-from util.lastfm import LastfmApiWrapper, LastfmUser
+from util.lastfm import LastfmApiWrapper
 from util.art_provider import ArtProvider
 from datatypes.Scrobble import Scrobble
 

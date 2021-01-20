@@ -5,7 +5,8 @@ from PySide2 import QtCore
 from ApplicationViewModel import ApplicationViewModel
 from tasks import FetchFriends, FetchFriendScrobble, FetchFriendScrobbleArt
 from util.lastfm import LastfmUser
-from datatypes import Friend, FriendScrobble
+from datatypes.Friend import Friend
+from datatypes.FriendScrobble import FriendScrobble
 
 class FriendsViewModel(QtCore.QObject):
   # Qt Property signals

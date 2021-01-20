@@ -1,13 +1,15 @@
 from __future__ import annotations
 from dataclasses import asdict, dataclass
-from datatypes.ProfileStatistic import ProfileStatistic
 from typing import List
 
-from datatypes import MediaPlayerState, ImageSet
-from util.lastfm import LastfmScrobble, LastfmTrack
-from util.spotify_api import SpotifyArtist
+from util.lastfm.LastfmScrobble import LastfmScrobble
+from util.lastfm.LastfmTrack import LastfmTrack
 from util.lastfm.LastfmAlbum import LastfmAlbum
+from util.spotify_api import SpotifyArtist
 from util.lastfm.LastfmArtist import LastfmArtist
+from .MediaPlayerState import MediaPlayerState
+from .ImageSet import ImageSet
+from .ProfileStatistic import ProfileStatistic
 
 @dataclass
 class Scrobble(LastfmScrobble):

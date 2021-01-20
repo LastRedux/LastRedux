@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from typing import List
 
-from .LastfmArtistReference import LastfmArtistReference
+from .LastfmArtistLink import LastfmArtistLink
 from .LastfmTag import LastfmTag
-from datatypes import ImageSet
+from datatypes.ImageSet import ImageSet
 
 @dataclass
 class LastfmAlbum:
   url: str
   title: str
-  artist: LastfmArtistReference
+  artist_link: LastfmArtistLink
   image_set: ImageSet
   plays: int
 
@@ -27,4 +27,4 @@ class LastfmAlbum:
     ))
 
   def __repr__(self) -> str:
-    return f'{self.title} | {self.artist.name}'
+    return f'{self.title} | {self.artist_link.name}'

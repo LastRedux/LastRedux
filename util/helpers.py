@@ -1,24 +1,27 @@
-from datetime import datetime
+import datetime
 import subprocess
 import json
-from typing import List
 
 from AppKit import NSScreen
 import psutil
 
+from util.lastfm import LastfmList
 from util.lastfm.LastfmScrobble import LastfmScrobble
 
-def get_mock_recent_scrobbles(count: int) -> List[LastfmScrobble]:
-  return [
-    LastfmScrobble(
-      artist_name=mock_track['artist_name'],
-      track_title=mock_track['track_title'],
-      album_title=mock_track.get('album_title', None),
-      timestamp=datetime.datetime.now() - datetime.timedelta(minutes=3 * i)
-    ) for i, mock_track in enumerate(
-      json.load(open('mock_data/mock_tracks.json'))[1:count]
-    ) if mock_track.get('artist_name')
-  ]
+def get_mock_recent_scrobbles(count: int) -> LastfmList[LastfmScrobble]:
+  return LastfmList(
+    items=[
+      LastfmScrobble(
+        artist_name=mock_track['artist_name'],
+        track_title=mock_track['track_title'],
+        album_title=mock_track.get('album_title', None),
+        timestamp=datetime.datetime.now() - datetime.timedelta(minutes=3 * i)
+      ) for i, mock_track in enumerate(
+        json.load(open('mock_data/mock_tracks.json'))[1:count]
+      ) if mock_track.get('artist_name')
+    ],
+    attr_total=count
+  )
 
 def generate_system_profile() -> dict:
   software_info = json.loads(subprocess.check_output('system_profiler SPSoftwareDataType -json', shell=True))['SPSoftwareDataType'][0]
@@ -42,8 +45,8 @@ def generate_system_profile() -> dict:
     'displays': f'''{[f'{int(screen.frame().size.width)}x{int(screen.frame().size.height)} {"(Retina)" if screen.backingScaleFactor() == 2.0 else ""}' for screen in NSScreen.screens()]}'''
   }
 
-def is_within_24_hours(date: datetime) -> bool:
-  return (datetime.now() - date).total_seconds() <= 86400 # 24 hours = 86400 seconds
+def is_within_24_hours(date: datetime.datetime) -> bool:
+  return (datetime.datetime.now() - date).total_seconds() <= 86400 # 24 hours = 86400 seconds
 
 def is_discord_open() -> bool:
   '''Check if there is a process named Discord running'''

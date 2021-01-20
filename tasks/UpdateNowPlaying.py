@@ -2,7 +2,7 @@ from loguru import logger
 from PySide2 import QtCore
 
 from util.lastfm import LastfmApiWrapper
-from datatypes import Scrobble
+from datatypes.Scrobble import Scrobble
 
 class UpdateNowPlaying(QtCore.QRunnable): # Don't inherit from QObject because no signals are used
   def __init__(self, lastfm: LastfmApiWrapper, scrobble: Scrobble, duration: float):

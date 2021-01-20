@@ -4,15 +4,15 @@ from loguru import logger
 from util.lastfm import LastfmApiWrapper
 from util.spotify_api import SpotifyApiWrapper
 from datatypes.ImageSet import ImageSet
-import util.itunes_store_api_helper as itunes_store
 from .ScrobbleImages import ScrobbleImages
+import util.itunes_store_api_helper as itunes_store
 
 class ArtProvider:
   def __init__(self, lastfm: LastfmApiWrapper, spotify_api: SpotifyApiWrapper):
     self.lastfm = lastfm
     self.spotify_api = spotify_api
 
-  def get_album_art(self, artist_name: str, track_title: str, album_title: str=None) -> ImageSet:
+  def get_album_art(self, artist_name: str, track_title: str=None, album_title: str=None) -> ImageSet:
     '''Get album art from whichever source can find it'''
 
     album_art = ImageSet(None, None)
@@ -77,8 +77,6 @@ class ArtProvider:
       album_info = self.lastfm.get_album_info(artist_name, album_title.replace(' - Single', ''))
 
       if album_info:
-        # Some albums don't exist yet on Last.fm
-
         if album_info.image_set:
           return album_info.image_set
 

@@ -4,8 +4,8 @@ from util.spotify_api.SpotifyApiWrapper import SpotifyApiWrapper
 from PySide2 import QtCore
 
 from ApplicationViewModel import ApplicationViewModel
+from datatypes.ProfileStatistics import ProfileStatistics
 from tasks import FetchProfileStatistics
-from datatypes import ProfileStatistics
 
 class ProfileViewModel(QtCore.QObject):
   # Qt Property signals

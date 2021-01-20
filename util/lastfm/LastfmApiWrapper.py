@@ -17,7 +17,7 @@ from .LastfmTag import LastfmTag
 from .LastfmTrack import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
-from .LastfmArtistReference import LastfmArtistReference
+from .LastfmArtistLink import LastfmArtistLink
 from datatypes.ImageSet import ImageSet
 from datatypes.FriendScrobble import FriendScrobble
 
@@ -126,7 +126,7 @@ class LastfmApiWrapper:
         LastfmTrack(
           url=track['url'],
           title=track['name'],
-          artist_reference=LastfmArtistReference(
+          artist_link=LastfmArtistLink(
             url=track['artist']['url'],
             name=track['artist']['name']
           ),
@@ -147,8 +147,8 @@ class LastfmApiWrapper:
         LastfmAlbum(
           url=album['url'],
           title=album['name'],
-          artist=LastfmArtist(
-            url=None,
+          artist_link=LastfmArtist(
+            url=album['artist']['url'],
             name=album['artist']['name']
           ),
           image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
@@ -194,7 +194,7 @@ class LastfmApiWrapper:
       return_value_builder=lambda track, response: LastfmTrack(
         url=track['url'],
         title=track['name'],
-        artist_reference=LastfmArtistReference(
+        artist_link=LastfmArtistLink(
           name=track['artist']['name'],
           url=track['artist']['url']
         ),
@@ -217,7 +217,7 @@ class LastfmApiWrapper:
       return_value_builder=lambda album, response: LastfmAlbum(
         url=album['url'],
         title=album['name'],
-        artist=LastfmArtist(
+        artist_link=LastfmArtist(
           url=None,
           name=album['artist']
         ),

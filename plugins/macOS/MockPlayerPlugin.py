@@ -11,6 +11,9 @@ class MockPlayerPlugin(QtCore.QObject):
   stopped = QtCore.Signal()
   paused = QtCore.Signal(MediaPlayerState)
   playing = QtCore.Signal(MediaPlayerState)
+  cannot_scrobble_error = QtCore.Signal(str)
+
+  MEDIA_PLAYER_NAME = 'Mock'
 
   # Mock player constants
   MOCK_TRACKS = json.load(open('mock_data/mock_tracks.json')) + [{
@@ -20,8 +23,7 @@ class MockPlayerPlugin(QtCore.QObject):
     "album_title": random.getrandbits(128),
   }, {
     "reason": "Test song with no artist",
-    "track_title": "localtrack.mp3",
-
+    "track_title": "localtrack.mp3"
   }] if os.environ.get('MOCK') else []
 
   MOCK_TRACK_LENGTH = 100
@@ -32,9 +34,6 @@ class MockPlayerPlugin(QtCore.QObject):
     self.__state: MediaPlayerState = None
     self.__track_index = 0
     self.__player_position = 0
-
-  def __str__(self):
-    return 'Mock'
 
   # --- Media Player Implementation ---
 
@@ -74,12 +73,15 @@ class MockPlayerPlugin(QtCore.QObject):
       self.__track_index += 1
       self.__player_position = 0
       self.__update_state()
-      self.playing.emit(self.__state)
 
   def __update_state(self):
     mock_track = MockPlayerPlugin.MOCK_TRACKS[self.__track_index % len(MockPlayerPlugin.MOCK_TRACKS)]
 
-    self.__state = MediaPlayerState(
+    if not mock_track['artist_name'] or not mock_track['track_title']:
+      self.cannot_scrobble_error.emit('No track title or artist name')
+      return
+
+    self.playing.emit(MediaPlayerState(
       is_playing=True,
       position=0,
       track_title=mock_track['track_title'], 
@@ -87,4 +89,4 @@ class MockPlayerPlugin(QtCore.QObject):
       album_title=mock_track.get('album_title'), 
       track_start=0,
       track_finish=MockPlayerPlugin.MOCK_TRACK_LENGTH
-    )
+    ))

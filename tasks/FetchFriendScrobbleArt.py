@@ -1,7 +1,7 @@
 from PySide2 import QtCore
 
 from util.art_provider import ArtProvider
-from datatypes import FriendScrobble
+from datatypes.FriendScrobble import FriendScrobble
 
 class FetchFriendScrobbleArt(QtCore.QObject, QtCore.QRunnable):
   finished = QtCore.Signal(int)

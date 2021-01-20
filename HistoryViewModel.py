@@ -18,7 +18,7 @@ from plugins.macOS.music_app import MusicAppPlugin
 from plugins.macOS.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.SpotifyPlugin import SpotifyPlugin
 from ApplicationViewModel import ApplicationViewModel
-from datatypes import Scrobble
+from datatypes.Scrobble import Scrobble
 import util.helpers as helpers
 
 class HistoryViewModel(QtCore.QObject):
@@ -358,7 +358,7 @@ class HistoryViewModel(QtCore.QObject):
 
     self.__scrobbles_with_external_data_count += 1
 
-    if self.__scrobbles_with_external_data_count == self.__INITIAL_SCROBBLE_HISTORY_COUNT:
+    if self.__scrobbles_with_external_data_count == len(self.scrobble_history): # Don't use initial scrobble count because there might not be that many
       # All scrobbles have loaded their additional data
       self.__should_show_loading_indicator = False
       self.should_show_loading_indicator_changed.emit()
