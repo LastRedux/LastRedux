@@ -250,165 +250,165 @@ Item {
           }
         }
 
-        // --- Top Albums This Week ---
+        // // --- Top Albums This Week ---
 
-        Column {
-          spacing: 8
+        // Column {
+        //   spacing: 8
 
-          width: parent.width
+        //   width: parent.width
 
-          Label {
-            text: 'Top Albums This Week'
-            style: kTitleTertiary
+        //   Label {
+        //     text: 'Top Albums This Week'
+        //     style: kTitleTertiary
 
-            x: 15
-          }
+        //     x: 15
+        //   }
 
-          Column {
-            spacing: 10
+        //   Column {
+        //     spacing: 10
 
-            width: parent.width
+        //     width: parent.width
 
-            Column {
-              spacing: 10
+        //     Column {
+        //       spacing: 10
 
-              width: parent.width
+        //       width: parent.width
 
-              Repeater {
-                model: viewModel.profileStatistics && viewModel.profileStatistics.top_albums_week
+        //       Repeater {
+        //         model: viewModel.profileStatistics && viewModel.profileStatistics.top_albums_week
 
-                delegate: ProfileStatistic {
-                  imageSource: modelData.image_url
-                  lastfmUrl: modelData.lastfm_url
-                  title: modelData.title
-                  subtitle: modelData.subtitle
-                  secondaryLastfmUrl: modelData.secondary_lastfm_url
-                  plays: modelData.plays
-                  playsPercentage: modelData.percentage
+        //         delegate: ProfileStatistic {
+        //           imageSource: modelData.image_url
+        //           lastfmUrl: modelData.lastfm_url
+        //           title: modelData.title
+        //           subtitle: modelData.subtitle
+        //           secondaryLastfmUrl: modelData.secondary_lastfm_url
+        //           plays: modelData.plays
+        //           playsPercentage: modelData.percentage
 
-                  width: flickable.width
-                }
-              }
-            }
-          }
-        }
+        //           width: flickable.width
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
 
-        // --- Top Albums Overall ---
+        // // --- Top Albums Overall ---
 
-        Column {
-          spacing: 8
+        // Column {
+        //   spacing: 8
 
-          width: parent.width
+        //   width: parent.width
 
-          Label {
-            text: 'Top Albums Overall'
-            style: kTitleTertiary
+        //   Label {
+        //     text: 'Top Albums Overall'
+        //     style: kTitleTertiary
 
-            x: 15
-          }
+        //     x: 15
+        //   }
 
-          Column {
-            spacing: 10
+        //   Column {
+        //     spacing: 10
 
-            width: parent.width
+        //     width: parent.width
 
-            Repeater {
-              model: viewModel.profileStatistics && viewModel.profileStatistics.top_albums
+        //     Repeater {
+        //       model: viewModel.profileStatistics && viewModel.profileStatistics.top_albums
 
-              delegate: ProfileStatistic {
-                imageSource: modelData.image_url
-                lastfmUrl: modelData.lastfm_url
-                title: modelData.title
-                subtitle: modelData.subtitle
-                secondaryLastfmUrl: modelData.secondary_lastfm_url
-                plays: modelData.plays
-                playsPercentage: modelData.percentage
+        //       delegate: ProfileStatistic {
+        //         imageSource: modelData.image_url
+        //         lastfmUrl: modelData.lastfm_url
+        //         title: modelData.title
+        //         subtitle: modelData.subtitle
+        //         secondaryLastfmUrl: modelData.secondary_lastfm_url
+        //         plays: modelData.plays
+        //         playsPercentage: modelData.percentage
 
-                width: flickable.width
-              }
-            }
-          }
-        }
+        //         width: flickable.width
+        //       }
+        //     }
+        //   }
+        // }
 
-        // --- Top Tracks This Week ---
+        // // --- Top Tracks This Week ---
 
-        Column {
-          spacing: 8
+        // Column {
+        //   spacing: 8
 
-          width: parent.width
+        //   width: parent.width
 
-          Label {
-            text: 'Top Tracks This Week'
-            style: kTitleTertiary
+        //   Label {
+        //     text: 'Top Tracks This Week'
+        //     style: kTitleTertiary
 
-            x: 15
-          }
+        //     x: 15
+        //   }
 
-          Column {
-            spacing: 10
+        //   Column {
+        //     spacing: 10
 
-            width: parent.width
+        //     width: parent.width
 
-            Column {
-              spacing: 10
+        //     Column {
+        //       spacing: 10
 
-              width: parent.width
+        //       width: parent.width
 
-              Repeater {
-                model: viewModel.profileStatistics && viewModel.profileStatistics.top_tracks_week
+        //       Repeater {
+        //         model: viewModel.profileStatistics && viewModel.profileStatistics.top_tracks_week
 
-                delegate: ProfileStatistic {
-                  imageSource: modelData.image_url
-                  lastfmUrl: modelData.lastfm_url
-                  title: modelData.title
-                  subtitle: modelData.subtitle
-                  secondaryLastfmUrl: modelData.secondary_lastfm_url
-                  plays: modelData.plays
-                  playsPercentage: modelData.percentage
+        //         delegate: ProfileStatistic {
+        //           imageSource: modelData.image_url
+        //           lastfmUrl: modelData.lastfm_url
+        //           title: modelData.title
+        //           subtitle: modelData.subtitle
+        //           secondaryLastfmUrl: modelData.secondary_lastfm_url
+        //           plays: modelData.plays
+        //           playsPercentage: modelData.percentage
 
-                  width: flickable.width
-                }
-              }
-            }
-          }
-        }
+        //           width: flickable.width
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
 
-        // --- Top Tracks Overall ---
+        // // --- Top Tracks Overall ---
 
-        Column {
-          spacing: 8
+        // Column {
+        //   spacing: 8
 
-          width: parent.width
+        //   width: parent.width
 
-          Label {
-            text: 'Top Tracks Overall'
-            style: kTitleTertiary
+        //   Label {
+        //     text: 'Top Tracks Overall'
+        //     style: kTitleTertiary
 
-            x: 15
-          }
+        //     x: 15
+        //   }
 
-          Column {
-            spacing: 10
+        //   Column {
+        //     spacing: 10
 
-            width: parent.width
+        //     width: parent.width
 
-            Repeater {
-              model: viewModel.profileStatistics && viewModel.profileStatistics.top_tracks
+        //     Repeater {
+        //       model: viewModel.profileStatistics && viewModel.profileStatistics.top_tracks
 
-              delegate: ProfileStatistic {
-                imageSource: modelData.image_url
-                lastfmUrl: modelData.lastfm_url
-                title: modelData.title
-                subtitle: modelData.subtitle
-                secondaryLastfmUrl: modelData.secondary_lastfm_url
-                plays: modelData.plays
-                playsPercentage: modelData.percentage
+        //       delegate: ProfileStatistic {
+        //         imageSource: modelData.image_url
+        //         lastfmUrl: modelData.lastfm_url
+        //         title: modelData.title
+        //         subtitle: modelData.subtitle
+        //         secondaryLastfmUrl: modelData.secondary_lastfm_url
+        //         plays: modelData.plays
+        //         playsPercentage: modelData.percentage
 
-                width: flickable.width
-              }
-            }
-          }
-        }
+        //         width: flickable.width
+        //       }
+        //     }
+        //   }
+        // }
       }
     }
 

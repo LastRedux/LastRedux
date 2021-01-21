@@ -93,18 +93,18 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
       top_artists_week=__artists_to_profile_statistics(
         self.lastfm.get_top_artists(limit=5, period='7day').items
       ),
-      top_albums=__albums_to_profile_statistics(
-        self.lastfm.get_top_albums(limit=5)
-      ),
-      top_albums_week=__albums_to_profile_statistics(
-        self.lastfm.get_top_albums(limit=5, period='7day')
-      ),
-      top_tracks=__tracks_to_profile_statistics(
-        self.lastfm.get_top_tracks(limit=5)
-      ),
-      top_tracks_week=__tracks_to_profile_statistics(
-        self.lastfm.get_top_tracks(limit=5, period='7day')
-      ),
+      # top_albums=__albums_to_profile_statistics(
+      #   self.lastfm.get_top_albums(limit=5)
+      # ),
+      # top_albums_week=__albums_to_profile_statistics(
+      #   self.lastfm.get_top_albums(limit=5, period='7day')
+      # ),
+      # top_tracks=__tracks_to_profile_statistics(
+      #   self.lastfm.get_top_tracks(limit=5)
+      # ),
+      # top_tracks_week=__tracks_to_profile_statistics(
+      #   self.lastfm.get_top_tracks(limit=5, period='7day')
+      # ),
       **asdict(user_info)
     )
     

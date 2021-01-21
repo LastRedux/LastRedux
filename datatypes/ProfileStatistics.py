@@ -15,9 +15,9 @@ class ProfileStatistics(LastfmUserInfo):
   top_artists_week: ProfileStatistic
   
   # Top albums
-  top_albums: ProfileStatistic
-  top_albums_week: ProfileStatistic
+  # top_albums: ProfileStatistic
+  # top_albums_week: ProfileStatistic
 
-  # Top tracks
-  top_tracks: ProfileStatistic
-  top_tracks_week: ProfileStatistic
+  # # Top tracks
+  # top_tracks: ProfileStatistic
+  # top_tracks_week: ProfileStatistic
