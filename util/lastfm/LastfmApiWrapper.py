@@ -391,7 +391,7 @@ class LastfmApiWrapper:
 
         # Return cached resource, otherwise continue with new request
         if resource.expiration_date > datetime.now():
-          logger.trace(f'Returned cached response for {args}')
+          logger.trace(f'Used cache: {args}')
           return resource.data
         else:
           # Remove expired resource from cache

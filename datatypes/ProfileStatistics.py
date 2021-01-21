@@ -1,7 +1,8 @@
-from dataclasses import asdict, dataclass
-from datatypes.ProfileStatistic import ProfileStatistic
+from dataclasses import dataclass
+from typing import List
 
 from util.lastfm.LastfmUserInfo import LastfmUserInfo
+from .ProfileStatistic import ProfileStatistic
 
 @dataclass
 class ProfileStatistics(LastfmUserInfo):
@@ -11,8 +12,8 @@ class ProfileStatistics(LastfmUserInfo):
   total_loved_tracks: int
   
   # Top artists
-  top_artists: ProfileStatistic
-  top_artists_week: ProfileStatistic
+  top_artists: List[ProfileStatistic]
+  top_artists_week: List[ProfileStatistic]
   
   # Top albums
   # top_albums: ProfileStatistic

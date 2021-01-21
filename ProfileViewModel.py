@@ -4,7 +4,7 @@ from PySide2 import QtCore
 
 from ApplicationViewModel import ApplicationViewModel
 from datatypes.ProfileStatistics import ProfileStatistics
-from tasks import FetchProfileStatistics
+from tasks import FetchProfileStatistics, LoadProfileSpotifyArtists
 
 class ProfileViewModel(QtCore.QObject):
   # Qt Property signals
@@ -42,29 +42,36 @@ class ProfileViewModel(QtCore.QObject):
       return
 
     self.__is_loading = True
-
-    # Clear data but don't update UI so that we can check later which parts have reloaded
-    self.__user_info_top_artists = []
-    self.__top_tracks = []
-    self.__top_albums = []
     
-    fetch_profile_statistics_task = FetchProfileStatistics(
-      lastfm=self.__application_reference.lastfm,
-      spotify_api=self.__application_reference.spotify_api,
-      art_provider=self.__application_reference.art_provider
-    )
+    fetch_profile_statistics_task = FetchProfileStatistics(self.__application_reference.lastfm,)
     fetch_profile_statistics_task.finished.connect(self.__handle_profile_statistics_fetched)
     QtCore.QThreadPool.globalInstance().start(fetch_profile_statistics_task)
 
   # --- Private Methods ---
 
-  def __handle_profile_statistics_fetched(self, profile_statistics: ProfileStatistics):
+  def __handle_profile_statistics_fetched(
+    self, 
+    new_profile_statistics: ProfileStatistics
+  ) -> None:
     if not self.__is_enabled:
       return
     
-    # Load profile statistics
-    self.__profile_statistics = profile_statistics
-    self.profile_statistics_changed.emit()
+    # Load new profile statistics if they changed
+    # TODO: Handle top artists and user statistics separately
+    if new_profile_statistics != self.__profile_statistics:
+      self.__profile_statistics = new_profile_statistics
+      self.profile_statistics_changed.emit()
+
+      # Fetch Spotify artist images
+      load_profile_spotify_artists_task = LoadProfileSpotifyArtists(
+        spotify_api=self.__application_reference.spotify_api,
+        top_artists=(
+          # Concatenate both lists since we're passing by reference and we want to load all together
+          self.__profile_statistics.top_artists + self.__profile_statistics.top_artists_week
+        )
+      )
+      load_profile_spotify_artists_task.finished.connect(lambda: self.profile_statistics_changed.emit())
+      QtCore.QThreadPool.globalInstance().start(load_profile_spotify_artists_task)
 
     # Update loading indicator
     self.__should_show_loading_indicator = False
