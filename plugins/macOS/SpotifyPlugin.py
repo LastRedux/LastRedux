@@ -1,11 +1,8 @@
-
-# from typing import Dict
-
-from datatypes.TrackCrop import TrackCrop
-from PySide2 import QtCore
+from loguru import logger
 from ScriptingBridge import SBApplication
 from Foundation import NSDistributedNotificationCenter
 
+from datatypes.TrackCrop import TrackCrop
 from plugins.macOS.MacMediaPlayerPlugin import MacMediaPlayerPlugin
 from datatypes.MediaPlayerState import MediaPlayerState
 
@@ -68,6 +65,8 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     '''Handle Objective-C notifications for Spotify events'''
 
     notification_payload = notification.userInfo()
+
+    logger.trace(f'New notification from Spotify.app: {notification_payload}')
 
     if notification_payload['Player State'] == 'Stopped':
       self.stopped.emit()

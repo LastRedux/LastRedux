@@ -427,10 +427,9 @@ class HistoryViewModel(QtCore.QObject):
 
     # Update playcounts for scrobbles (including the one just added to history)
     for history_scrobble in self.scrobble_history:
-      if history_scrobble == scrobble:
+      if history_scrobble == scrobble and history_scrobble.lastfm_track:
         history_scrobble.lastfm_track.plays += 1
         history_scrobble.lastfm_artist.plays += 1
-        # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
 
       # Refresh scrobble details pane if the submitted scrobble is selected
       if scrobble == self.selected_scrobble:

@@ -28,10 +28,10 @@ class FriendsViewModel(QtCore.QObject):
 
   def reset_state(self) -> None:
     self.friends: List[Friend] = []
-    self.__friends_with_track_loaded_count: int = 0
+    self.__new_friends_with_track_loaded_count: int = 0
     self.__should_show_loading_indicator: bool = False
     self.__is_loading: bool = False
-    # self.__previous_friends = None
+    self.__new_friends: List[Friend] = None
 
   # --- Slots ---
 
@@ -70,23 +70,23 @@ class FriendsViewModel(QtCore.QObject):
     friends_changed = set(new_usernames) != set(current_usernames)
 
     # Load and sort new list of friends if it doesn't match the current one 
-    if friends_changed:
-      self.begin_refresh_friends.emit()
-      
+    if friends_changed:      
       # Build Friend objects and sort them alphabetically by username
-      self.friends = sorted(
+      self.__new_friends = sorted(
         [Friend.from_lastfm_user(user) for user in lastfm_users],
         key=lambda friend: friend.username.lower()
       )
 
       # Update UI with friends (just friend, no track)
+      self.begin_refresh_friends.emit()
+      self.friends = self.__new_friends.copy()
       self.end_refresh_friends.emit()
 
     # Reset loading tracker
-    self.__friends_with_track_loaded_count = 0
+    self.__new_friends_with_track_loaded_count = 0
 
     # Load each friend's most recent/currently playing track
-    for i, friend in enumerate(self.friends):
+    for i, friend in enumerate(self.__new_friends):
       load_friend_scrobble_task = FetchFriendScrobble(
         lastfm=self.__application_reference.lastfm, 
         username=friend.username, 
@@ -99,49 +99,50 @@ class FriendsViewModel(QtCore.QObject):
     if not self.__is_enabled:
       return
 
-    friend = self.friends[friend_index]
-    friend.last_scrobble = last_scrobble # Could be None but that's okay
-    friend.is_loading = False
+    new_friend = self.__new_friends[friend_index]
+    new_friend.is_loading = False
 
+    if not new_friend.last_scrobble or new_friend.last_scrobble != last_scrobble:
+      new_friend.last_scrobble = last_scrobble # Could be None but that's okay
+    
     # Increment regardless of whether a track was actually found, we're keeping track of loading
-    self.__friends_with_track_loaded_count += 1
+    self.__new_friends_with_track_loaded_count += 1
 
     # Update UI when the last friend is loaded
-    if self.__friends_with_track_loaded_count == len(self.friends):      
+    if self.__new_friends_with_track_loaded_count == len(self.__new_friends):      
       # Move friends currently playing music to the top
-      self.friends = sorted(
-        self.friends,
+      self.__new_friends = sorted(
+        self.__new_friends,
         key=lambda friend: bool(friend.last_scrobble.is_playing) if friend.last_scrobble else False, # bool because it might be None
         reverse=True
       )
 
       # Move friends with no track to the bottom
-      self.friends = sorted(
-        self.friends, 
+      self.__new_friends = sorted(
+        self.__new_friends, 
         key=lambda friend: bool(friend.last_scrobble.track_title) if friend.last_scrobble else False, 
         reverse=True
       )
 
-      # WIP CODE for comparing friends - not working
-      # Only refresh friends if new friend activity is different
-      # should_refresh_friends = True
-      
-      # consistencies = 0
-      # if self.previous_friends:
-      #   if len(self.previous_friends) == len(self.friends):
-      #     for i in range(len(self.friends)):
-      #       if self.friends[i].equals(self.previous_friends[i]):
-      #         consistencies += 1
-          
-      #     print(consistencies)
-      #     if consistencies == len(self.friends):
-      #       should_refresh_friends = False
-      # self.previous_friends = self.friends
+      if not self.friends or self.__new_friends != self.friends:
+        self.begin_refresh_friends.emit()
+        self.friends = self.__new_friends.copy()
+        self.end_refresh_friends.emit()
 
-      # if should_refresh_friends:
-        # Refresh UI with friend tracks
-      
-      self.end_refresh_friends.emit()
+        # Start loading album art for friend tracks
+        for row, new_friend in enumerate(self.friends):
+          if not new_friend.last_scrobble or not new_friend.last_scrobble.is_playing:
+            continue
+
+          fetch_album_art_task = FetchFriendScrobbleArt(
+            art_provider=self.applicationReference.art_provider,
+            friend_scrobble=new_friend.last_scrobble,
+            row_in_friends_list=row
+          )
+          fetch_album_art_task.finished.connect(
+            lambda row_in_list: self.album_image_url_changed.emit(row_in_list)
+          )
+          QtCore.QThreadPool.globalInstance().start(fetch_album_art_task)
 
       self.__is_loading = False
       self.is_loading_changed.emit()
@@ -150,21 +151,6 @@ class FriendsViewModel(QtCore.QObject):
       if self.__should_show_loading_indicator:
         self.__should_show_loading_indicator = False
         self.should_show_loading_indicator_changed.emit()
-
-      # Start loading album art for friend tracks
-      for row, friend in enumerate(self.friends):
-        if not friend.last_scrobble or not friend.last_scrobble.is_playing:
-          continue
-
-        fetch_album_art_task = FetchFriendScrobbleArt(
-          art_provider=self.applicationReference.art_provider,
-          friend_scrobble=friend.last_scrobble,
-          row_in_friends_list=row
-        )
-        fetch_album_art_task.finished.connect(
-          lambda row_in_list: self.album_image_url_changed.emit(row_in_list)
-        )
-        QtCore.QThreadPool.globalInstance().start(fetch_album_art_task)
 
   # --- Qt Property Getters and Setters ---
 

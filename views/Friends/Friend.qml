@@ -9,7 +9,7 @@ Item {
   property var userLastfmUrl
   property alias userImage: userImageView.source
   property string username
-  property string userRealName
+  property var userRealName
 
   property var trackImage
   property var trackTitle
@@ -150,7 +150,7 @@ Item {
         color: Qt.rgba(1, 1, 1, 0.81)
         elide: Text.ElideRight
         isShadowEnabled: !isTrackPlaying
-        text: root.userRealName
+        text: root.userRealName || ''
         visible: text
 
         width: parent.width

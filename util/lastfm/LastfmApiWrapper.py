@@ -44,7 +44,7 @@ class LastfmApiWrapper:
       main_key_getter=lambda response: response['user'],
       return_value_builder=lambda user_info, response: LastfmUserInfo(
         username=user_info['name'],
-        real_name=user_info['realname'],
+        real_name=user_info['realname'] or None,
         image_url=user_info['image'][-1]['#text'].replace('300', '500'),
         url=user_info['url'],
         registered_date=datetime.fromtimestamp(int(user_info['registered']['unixtime'])),
@@ -91,7 +91,7 @@ class LastfmApiWrapper:
         LastfmUser(
           url=friend['url'],
           username=friend['name'],
-          real_name=friend['realname'],
+          real_name=friend['realname'] or None,
           image_url=friend['image'][0]['#text'] # All sizes are the same apparently
         ) for friend in friends
       ]
