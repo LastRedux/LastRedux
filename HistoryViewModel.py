@@ -14,8 +14,8 @@ from ScriptingBridge import SBApplication
 from pypresence import Presence
 
 from tasks import FetchPlayerPosition, LoadExternalScrobbleData, UpdateTrackLoveOnLastfm, FetchRecentScrobbles, SubmitScrobble, UpdateNowPlaying
+from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.music_app import MusicAppPlugin
-from plugins.macOS.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.SpotifyPlugin import SpotifyPlugin
 from ApplicationViewModel import ApplicationViewModel
 from datatypes.Scrobble import Scrobble
