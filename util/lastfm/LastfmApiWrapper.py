@@ -18,7 +18,7 @@ from .LastfmTrack import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
 from .LastfmArtistLink import LastfmArtistLink
-from .CachedResource import CachedResource
+from datatypes.CachedResource import CachedResource
 from datatypes.ImageSet import ImageSet
 from datatypes.FriendScrobble import FriendScrobble
 

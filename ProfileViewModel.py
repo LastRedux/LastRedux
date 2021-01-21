@@ -60,7 +60,6 @@ class ProfileViewModel(QtCore.QObject):
     # TODO: Handle top artists and user statistics separately
     if new_profile_statistics != self.__profile_statistics:
       self.__profile_statistics = new_profile_statistics
-      self.profile_statistics_changed.emit()
 
       # Fetch Spotify artist images
       load_profile_spotify_artists_task = LoadProfileSpotifyArtists(

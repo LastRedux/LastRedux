@@ -1,5 +1,7 @@
+import datetime
+import json
 import re
-from typing import List
+from typing import Dict, List
 
 from unidecode import unidecode
 from loguru import logger
@@ -8,6 +10,7 @@ import requests
 from datatypes.ImageSet import ImageSet
 from .SpotifySongData import SpotifySongData
 from .SpotifyArtist import SpotifyArtist
+from datatypes.CachedResource import CachedResource
 
 class SpotifyApiWrapper:
   CLIENT_ID = '26452cc6850d4d1abbd2adb5a6ffccb4'
@@ -15,7 +18,8 @@ class SpotifyApiWrapper:
 
   def __init__(self) -> None:
     # Store Spotify access token
-    self.access_token: str = self.__get_access_token()
+    self.__access_token: str = self.__get_access_token()
+    self.__ram_cache: Dict[str, CachedResource] = {}
 
   # --- Search Wrappers ---
   
@@ -82,17 +86,31 @@ class SpotifyApiWrapper:
   # --- Private Methods ---
 
   def __search(self, query: str, media_type: str, limit: int=20) -> ImageSet:
-    return self.__request(
+    result = self.__request(
       url='https://api.spotify.com/v1/search/',
       args={
         'q': query,
         'type': media_type,
         'limit': limit
       }
-    ).get(f'{media_type}s', {}).get('items')
+    )
+    
+    if not result:
+      return None
+    
+    return result.get(f'{media_type}s', {}).get('items')
 
   def __request(self, url: str, args: dict, is_retry=False) -> dict:
     '''Make a request to Spotify and handle the potential errors'''
+
+    # Convert request arguments to string to use as a key to the cache
+    request_string = json.dumps(args, sort_keys=True)
+
+    # Check for cached responses
+    if request_string in self.__ram_cache:
+      logger.trace(f'Used cache: {args}')
+
+      return self.__ram_cache[request_string].data
 
     resp = None
     
@@ -102,7 +120,7 @@ class SpotifyApiWrapper:
         params=args, 
         headers={
           'Accept': 'application/json',
-          'Authorization': f'Bearer {self.access_token}'
+          'Authorization': f'Bearer {self.__access_token}'
         }
       )
     except (ConnectionResetError, ConnectionError):
@@ -119,7 +137,7 @@ class SpotifyApiWrapper:
     if 'error' in resp_json:
       if resp_json['error']['message'] == 'The access token expired':
         # Generate a new access token (lasts for 1 hour by default)
-        self.access_token = SpotifyApiWrapper.__get_access_token()
+        self.__access_token = SpotifyApiWrapper.__get_access_token()
         logger.trace('Refreshed Spotify access token')
 
         # Retry request
@@ -127,6 +145,11 @@ class SpotifyApiWrapper:
         return
       else:
         raise Exception(f'Spotify search error: {resp_json}')
+
+    self.__ram_cache[request_string] = CachedResource(
+      data=resp_json,
+      expiration_date=None # Spotify data shouldn't change
+    )
 
     return resp_json
 
