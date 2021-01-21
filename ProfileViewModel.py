@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from util.spotify_api.SpotifyApiWrapper import SpotifyApiWrapper
 
 from PySide2 import QtCore
 
@@ -34,9 +33,9 @@ class ProfileViewModel(QtCore.QObject):
       return
     
     # Update loading indicator if needed
-    # if not self.__profile_statistics or was_app_refocused:
-    #   self.__should_show_loading_indicator = True
-    #   self.should_show_loading_indicator_changed.emit()
+    if not self.__profile_statistics or was_app_refocused:
+      self.__should_show_loading_indicator = True
+      self.should_show_loading_indicator_changed.emit()
 
     # Don't reload if the profile page is already loading
     if self.__is_loading:

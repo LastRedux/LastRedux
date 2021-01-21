@@ -620,8 +620,10 @@ class HistoryViewModel(QtCore.QObject):
       self.__discord_rpc.update(
         details=media_player_state.track_title,
         state=media_player_state.artist_name + (
-          ' | ' + media_player_state.album_title
-        ) if media_player_state.album_title else '',
+          (
+            ' | ' + media_player_state.album_title
+          ) if media_player_state.album_title else ''
+        ),
         large_image='music-logo',
         large_text='Playing on Music',
         small_image='lastredux-logo',
