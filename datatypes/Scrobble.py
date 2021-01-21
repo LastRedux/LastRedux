@@ -19,6 +19,7 @@ class Scrobble(LastfmScrobble):
   lastfm_album: LastfmAlbum = None
   spotify_artists: List[SpotifyArtist] = None
   is_loading: bool = True
+  has_error: bool = False
   lastfm_album_url: str = None # This is needed since the track info request doesn't give us an album
   friend_artist_leaderboard: List[ProfileStatistic] = None
 

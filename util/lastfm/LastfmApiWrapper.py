@@ -1,8 +1,8 @@
 import hashlib
 import json
 import time
-from datetime import datetime, time
-from typing import List
+from datetime import datetime, time, timedelta
+from typing import Dict, List
 
 import requests
 from loguru import logger
@@ -18,6 +18,7 @@ from .LastfmTrack import LastfmTrack
 from .LastfmUser import LastfmUser
 from .LastfmUserInfo import LastfmUserInfo
 from .LastfmArtistLink import LastfmArtistLink
+from .CachedResource import CachedResource
 from datatypes.ImageSet import ImageSet
 from datatypes.FriendScrobble import FriendScrobble
 
@@ -28,9 +29,10 @@ class LastfmApiWrapper:
   MAX_RETRIES = 3
   NOT_FOUND_ERRORS = ['The artist you supplied could not be found', 'Track not found', 'Album not found']
 
-  def __init__(self):
-    self.username = None
-    self.__session_key = None
+  def __init__(self) -> None:
+    self.username: str = None
+    self.__session_key: str = None
+    self.__ram_cache: Dict[str, CachedResource] = {}
 
   # --- User Request Wrappers ---
 
@@ -226,7 +228,8 @@ class LastfmApiWrapper:
         global_listeners=int(album['listeners']),
         global_plays=int(album['playcount']),
         tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in album['tags']['tag']]
-      )
+      ),
+      cache=True # Cache since we don't display plays anywhere
     )
 
   # --- Authentication Wrappers ---
@@ -370,8 +373,30 @@ class LastfmApiWrapper:
 
   # --- Private Methods ---
 
-  def __lastfm_request(self, args, main_key_getter=None, return_value_builder=None, http_method='GET'):
-    # print('req ' + str(args))
+  def __lastfm_request(
+    self,
+    args,
+    main_key_getter=None,
+    return_value_builder=None,
+    http_method='GET',
+    cache=False
+  ) -> dict:
+    # Convert request arguments to string to use as a key to the cache
+    request_string = json.dumps(args, sort_keys=True)
+
+    # Check for cached responses
+    if cache:
+      if request_string in self.__ram_cache:
+        resource = self.__ram_cache[request_string]
+
+        # Return cached resource, otherwise continue with new request
+        if resource.expiration_date > datetime.now():
+          logger.trace(f'Returned cached response for {args}')
+          return resource.data
+        else:
+          # Remove expired resource from cache
+          del self.__ram_cache[request_string]
+
     params = {
       'api_key': LastfmApiWrapper.API_KEY, 
       'format': 'json',
@@ -438,7 +463,13 @@ class LastfmApiWrapper:
         logger.warning(f'Mising key in Last.fm request: {str(err)} for request {args}')
         continue
 
-      # The object creation succeeded, so we can break out of the for loop and return
+      # The object creation succeeded, so we can cache it if needed and break out of the retry loop
+      if cache:
+        self.__ram_cache[request_string] = CachedResource(
+          data=return_object,
+          expiration_date=datetime.now() + timedelta(minutes=1)
+        )
+
       return return_object
     else:
       # The for loop completed without breaking (The key was not found after the max number of retries)

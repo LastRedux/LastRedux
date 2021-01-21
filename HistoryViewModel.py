@@ -202,6 +202,7 @@ class HistoryViewModel(QtCore.QObject):
       self.reset_state()
       self.__media_player.request_initial_state()
       self.reloadHistory()
+      self.preloadProfileAndFriends.emit()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
     else:
@@ -364,9 +365,6 @@ class HistoryViewModel(QtCore.QObject):
       self.should_show_loading_indicator_changed.emit()
       self.end_refresh_history.emit()
 
-      # Pre-load profile and friends pages
-      self.preloadProfileAndFriends.emit()
-
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
     if not self.__is_enabled:
       return
@@ -423,15 +421,12 @@ class HistoryViewModel(QtCore.QObject):
       )
       QtCore.QThreadPool.globalInstance().start(submit_scrobble_task)
 
-    # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
-    if scrobble.lastfm_track:
-      try:
-        scrobble.lastfm_track.plays += 1
-        scrobble.lastfm_artist.plays += 1
-      except TypeError:
-        print('error incrementing plays ' + str(scrobble))
-        print(scrobble.lastfm_track)
-        print(scrobble.lastfm_artist)
+    # Update playcounts for scrobbles (including the one just added to history)
+    for history_scrobble in self.scrobble_history:
+      if history_scrobble == scrobble:
+        history_scrobble.lastfm_track.plays += 1
+        history_scrobble.lastfm_artist.plays += 1
+        # TODO: Decide what happens when a scrobble that hasn't been fully downloaded is submitted. Does it wait for the data to load for the plays to be updated or should it not submit at all?
 
       # Refresh scrobble details pane if the submitted scrobble is selected
       if scrobble == self.selected_scrobble:
@@ -604,13 +599,14 @@ class HistoryViewModel(QtCore.QObject):
     # if not self.__is_enabled:
     #   return
 
-
     # Update now playing on Last.fm
     if self.__is_submission_enabled:
       QtCore.QThreadPool.globalInstance().start(
         UpdateNowPlaying(
           lastfm=self.__application_reference.lastfm, 
-          scrobble=self.__current_scrobble,
+          artist_name=media_player_state.artist_name,
+          track_title=media_player_state.track_title,
+          album_title=media_player_state.album_title,
           duration=media_player_state.track_crop.finish - media_player_state.track_crop.start
         )
       )

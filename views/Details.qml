@@ -25,7 +25,10 @@ Item {
     canDisplayScrobble && !viewModel.scrobble.is_loading
   )
   property bool isTrackNotFound: (
-    canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
+    canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading && !viewModel.scrobble.has_error
+  )
+  property bool hasTrackLoadingError: (
+    canDisplayScrobble && viewModel.scrobble.has_error
   )
 
   signal switchToCurrentScrobble
@@ -74,7 +77,7 @@ Item {
         // --- First time scrobble banner ---
   
         Image {
-          visible: isTrackNotFound
+          visible: isTrackNotFound || hasTrackLoadingError
 
           fillMode: Image.TileHorizontally
           source: '../shared/resources/effects/bannerGradient.png'
@@ -83,7 +86,11 @@ Item {
           height: 30
 
           Label {
-            text: 'This track isn’t in Last.fm\'s database yet'
+            text: (
+              isTrackNotFound ? 
+              'This track isn’t in Last.fm\'s database yet' :
+              'Could not load track from Last.fm, most likely a server outage'
+            )
             isShadowEnabled: false
             color: 'black'
             elide: Text.ElideRight

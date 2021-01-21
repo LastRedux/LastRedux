@@ -20,10 +20,16 @@ class LoadExternalScrobbleData(QtCore.QObject, QtCore.QRunnable):
     '''Load Last.fm track + artist info, album art for scrobble and update the UI progressively'''
 
     # 1. Fetch and load Last.fm track info (first becuase we need is_loved value)
-    self.scrobble.lastfm_track = self.lastfm.get_track_info(
+    lastfm_track = self.lastfm.get_track_info(
       artist_name=self.scrobble.artist_name,
       track_title=self.scrobble.track_title
     )
+
+    if lastfm_track:
+      self.scrobble.lastfm_track = lastfm_track
+    else:
+      self.scrobble.has_error = True
+
     self.update_ui_for_scrobble.emit(self.scrobble)
 
     # 2. Fetch album art and artist images
