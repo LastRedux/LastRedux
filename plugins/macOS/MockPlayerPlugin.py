@@ -1,3 +1,4 @@
+from datatypes.TrackCrop import TrackCrop
 import json
 import os
 import random
@@ -50,7 +51,6 @@ class MockPlayerPlugin(QtCore.QObject):
       if event_name == 'playPause':
         # Load first track
         self.__update_state()
-        self.playing.emit(self.__state)
 
       # Ignore other events since nothing is playing
       return
@@ -59,12 +59,11 @@ class MockPlayerPlugin(QtCore.QObject):
       self.__track_index -= 1
       self.__player_position = 0
       self.__update_state()
-      self.playing.emit(self.__state)
     elif event_name == 'playPause':
       if self.__state.is_playing:
-        self.paused.emit(self.__state)
+        self.__update_state()
       else:
-        self.playing.emit(self.__state)
+        self.paused.emit(self.__state)
       
       self.__state.is_playing = not self.__state.is_playing
     elif event_name == 'scrubForward':
@@ -81,12 +80,16 @@ class MockPlayerPlugin(QtCore.QObject):
       self.cannot_scrobble_error.emit('No track title or artist name')
       return
 
-    self.playing.emit(MediaPlayerState(
+    self.__state = MediaPlayerState(
       is_playing=True,
       position=0,
       track_title=mock_track['track_title'], 
       artist_name=mock_track.get('artist_name'),
       album_title=mock_track.get('album_title'), 
-      track_start=0,
-      track_finish=MockPlayerPlugin.MOCK_TRACK_LENGTH
-    ))
+      track_crop=TrackCrop(
+        start=0,
+        finish=MockPlayerPlugin.MOCK_TRACK_LENGTH
+      )
+    )
+
+    self.playing.emit(self.__state)
