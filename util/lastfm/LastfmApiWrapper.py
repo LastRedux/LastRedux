@@ -174,7 +174,7 @@ class LastfmApiWrapper:
         plays=int(artist['stats']['userplaycount']),
         global_listeners=int(artist['stats']['listeners']),
         global_plays=int(artist['stats']['playcount']),
-        bio=artist['bio']['summary'].split(' <')[0].strip(), # Remove the "Read more on Last.fm" html link at the end
+        bio=artist['bio']['content'].split(' <')[0].strip(), # Remove the "Read more on Last.fm" html link at the end
         tags=[self.__tag_to_lastfm_tag(tag) for tag in artist['tags']['tag']],
         similar_artists=[
           LastfmArtist(

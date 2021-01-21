@@ -31,8 +31,9 @@ class HistoryViewModel(QtCore.QObject):
   is_enabled_changed = QtCore.Signal()
   current_scrobble_data_changed = QtCore.Signal()
   scrobble_percentage_changed = QtCore.Signal()
-  is_using_mock_player_changed = QtCore.Signal()
   is_player_paused_changed = QtCore.Signal()
+  is_spotify_plugin_available_changed = QtCore.Signal()
+  is_using_mock_player_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
   should_show_loading_indicator_changed = QtCore.Signal()
@@ -62,6 +63,7 @@ class HistoryViewModel(QtCore.QObject):
     self.__spotify_plugin = SpotifyPlugin()
     self.__music_app_plugin = MusicAppPlugin()
     self.__media_player: MediaPlayerPlugin = None
+    self.__is_spotify_plugin_available = False # This is set to true if Spotify is installed
     
     # Set up Discord presence
     self.__is_discord_rpc_enabled = bool(os.environ.get('DISCORD_PRESENCE'))
@@ -85,6 +87,8 @@ class HistoryViewModel(QtCore.QObject):
       
       # TODO: Use better method to figure out if Spotify is installed without logged error
       if spotify_app:
+        self.__is_spotify_plugin_available = True
+
         if spotify_app.isRunning():
           use_spotify = True
       
@@ -680,6 +684,12 @@ class HistoryViewModel(QtCore.QObject):
     type=float,
     fget=lambda self: self.__current_scrobble_percentage,
     notify=scrobble_percentage_changed
+  )
+
+  isSpotifyPluginAvailable = QtCore.Property(
+    type=bool,
+    fget=lambda self: self.__is_spotify_plugin_available,
+    notify=is_spotify_plugin_available_changed
   )
 
   isUsingMockPlayer = QtCore.Property(

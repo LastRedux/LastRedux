@@ -26,6 +26,9 @@ class MediaPlayerPlugin(QtCore.QObject):
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
 
+    # Set this to false if the plugin's dependent media player isn't installed
+    self.is_available = True
+
   @abstractmethod
   def get_player_position(self) -> float:
     '''Get the media players current playback position in secoonds'''

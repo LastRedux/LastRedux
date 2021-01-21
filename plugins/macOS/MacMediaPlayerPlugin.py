@@ -21,7 +21,7 @@ class MacMediaPlayerPlugin(MediaPlayerPlugin):
     return self.__applescript_app.playerPosition()
 
   def is_open(self) -> bool:
-    return self.__applescript_app.isRunning()
+    return self.is_available and self.__applescript_app.isRunning()
 
   @abstractmethod
   def request_initial_state(self) -> None:

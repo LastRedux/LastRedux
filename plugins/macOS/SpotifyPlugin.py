@@ -20,23 +20,29 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
 
     super().__init__(self.__applescript_app)
 
-    # Set up NSNotificationCenter (refer to https://lethain.com/how-to-use-selectors-in-pyobjc)
-    self.__default_center = NSDistributedNotificationCenter.defaultCenter()
-    self.__default_center.addObserver_selector_name_object_(
-      self,
-      '__handleNotificationFromSpotify:',
-      'com.spotify.client.PlaybackStateChanged',
-      None
-    )
-    
+    self.is_plugin_available = False
+
     # Store the current media player state
     self.__state: MediaPlayerState = None
+
+    if self.__applescript_app:
+      self.is_plugin_available = True
+
+      # Set up NSNotificationCenter (refer to https://lethain.com/how-to-use-selectors-in-pyobjc)
+      self.__default_center = NSDistributedNotificationCenter.defaultCenter()
+
+      self.__default_center.addObserver_selector_name_object_(
+        self,
+        '__handleNotificationFromSpotify:',
+        'com.spotify.client.PlaybackStateChanged',
+        None
+      )
 
   # --- Mac Media Player Implementation ---
 
   def request_initial_state(self) -> None:
-    # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-    if not self.__applescript_app.isRunning():
+    # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch) or the app doesn't exist
+    if not self.is_open():
       return
 
     track = self.__applescript_app.currentTrack()

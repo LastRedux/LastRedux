@@ -100,7 +100,9 @@ Window {
         }
       }
 
-      MenuSeparator { }
+      MenuSeparator {
+        visible: historyViewModel.isSpotifyPluginAvailable
+      }
 
       MenuItem {
         text: qsTr('Toggle Mini Mode')
@@ -110,12 +112,14 @@ Window {
 
       MenuItem {
         text: qsTr('Use Music App as Media Player')
+        visible: historyViewModel.isSpotifyPluginAvailable
 
         onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
       }
 
       MenuItem {
         text: qsTr('Use Spotify as Media Player')
+        visible: historyViewModel.isSpotifyPluginAvailable
 
         onTriggered: historyViewModel.switchToMediaPlugin('spotify')
       }
