@@ -81,7 +81,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     # Some tracks don't have an artist and can't be scrobbled on Last.fm
     if not new_state.artist_name:
       self.stopped.emit()
-      self.cannot_scrobble_error.emit('Music did not provide an artist name')
+      self.cannot_scrobble_error.emit(f'Music did not provide an artist name for "{new_state.track_title}"')
       return
 
     if new_state.is_playing:
@@ -126,7 +126,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       else:
         # Sometimes even this fails, there's nothing we can do
         self.stopped.emit()
-        self.cannot_scrobble_error.emit('Music did not provide a track length')
+        self.cannot_scrobble_error.emit(f'Music did not provide a track length for "{self.__state.track_title}"')
         logger.error(f'Error getting track duration for {self.__cached_notification_payload}')
 
         # Don't emit play signal
