@@ -41,6 +41,11 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     if not self.__applescript_app.isRunning():
       return
 
+    is_playing = self.__applescript_app.playerState() == MusicAppPlugin.PLAYING_STATE
+
+    if not is_playing:
+      return
+
     track = self.__applescript_app.currentTrack()
     track_title = track.name()
     
@@ -56,7 +61,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         artist_name=track.artist(),
         track_title=track_title,
         album_title=track.album() or None, # Prevent storing empty strings in album_title key
-        is_playing=self.__applescript_app.playerState() == MusicAppPlugin.PLAYING_STATE,
+        is_playing=True, # We can't differentiate between paused and stopped, so we will only send a new state if playing
         position=self.get_player_position()
       )
     )
