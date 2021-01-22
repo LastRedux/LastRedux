@@ -21,11 +21,8 @@ Item {
   property bool hasLastfmArtistData: (
     canDisplayScrobble && !!viewModel.scrobble.lastfm_artist
   )
-  property bool hasAllLastfmData: (
-    canDisplayScrobble && !viewModel.scrobble.is_loading
-  )
   property bool isTrackNotFound: (
-    canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading && !viewModel.scrobble.has_error
+    canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
   )
   property bool hasTrackLoadingError: (
     canDisplayScrobble && viewModel.scrobble.has_error
@@ -89,7 +86,7 @@ Item {
             text: (
               isTrackNotFound ? 
               'This track isn’t in Last.fm\'s database yet' :
-              'Could not load track from Last.fm, most likely a server outage'
+              'Could not load track data from Last.fm, most likely a server outage'
             )
             isShadowEnabled: false
             color: 'black'
@@ -126,8 +123,7 @@ Item {
           artistName: canDisplayScrobble && viewModel.scrobble.artist_name
           artistLastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.artist_link.url
           albumTitle: canDisplayScrobble && viewModel.scrobble.album_title
-          albumLastfmUrl: hasLastfmAlbum && hasAllLastfmData && viewModel.scrobble.lastfm_album.url
-          albumLastfmPlays: hasLastfmAlbum && hasAllLastfmData && viewModel.scrobble.lastfm_album.plays
+          albumLastfmUrl: hasLastfmAlbum && viewModel.scrobble.lastfm_album.url
           albumImageUrl: (
             canDisplayScrobble
             && !!viewModel.scrobble.image_set
@@ -155,7 +151,7 @@ Item {
           lastfmPlays: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.plays
           lastfmTags: hasLastfmArtistData ? viewModel.scrobble.lastfm_artist.tags : []
           spotifyArtists: canDisplayScrobble && viewModel.scrobble.spotify_artists
-          isReadMoreLinkVisible: root.hasAllLastfmData && viewModel.scrobble.lastfm_artist.bio
+          isReadMoreLinkVisible: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.bio
           hasLastfmData: hasLastfmArtistData
           isInMiniMode: viewModel.isInMiniMode
 
@@ -167,7 +163,7 @@ Item {
         Item {
           visible: (
             !isInMiniMode
-            && hasAllLastfmData
+            && hasLastfmArtistData
             && viewModel.scrobble.lastfm_artist.similar_artists.length
           )
 
@@ -222,7 +218,7 @@ Item {
             }
 
             Repeater {
-              model: hasAllLastfmData && viewModel.scrobble.lastfm_artist.similar_artists
+              model: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.similar_artists
 
               delegate: Tag {
                 name: modelData.name
