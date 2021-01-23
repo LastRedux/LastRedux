@@ -28,3 +28,6 @@ class LastfmTrack:
 
   def __repr__(self) -> str:
     return f'{self.artist_link.name} - {self.title}'
+
+  def __eq__(self, o: object) -> bool:
+    return self.url == o.url

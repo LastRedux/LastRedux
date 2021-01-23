@@ -108,7 +108,7 @@ class SpotifyApiWrapper:
 
     # Check for cached responses
     if request_string in self.__ram_cache:
-      logger.trace(f'Used cache: {args}')
+      logger.trace(f'Used Spotify API cache: {args}')
 
       return self.__ram_cache[request_string].data
 

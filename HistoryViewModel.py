@@ -387,9 +387,6 @@ class HistoryViewModel(QtCore.QObject):
         self.scrobble_album_image_changed.emit(i)
         self.scrobble_lastfm_is_loved_changed.emit(i)
 
-        # No break just in case track is somehow scrobbled twice before image loads
-        # TODO: Figure out if this is actually possible ^
-
   def __submit_scrobble(self, scrobble: Scrobble) -> None:
     '''Add a scrobble object to the history array and submit it to Last.fm'''
     
@@ -427,13 +424,13 @@ class HistoryViewModel(QtCore.QObject):
 
     # Update playcounts for scrobbles (including the one just added to history)
     for history_scrobble in self.scrobble_history:
-      if history_scrobble == scrobble and history_scrobble.lastfm_track:
-        history_scrobble.lastfm_track.plays += 1
-        history_scrobble.lastfm_artist.plays += 1
-
-      # Refresh scrobble details pane if the submitted scrobble is selected
-      if scrobble == self.selected_scrobble:
-        self.selected_scrobble_changed.emit()
+      if history_scrobble.lastfm_track:
+        if history_scrobble.lastfm_track == scrobble.lastfm_track:
+          history_scrobble.lastfm_track.plays += 1
+      
+      if history_scrobble.lastfm_artist:
+        if history_scrobble.lastfm_artist == scrobble.lastfm_artist:
+          history_scrobble.lastfm_artist.plays += 1
 
     # Reset flag so new scrobble can later be submitted
     self.__should_submit_current_scrobble = False

@@ -27,3 +27,6 @@ class LastfmArtist:
 
   def __repr__(self):
     return self.name + (f' [{self.plays} plays]' if self.plays else '')
+
+  def __eq__(self, o: object) -> bool:
+    return self.url == o.url
