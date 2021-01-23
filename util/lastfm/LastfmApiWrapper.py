@@ -423,8 +423,6 @@ class LastfmApiWrapper:
           data=params if http_method == 'POST' else None
         )
       except requests.exceptions.ConnectionError:
-        logger.critical(f'Connection error: {params}')
-
         # Retry request
         continue
 
@@ -460,7 +458,7 @@ class LastfmApiWrapper:
           return_object = return_value_builder(resp_json)
       except KeyError as err:
         # There's a missing key, run the request again by continuing the for loop
-        logger.warning(f'Mising key in Last.fm request: {str(err)} for request {args}')
+        logger.trace(f'Mising key in Last.fm request: {str(err)} for request {args}')
         continue
 
       # The object creation succeeded, so we can cache it if needed and break out of the retry loop
