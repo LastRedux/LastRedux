@@ -8,7 +8,7 @@ from util.lastfm import LastfmApiWrapper, LastfmArtist
 from datatypes.ProfileStatistic import ProfileStatistic
 from datatypes.ProfileStatistics import ProfileStatistics
 
-def __artists_to_profile_statistics(artists: List[LastfmArtist]):  
+def artists_to_profile_statistics(artists: List[LastfmArtist]):  
   top_plays = artists[0].plays
 
   return [
@@ -47,8 +47,8 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
         average_daily_scrobbles=round(
           user_info.total_scrobbles / (datetime.now() - user_info.registered_date).days
         ),
-        top_artists=__artists_to_profile_statistics(top_artists.items),
-        top_artists_week=__artists_to_profile_statistics(
+        top_artists=artists_to_profile_statistics(top_artists.items),
+        top_artists_week=artists_to_profile_statistics(
           self.lastfm.get_top_artists(limit=5, period='7day').items
         ),
         **asdict(user_info)
