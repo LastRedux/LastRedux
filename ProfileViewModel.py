@@ -31,6 +31,10 @@ class ProfileViewModel(QtCore.QObject):
   def loadProfile(self, was_app_refocused: bool=False) -> None:
     if not self.__is_enabled:
       return
+
+    if self.__application_reference.is_offline:
+      # Skip request if offline
+      return
     
     # Update loading indicator if needed
     if not self.__profile_statistics or was_app_refocused:
@@ -56,9 +60,8 @@ class ProfileViewModel(QtCore.QObject):
     if not self.__is_enabled:
       return
     
-    # Load new profile statistics if they changed
-    # TODO: Handle top artists and user statistics separately
-    if new_profile_statistics != self.__profile_statistics:
+    # Load new profile statistics if they changed (and there were some to begin with)
+    if self.__profile_statistics and new_profile_statistics != self.__profile_statistics:
       self.__profile_statistics = new_profile_statistics
 
       # Fetch Spotify artist images
@@ -73,9 +76,9 @@ class ProfileViewModel(QtCore.QObject):
       QtCore.QThreadPool.globalInstance().start(load_profile_spotify_artists_task)
 
     # Update loading indicator
+    self.__is_loading = False
     self.__should_show_loading_indicator = False
     self.should_show_loading_indicator_changed.emit()
-    self.__is_loading = False
 
   # --- Qt Property Getters and Setters ---
 

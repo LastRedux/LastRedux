@@ -1,12 +1,8 @@
 from dataclasses import asdict
-from datatypes.TrackCrop import TrackCrop
-from datatypes.MediaPlayerState import MediaPlayerState
+
 import os
 from datetime import datetime, timedelta
 from typing import List
-from util.lastfm import LastfmList
-from util.lastfm.LastfmScrobble import LastfmScrobble
-from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
 from loguru import logger
 from PySide2 import QtCore
@@ -14,11 +10,15 @@ from ScriptingBridge import SBApplication
 from pypresence import Presence
 
 from tasks import FetchPlayerPosition, LoadExternalScrobbleData, UpdateTrackLoveOnLastfm, FetchRecentScrobbles, SubmitScrobble, UpdateNowPlaying
+from util.lastfm import LastfmList, LastfmScrobble
+from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.music_app import MusicAppPlugin
 from plugins.macOS.SpotifyPlugin import SpotifyPlugin
-from ApplicationViewModel import ApplicationViewModel
 from datatypes.Scrobble import Scrobble
+from datatypes.TrackCrop import TrackCrop
+from datatypes.MediaPlayerState import MediaPlayerState
+from ApplicationViewModel import ApplicationViewModel
 import util.helpers as helpers
 
 class HistoryViewModel(QtCore.QObject):
@@ -55,7 +55,6 @@ class HistoryViewModel(QtCore.QObject):
     QtCore.QObject.__init__(self)
 
     # TODO: Figure out which things should be in reset_state
-
     self.__application_reference: ApplicationViewModel = None
     self.__is_enabled: bool = False
     
@@ -205,10 +204,15 @@ class HistoryViewModel(QtCore.QObject):
       # Reset view model
       self.reset_state()
       self.__media_player.request_initial_state()
-      self.reloadHistory()
-      self.preloadProfileAndFriends.emit()
       polling_interval = 100 if os.environ.get('MOCK') else 1000
       self.__timer.start(polling_interval)
+
+      # Check for network connection on open
+      self.__application_reference.update_is_offline()
+
+      if not self.__application_reference.is_offline:
+        self.reloadHistory()
+        self.preloadProfileAndFriends.emit()
     else:
       self.begin_refresh_history.emit()
       self.reset_state()
@@ -344,6 +348,9 @@ class HistoryViewModel(QtCore.QObject):
     self.end_refresh_history.emit()
 
   def __load_external_scrobble_data(self, scrobble: Scrobble) -> None:
+    if self.__application_reference.is_offline:
+      return
+
     load_external_scrobble_data_task = LoadExternalScrobbleData(
       lastfm=self.__application_reference.lastfm,
       art_provider=self.__application_reference.art_provider,
@@ -438,10 +445,8 @@ class HistoryViewModel(QtCore.QObject):
   def __update_current_scrobble(self, media_player_state: MediaPlayerState) -> None:
     '''Replace the current scrobble, update cached track start/finish, update the UI'''
 
-    # if not self.__is_enabled:
-    #   return
-
-    logger.debug(f'Now playing: {media_player_state.artist_name} - {media_player_state.track_title} | {media_player_state.album_title}')
+    if not self.__is_enabled:
+      return
     
     # Initialize a new Scrobble object with the updated media player state
     self.__current_scrobble = Scrobble(
@@ -596,8 +601,8 @@ class HistoryViewModel(QtCore.QObject):
   def __handle_media_player_playing(self, media_player_state: MediaPlayerState) -> None:
     '''Handle media player play event'''
 
-    # if not self.__is_enabled:
-    #   return
+    if not self.__is_enabled:
+      return
 
     # Update now playing on Last.fm
     if self.__is_submission_enabled:
@@ -616,9 +621,7 @@ class HistoryViewModel(QtCore.QObject):
       self.__discord_rpc.update(
         details=media_player_state.track_title,
         state=media_player_state.artist_name + (
-          (
-            ' | ' + media_player_state.album_title
-          ) if media_player_state.album_title else ''
+          (' | ' + media_player_state.album_title) if media_player_state.album_title else ''
         ),
         large_image='music-logo',
         large_text='Playing on Music',

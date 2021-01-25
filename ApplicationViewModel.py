@@ -1,14 +1,16 @@
-from util.spotify_api import SpotifyApiWrapper
-from shared.components.NetworkImage import NetworkImage
+import requests
 from PySide2 import QtCore, QtNetwork
 
+from shared.components.NetworkImage import NetworkImage
 from util.lastfm import LastfmApiWrapper, LastfmSession
 from util.art_provider import ArtProvider
+from util.spotify_api import SpotifyApiWrapper
 from util import db_helper
 
 class ApplicationViewModel(QtCore.QObject):
   # Qt Property changed signals
   is_logged_in_changed = QtCore.Signal()
+  is_offline_changed = QtCore.Signal()
 
   # JS event signals
   openOnboarding = QtCore.Signal()
@@ -22,6 +24,7 @@ class ApplicationViewModel(QtCore.QObject):
     self.spotify_api = SpotifyApiWrapper()
     self.art_provider = ArtProvider(self.lastfm, self.spotify_api)
     self.is_logged_in = False
+    self.is_offline = False
     
     # Create network request manager and expose it to all NetworkImage instances
     self.network_manager = QtNetwork.QNetworkAccessManager()
@@ -41,6 +44,13 @@ class ApplicationViewModel(QtCore.QObject):
     # Close onboarding and start app
     self.__set_is_logged_in(True)
     self.closeOnboarding.emit()
+
+  def update_is_offline(self) -> None:
+    try:
+      requests.get('https://1.1.1.1')
+      self.__set_is_offline(False)
+    except requests.exceptions.ConnectionError:
+      self.__set_is_offline(True)
 
   # --- Slots ---
 
@@ -64,9 +74,6 @@ class ApplicationViewModel(QtCore.QObject):
     self.is_logged_in = is_logged_in
     self.is_logged_in_changed.emit()
 
-  isLoggedIn = QtCore.Property(
-    type=bool, 
-    fget=lambda self: self.is_logged_in, 
-    fset=__set_is_logged_in, 
-    notify=is_logged_in_changed
-  )
+  def __set_is_offline(self, is_offline: bool) -> None:
+    self.is_offline = is_offline
+    self.is_offline_changed.emit()

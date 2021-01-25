@@ -1,4 +1,5 @@
 from PySide2 import QtCore
+from loguru import logger
 
 from util.lastfm import LastfmApiWrapper
 from util.art_provider import ArtProvider
@@ -20,16 +21,18 @@ class LoadExternalScrobbleData(QtCore.QObject, QtCore.QRunnable):
     '''Load Last.fm track + artist info, album art for scrobble and update the UI progressively'''
 
     # 1. Fetch and load Last.fm track info (first becuase we need is_loved value)
-    lastfm_track = self.lastfm.get_track_info(
-      artist_name=self.scrobble.artist_name,
-      track_title=self.scrobble.track_title
-    )
-
-    if lastfm_track:
-      self.scrobble.lastfm_track = lastfm_track
-    else:
+    lastfm_track = None
+    
+    try:
+      lastfm_track = self.lastfm.get_track_info(
+        artist_name=self.scrobble.artist_name,
+        track_title=self.scrobble.track_title
+      )
+    except Exception as err:
       self.scrobble.has_error = True
+      logger.error(err)
 
+    self.scrobble.lastfm_track = lastfm_track # Could be None
     self.update_ui_for_scrobble.emit(self.scrobble)
 
     # 2. Fetch album art and artist images

@@ -11,22 +11,16 @@ Item {
   // Store reference to view model counterpart that can be set from main.qml
   property DetailsViewModel viewModel
 
-  // Don't do just viewModel && viewModel.scrobble because we need to return a bool value instead of an undefined viewModel.scrobble
   property bool canDisplayScrobble: !!(viewModel && viewModel.scrobble)
 
   // Check if all remote scrobble data from Last.fm has loaded
-  property bool hasLastfmTrackData: (
-    canDisplayScrobble && !!viewModel.scrobble.lastfm_track
-  )
-  property bool hasLastfmArtistData: (
-    canDisplayScrobble && !!viewModel.scrobble.lastfm_artist
-  )
+  property bool hasLastfmTrackData: canDisplayScrobble && !!viewModel.scrobble.lastfm_track
+  property bool hasLastfmArtistData: canDisplayScrobble && !!viewModel.scrobble.lastfm_artist
   property bool isTrackNotFound: (
     canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
   )
-  property bool hasTrackLoadingError: (
-    canDisplayScrobble && viewModel.scrobble.has_error
-  )
+  property bool hasTrackLoadingError: canDisplayScrobble && viewModel.scrobble.has_error
+  property bool isOffline: viewModel && viewModel.isOffline
 
   signal switchToCurrentScrobble
 
@@ -74,7 +68,7 @@ Item {
         // --- First time scrobble banner ---
   
         Image {
-          visible: isTrackNotFound || hasTrackLoadingError
+          visible: isOffline || isTrackNotFound || hasTrackLoadingError
 
           fillMode: Image.TileHorizontally
           source: '../shared/resources/effects/bannerGradient.png'
@@ -84,9 +78,11 @@ Item {
 
           Label {
             text: (
-              isTrackNotFound ? 
-              'This track isn’t in Last.fm\'s database yet' :
-              'Could not load track data from Last.fm, most likely a server outage'
+              isOffline ? 
+              'No internet connection' :
+                isTrackNotFound ? 
+                'This track isn’t in Last.fm\'s database yet' :
+                'Could not load track details from Last.fm, try restarting the app later'
             )
             isShadowEnabled: false
             color: 'black'

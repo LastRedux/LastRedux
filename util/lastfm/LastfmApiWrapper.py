@@ -423,14 +423,13 @@ class LastfmApiWrapper:
           data=params if http_method == 'POST' else None
         )
       except requests.exceptions.ConnectionError:
-        # Retry request
+        # Retry request since Last.fm drops connections randomly
         continue
-
       try:
         resp_json = resp.json()
       except json.decoder.JSONDecodeError:
-        logger.critical(f'Last.fm returned non-JSON response (code {resp.status_code})): {resp.text}')
-        return
+        # Retry request
+        continue
 
       if not resp.status_code == 200:
         if resp.status_code == 403:
@@ -438,7 +437,7 @@ class LastfmApiWrapper:
         elif resp.status_code == 400:
           raise Exception(f'403 Bad Request: {resp_json}')
         elif resp.status_code == 500:
-          logger.warning(f'Last.fm Internal Server Error: {resp_json}')
+          logger.warning(f'Last.fm internal server error: {resp_json}')
 
           # Retry request
           continue
@@ -471,9 +470,7 @@ class LastfmApiWrapper:
       return return_object
     else:
       # The for loop completed without breaking (The key was not found after the max number of retries)
-      logger.critical(f'Could not request {args.get("method")} after {LastfmApiWrapper.MAX_RETRIES} retries')
-    
-    return None
+      raise Exception(f'Could not request {args["method"]} after {LastfmApiWrapper.MAX_RETRIES} retries')
 
   @staticmethod
   def __generate_method_signature(payload: dict) -> str:

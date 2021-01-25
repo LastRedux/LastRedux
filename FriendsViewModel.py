@@ -41,6 +41,10 @@ class FriendsViewModel(QtCore.QObject):
 
     if not self.__is_enabled:
       return
+
+    if self.__application_reference.is_offline:
+      # Skip request if offline
+      return
     
     # Enable loading indicator if there are no friends (initial page load) or the window was refocused
     if not self.friends or was_app_refocused:
@@ -53,12 +57,12 @@ class FriendsViewModel(QtCore.QObject):
       self.is_loading_changed.emit()
 
       fetch_friends_task = FetchFriends(lastfm=self.__application_reference.lastfm)
-      fetch_friends_task.finished.connect(self.__handle_fetched_lastfm_friends)
+      fetch_friends_task.finished.connect(self.__handle_lastfm_friends_fetched)
       QtCore.QThreadPool.globalInstance().start(fetch_friends_task)
 
   # --- Private Methods ---
 
-  def __handle_fetched_lastfm_friends(self, lastfm_users: List[LastfmUser]) -> None:
+  def __handle_lastfm_friends_fetched(self, lastfm_users: List[LastfmUser]) -> None:
     '''Create Friend objects from Last.fm friends and run tasks to fetch their current/recent tracks'''
 
     if not self.__is_enabled:

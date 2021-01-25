@@ -3,6 +3,7 @@ from dataclasses import asdict
 from PySide2 import QtCore
 
 from HistoryViewModel import HistoryViewModel
+from ApplicationViewModel import ApplicationViewModel
 
 class DetailsViewModel(QtCore.QObject):
   # Qt Property changed signals
@@ -10,12 +11,16 @@ class DetailsViewModel(QtCore.QObject):
   is_in_mini_mode_changed = QtCore.Signal()
   is_player_paused_changed = QtCore.Signal()
   media_player_name_changed = QtCore.Signal()
+  is_offline_changed = QtCore.Signal()
 
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
 
     # Store a reference to the scrobble history view model instance that provides data
     self.__history_reference: HistoryViewModel = None
+
+    # Store a reference to the application view model
+    self.__application_reference: ApplicationViewModel = None
 
     # Store whether the app is in mini mode
     self.__is_in_mini_mode: bool = None
@@ -43,6 +48,17 @@ class DetailsViewModel(QtCore.QObject):
     self.scrobble_changed.emit()
     self.media_player_name_changed.emit()
 
+  def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
+    if not new_reference:
+      return
+
+    self.__application_reference = new_reference
+
+    # Pass through signal from application view model
+    self.__application_reference.is_offline_changed.connect(
+      lambda: self.is_offline_changed.emit()
+    )
+
   # --- Slots ---
 
   @QtCore.Slot()
@@ -55,8 +71,16 @@ class DetailsViewModel(QtCore.QObject):
 
   # --- Qt Properties ---
 
+  applicationReference = QtCore.Property(
+    type=ApplicationViewModel,
+    fget=lambda self: self.__application_reference,
+    fset=set_application_reference
+  )
+
   historyReference = QtCore.Property(
-    HistoryViewModel, lambda self: self.__history_reference, set_history_reference
+    type=HistoryViewModel,
+    fget=lambda self: self.__history_reference,
+    fset=set_history_reference
   )
 
   scrobble = QtCore.Property(
@@ -75,6 +99,15 @@ class DetailsViewModel(QtCore.QObject):
       if self.__history_reference else None
     ),
     notify=scrobble_changed
+  )
+
+  isOffline = QtCore.Property(
+    type=bool,
+    fget=(
+      lambda self: self.__application_reference.is_offline
+      if self.__application_reference else None
+    ),
+    notify=is_offline_changed
   )
 
   isInMiniMode = QtCore.Property(

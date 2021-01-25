@@ -188,6 +188,7 @@ Window {
     id: detailsViewModel
 
     historyReference: historyViewModel
+    applicationReference: applicationViewModel
   }
 
   Details {

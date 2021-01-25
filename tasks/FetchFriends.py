@@ -1,4 +1,3 @@
-from util.lastfm.LastfmUser import LastfmUser
 from PySide2 import QtCore
 
 from util.lastfm import LastfmApiWrapper

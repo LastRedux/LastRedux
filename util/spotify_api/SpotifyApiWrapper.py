@@ -18,7 +18,7 @@ class SpotifyApiWrapper:
 
   def __init__(self) -> None:
     # Store Spotify access token
-    self.__access_token: str = self.__get_access_token()
+    self.__access_token: str = None
     self.__ram_cache: Dict[str, CachedResource] = {}
 
   # --- Search Wrappers ---
@@ -31,6 +31,7 @@ class SpotifyApiWrapper:
     )
 
     if not results:
+      logger.warning(f'No Spotify artist results for "{artist_name}"')
       return
 
     return SpotifyArtist(
@@ -48,12 +49,14 @@ class SpotifyApiWrapper:
     # Create empty return type
     spotify_data = SpotifySongData(None, None)
 
+    query = '{} {} {}'.format(
+      SpotifyApiWrapper.__simplify_artist_name(artist_name),
+      SpotifyApiWrapper.__simplify_title(track_title) if track_title else '',
+      SpotifyApiWrapper.__simplify_title(album_title) if album_title else '' 
+    )
+
     results = self.__search(
-      query='{} {} {}'.format(
-        SpotifyApiWrapper.__simplify_artist_name(artist_name),
-        SpotifyApiWrapper.__simplify_title(track_title) if track_title else '',
-        SpotifyApiWrapper.__simplify_title(album_title) if album_title else ''
-      ),
+      query=query,
       media_type='track'
     )
 
@@ -80,6 +83,8 @@ class SpotifyApiWrapper:
               ) if artist['images'] else None
             ) for artist in artists
           ]
+    else:
+      logger.warning(f'No Spotify track results for "{query}"')
 
     return spotify_data
     
@@ -113,6 +118,9 @@ class SpotifyApiWrapper:
       return self.__ram_cache[request_string].data
 
     resp = None
+
+    if not self.__access_token:
+      self.__access_token = self.__get_access_token()
     
     try:
       resp = requests.get(
@@ -128,7 +136,7 @@ class SpotifyApiWrapper:
       if not is_retry:
         self.__request(url, args, is_retry=True)
       else:
-        logger.critical('Could not connect to Spotify')
+        logger.error('Could not connect to Spotify')
       
       return
 
