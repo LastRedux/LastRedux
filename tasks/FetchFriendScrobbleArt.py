@@ -22,6 +22,8 @@ class FetchFriendScrobbleArt(QtCore.QObject, QtCore.QRunnable):
       track_title=self.friend_scrobble.track_title,
       album_title=self.friend_scrobble.album_title,
     )
-    self.friend_scrobble.image_url = album_art.medium_url
+
+    if album_art:
+      self.friend_scrobble.image_url = album_art.medium_url
 
     self.finished.emit(self.row_in_friends_list)

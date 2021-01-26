@@ -3,8 +3,11 @@ import signal
 import sys
 
 import sentry_sdk
-from loguru import logger
+from rich.traceback import install
 from PySide2 import QtCore, QtGui, QtQml
+
+# Install rich traceback errors
+install(show_locals=True)
 
 # Initialize Sentry if in production
 if getattr(sys, 'frozen', False) or os.environ.get('ENABLE_SENTRY'):

@@ -12,6 +12,9 @@ class Friend(LastfmUser):
   @staticmethod
   def from_lastfm_user(user: LastfmUser) -> Friend:
     return Friend(**asdict(user))
+
+  def __repr__(self) -> str:
+      return super().__repr__() + ' - ' + repr(self.last_scrobble)
   
   # # WIP CODE for comparing friends - not working
   # # TODO: Look into why "Friend" type annotation doesn't work here, it works in Track

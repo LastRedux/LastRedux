@@ -14,3 +14,6 @@ class LastfmUser:
       f'Name: {self.real_name or "N/A"}',
       f'Profile: {self.url}'
     ))
+
+  def __repr__(self) -> str:
+    return self.username

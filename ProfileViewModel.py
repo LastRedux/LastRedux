@@ -1,6 +1,7 @@
 from dataclasses import asdict
 
 from PySide2 import QtCore
+from loguru import logger
 
 from ApplicationViewModel import ApplicationViewModel
 from datatypes.ProfileStatistics import ProfileStatistics
@@ -33,6 +34,7 @@ class ProfileViewModel(QtCore.QObject):
       return
 
     if self.__application_reference.is_offline:
+      logger.trace('Offline, not loading profile')
       # Skip request if offline
       return
     
@@ -61,7 +63,7 @@ class ProfileViewModel(QtCore.QObject):
       return
     
     # Load new profile statistics if they changed (and there were some to begin with)
-    if self.__profile_statistics and new_profile_statistics != self.__profile_statistics:
+    if not self.__profile_statistics or new_profile_statistics != self.__profile_statistics:
       self.__profile_statistics = new_profile_statistics
 
       # Fetch Spotify artist images

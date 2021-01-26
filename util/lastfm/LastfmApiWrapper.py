@@ -333,7 +333,7 @@ class LastfmApiWrapper:
       from_timestamp=int(twelve_am_today) # Trim decimal points per API requirement
     ).attr_total
 
-  def get_friend_track(self, username: str) -> FriendScrobble:
+  def get_friend_scrobble(self, username: str) -> FriendScrobble:
     def __track_to_friend_track(track):
       is_playing = bool(track.get('@attr', {}).get('nowplaying')) # 'true' when true, misssing when false
 
@@ -355,15 +355,23 @@ class LastfmApiWrapper:
         is_playing=is_playing
       )
 
-    return self.__lastfm_request({
-        'method': 'user.getRecentTracks',
-        'username': username,
-        'limit': 1, # We only want the last scrobble
-        'extended': 1
-      },
-      main_key_getter=lambda response: response['recenttracks']['track'][0] if len(response['recenttracks']['track']) else None, # Not all users have a scrobble
-      return_value_builder=lambda track, response:  __track_to_friend_track(track) if track else None
-    )
+    friend_scrobble = None
+    
+    try:
+      friend_scrobble = self.__lastfm_request({
+          'method': 'user.getRecentTracks',
+          'username': username,
+          'limit': 1, # We only want the last scrobble
+          'extended': 1
+        },
+        main_key_getter=lambda response: response['recenttracks']['track'][0] if len(response['recenttracks']['track']) else None, # Not all users have a scrobble
+        return_value_builder=lambda track, response:  __track_to_friend_track(track) if track else None
+      )
+    except PermissionError:
+      # Friend has recent scrobbles hidden
+      pass
+
+    return friend_scrobble
 
   @staticmethod
   def generate_authorization_url(auth_token):
@@ -433,7 +441,7 @@ class LastfmApiWrapper:
 
       if not resp.status_code == 200:
         if resp.status_code == 403:
-          raise Exception(f'403 Forbidden: {resp_json}')
+          raise PermissionError(f'403 Forbidden: {resp_json}')
         elif resp.status_code == 400:
           raise Exception(f'403 Bad Request: {resp_json}')
         elif resp.status_code == 500:

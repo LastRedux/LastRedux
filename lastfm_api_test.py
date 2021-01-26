@@ -75,7 +75,7 @@ print('\n***** FRIENDS *****\n')
 
 if input('Run friends? (yN) ') == 'y':
   for friend in lastfm.get_friends():
-    friend_track = lastfm.get_friend_track(username=friend.username)
+    friend_track = lastfm.get_friend_scrobble(username=friend.username)
 
     print(friend)
     print(f'Last Scrobble: {friend_track or "N/A"}\n')

@@ -17,3 +17,6 @@ class FriendScrobble(SimpleTrack):
       and self.is_loved == o.is_loved
       and self.is_playing == o.is_playing
     )
+
+  def __repr__(self):
+      return super().__repr__()

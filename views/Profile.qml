@@ -106,7 +106,7 @@ Item {
     imageSource: isProfileLoaded ? viewModel.profileStatistics.image_url : ''
     backgroundImageSource: isProfileLoaded ? viewModel.profileStatistics.image_url : ''
     username: isProfileLoaded ? viewModel.profileStatistics.username : ''
-    fullName: isProfileLoaded ? viewModel.profileStatistics.real_name : ''
+    fullName: isProfileLoaded ? (viewModel.profileStatistics.real_name || '') : ''
 
     anchors {
       top: parent.top
