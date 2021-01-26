@@ -427,11 +427,11 @@ class HistoryViewModel(QtCore.QObject):
 
     # Update playcounts for scrobbles (including the one just added to history)
     for history_scrobble in self.scrobble_history:
-      if history_scrobble.lastfm_track:
+      if history_scrobble.lastfm_track and scrobble.lastfm_track:
         if history_scrobble.lastfm_track == scrobble.lastfm_track:
           history_scrobble.lastfm_track.plays += 1
       
-      if history_scrobble.lastfm_artist:
+      if history_scrobble.lastfm_artist and scrobble.lastfm_artist:
         if history_scrobble.lastfm_artist == scrobble.lastfm_artist:
           history_scrobble.lastfm_artist.plays += 1
 
