@@ -1,12 +1,12 @@
 import QtQuick 2.14
 
 ToolbarItem {
-  property bool shouldShowLoadingIndicator
+  property bool isLoading
 
   Item {
     id: loadingIndicator
 
-    visible: shouldShowLoadingIndicator
+    visible: isLoading
 
     width: 5
     height: width

@@ -13,9 +13,6 @@ Window {
 
   property int currentTabIndex: 0
   property bool hasAttemptedLogin: false
-  property bool shouldShowProfileLoadingIndicator: true
-  property bool shouldShowFriendsLoadingIndicator: true
-
   property bool isInMiniMode: (detailsViewModel && detailsViewModel.isInMiniMode) || false
 
   color: '#171717'
@@ -35,12 +32,10 @@ Window {
 
         switch (tabIndex) {
         case 1:
-          profileViewModel.loadProfile(shouldShowProfileLoadingIndicator)
-          shouldShowProfileLoadingIndicator = false
+          profileViewModel.loadProfile()
           break
         case 2:
-          friendsViewModel.loadFriends(shouldShowFriendsLoadingIndicator)
-          shouldShowFriendsLoadingIndicator = false
+          friendsViewModel.loadFriends()
         }
       }
     }
@@ -53,9 +48,8 @@ Window {
         hasAttemptedLogin = true
         attemptLoginTimer.running = true
       }
-
-      shouldShowProfileLoadingIndicator = true
-      shouldShowFriendsLoadingIndicator = true
+      
+      // Automatically refresh currently selected tab as if it was just switched to
       switchToTab(currentTabIndex, true)
     }
   }
@@ -213,8 +207,8 @@ Window {
     applicationReference: applicationViewModel
     onShowNotification: (title, message) => trayIcon.showMessage(title, message)
     onPreloadProfileAndFriends: {
-      profileViewModel.loadProfile(false)
-      friendsViewModel.loadFriends(false)
+      profileViewModel.loadProfile()
+      friendsViewModel.loadFriends()
     }
   }
 
@@ -325,7 +319,7 @@ Window {
 
           TabBarItem {
             iconName: 'history'
-            shouldShowLoadingIndicator: historyViewModel && historyViewModel.shouldShowLoadingIndicator
+            isLoading: historyViewModel && historyViewModel.isLoading
             isSelected: currentTabIndex === 0
 
             onClicked: switchToTab(0)
@@ -333,7 +327,7 @@ Window {
 
           TabBarItem {
             iconName: 'profile'
-            shouldShowLoadingIndicator: profileViewModel && profileViewModel.shouldShowLoadingIndicator
+            isLoading: profileViewModel && profileViewModel.isLoading
             isSelected: currentTabIndex === 1
 
             onClicked: switchToTab(1)
@@ -341,7 +335,7 @@ Window {
 
           TabBarItem {
             iconName: 'friends'
-            shouldShowLoadingIndicator: friendsViewModel && friendsViewModel.shouldShowLoadingIndicator
+            isLoading: friendsViewModel && friendsViewModel.isLoading
             isSelected: currentTabIndex === 2
 
             onClicked: switchToTab(2)

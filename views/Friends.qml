@@ -41,7 +41,7 @@ Item {
   }
 
   Item {
-    visible: listView.count == 0 && !viewModel.shouldShowLoadingIndicator
+    visible: listView.count == 0 && !viewModel.isLoading
 
     anchors.fill: parent
 

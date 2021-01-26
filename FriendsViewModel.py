@@ -1,4 +1,5 @@
 import logging
+import copy
 from typing import List
 
 from PySide2 import QtCore
@@ -12,7 +13,6 @@ from datatypes.FriendScrobble import FriendScrobble
 class FriendsViewModel(QtCore.QObject):
   # Qt Property signals
   is_enabled_changed = QtCore.Signal()
-  should_show_loading_indicator_changed = QtCore.Signal()
   
   # Friends list model signals
   begin_refresh_friends = QtCore.Signal()
@@ -28,16 +28,21 @@ class FriendsViewModel(QtCore.QObject):
     self.reset_state()
 
   def reset_state(self) -> None:
+    # Store friends provided to the list model
     self.friends: List[Friend] = []
-    self.__did_a_friend_track_change: bool = None
+    
+    # Store friends that are being processed before being pushed to list model
+    self.__new_friends: List[Friend] = []
+
+    self.__did_any_friend_scrobble_change: bool = None
     self.__new_friends_with_track_loaded_count: int = 0
     self.__should_show_loading_indicator: bool = False
     self.__is_loading: bool = False
 
   # --- Slots ---
 
-  @QtCore.Slot(bool)
-  def loadFriends(self, was_app_refocused: bool=False) -> None:
+  @QtCore.Slot()
+  def loadFriends(self) -> None:
     '''Initiate the process of loading (or reloading) the user's friends and their tracks'''
 
     if not self.__is_enabled:
@@ -51,13 +56,8 @@ class FriendsViewModel(QtCore.QObject):
     # Don't refetch friends if they're already loading
     if self.__is_loading:
       return
-    
-    # Enable loading indicator if there are no friends (initial page load) or the window was refocused
-    # if not self.friends or was_app_refocused:
 
     # Update loading indicator
-    self.__should_show_loading_indicator = True
-    self.should_show_loading_indicator_changed.emit()
     self.__is_loading = True
     self.is_loading_changed.emit()
 
@@ -81,36 +81,38 @@ class FriendsViewModel(QtCore.QObject):
 
     # Load and sort new list of friends if it doesn't match the current one
     if friends_changed:
-      self.begin_refresh_friends.emit()
-
-      # Build Friend objects and sort them alphabetically by username
-      self.friends = sorted(
+      # Build Friend objects and save them to a temporary list
+      self.__new_friends = sorted(
         [Friend.from_lastfm_user(user) for user in lastfm_users],
-        key=lambda friend: friend.username.lower()
+        key=lambda friend: friend.username.lower() # Sort alphabetically by username
       )
 
-      # Update UI with friends (just friend, no track)
+      self.begin_refresh_friends.emit()
+
+      # Create copies of all of the Friend objects to prevent pass by reference
+      self.friends = copy.deepcopy(self.__new_friends)
+
       self.end_refresh_friends.emit()
 
     # Reset loading tracker
     self.__new_friends_with_track_loaded_count = 0
-    self.__did_a_friend_track_change = False
+    self.__did_any_friend_scrobble_change = False
 
     # Load each friend's most recent/currently playing track
-    for i, friend in enumerate(self.friends):
-      load_friend_scrobble_task = FetchFriendScrobble(
-        lastfm=self.__application_reference.lastfm, 
-        username=friend.username, 
+    for i, friend in enumerate(self.__new_friends):
+      fetch_friend_scrobble_task = FetchFriendScrobble(
+        lastfm=self.__application_reference.lastfm,
+        username=friend.username,
         friend_index=i
       )
-      load_friend_scrobble_task.finished.connect(self.__handle_friend_scrobble_fetched)
-      QtCore.QThreadPool.globalInstance().start(load_friend_scrobble_task)
+      fetch_friend_scrobble_task.finished.connect(self.__handle_friend_scrobble_fetched)
+      QtCore.QThreadPool.globalInstance().start(fetch_friend_scrobble_task)
 
   def __handle_friend_scrobble_fetched(self, new_friend_scrobble: FriendScrobble, friend_index: int) -> None:
     if not self.__is_enabled:
       return
 
-    friend = self.friends[friend_index]
+    friend = self.__new_friends[friend_index]
     friend.is_loading = False
 
     if (
@@ -121,29 +123,30 @@ class FriendsViewModel(QtCore.QObject):
       or friend.last_scrobble != new_friend_scrobble
     ):
       friend.last_scrobble = new_friend_scrobble
-      self.__did_a_friend_track_change = True
+      self.__did_any_friend_scrobble_change = True
       
     # Increment regardless of whether a track was actually found, we're keeping track of loading
     self.__new_friends_with_track_loaded_count += 1
 
     # Update UI when the last friend is loaded
-    if self.__new_friends_with_track_loaded_count == len(self.friends):      
+    if self.__new_friends_with_track_loaded_count == len(self.__new_friends):
       # Move friends currently playing music to the top
-      self.friends = sorted(
-        self.friends,
+      self.__new_friends = sorted(
+        self.__new_friends,
         key=lambda friend: bool(friend.last_scrobble.is_playing) if friend.last_scrobble else False, # bool because it might be None
         reverse=True
       )
 
       # Move friends with no track to the bottom
-      self.friends = sorted(
-        self.friends, 
+      self.__new_friends = sorted(
+        self.__new_friends, 
         key=lambda friend: bool(friend.last_scrobble),
         reverse=True
       )
 
-      if not self.friends or self.__did_a_friend_track_change:
+      if not self.friends or self.__did_any_friend_scrobble_change:
         self.begin_refresh_friends.emit()
+        self.friends = self.__new_friends
         self.end_refresh_friends.emit()
 
         # Start loading album art for friend tracks
@@ -163,11 +166,6 @@ class FriendsViewModel(QtCore.QObject):
 
       self.__is_loading = False
       self.is_loading_changed.emit()
-      
-      # Update loading indicator on tab bar if needed
-      if self.__should_show_loading_indicator:
-        self.__should_show_loading_indicator = False
-        self.should_show_loading_indicator_changed.emit()
 
   # --- Qt Property Getters and Setters ---
 
@@ -208,12 +206,6 @@ class FriendsViewModel(QtCore.QObject):
     fget=lambda self: self.__is_enabled, 
     fset=set_is_enabled, 
     notify=is_enabled_changed
-  )
-
-  shouldShowLoadingIndicator = QtCore.Property(
-    type=bool,
-    fget=lambda self: self.__should_show_loading_indicator, 
-    notify=should_show_loading_indicator_changed
   )
 
   isLoading = QtCore.Property(

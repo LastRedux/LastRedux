@@ -445,8 +445,6 @@ class LastfmApiWrapper:
         elif resp.status_code == 400:
           raise Exception(f'403 Bad Request: {resp_json}')
         elif resp.status_code == 500:
-          logging.warning(f'Last.fm internal server error: {resp_json}')
-
           # Retry request
           continue
 

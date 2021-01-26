@@ -35,7 +35,7 @@ class HistoryViewModel(QtCore.QObject):
   is_using_mock_player_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
-  should_show_loading_indicator_changed = QtCore.Signal()
+  is_loading_changed = QtCore.Signal()
   media_player_name_changed = QtCore.Signal()
   
   # Scrobble history list model signals
@@ -109,7 +109,7 @@ class HistoryViewModel(QtCore.QObject):
     self.scrobble_history: List[Scrobble] = []
 
     # Keep track of whether the history view is loading data
-    self.__should_show_loading_indicator = False
+    self.__is_loading = False
 
     # Keep track of how many scrobbles have their additional data loaded from Last.fm and Spotify
     self.__scrobbles_with_external_data_count = 0
@@ -215,7 +215,7 @@ class HistoryViewModel(QtCore.QObject):
       self.current_scrobble_data_changed.emit()
       self.__timer.stop()
 
-    self.should_show_loading_indicator_changed.emit()
+    self.is_loading_changed.emit()
 
   # --- Slots ---
 
@@ -230,13 +230,13 @@ class HistoryViewModel(QtCore.QObject):
       or not self.__is_enabled
 
       # Prevent reloading while the view is already loading
-      or self.__should_show_loading_indicator
+      or self.__is_loading
     ):
       return
 
     # Update loading indicator
-    self.__should_show_loading_indicator = True
-    self.should_show_loading_indicator_changed.emit()
+    self.__is_loading = True
+    self.is_loading_changed.emit()
 
     # Reset scrobble history list
     self.begin_refresh_history.emit()
@@ -368,8 +368,8 @@ class HistoryViewModel(QtCore.QObject):
 
     if self.__scrobbles_with_external_data_count == len(self.scrobble_history): # Don't use initial scrobble count because there might not be that many
       # All scrobbles have loaded their additional data
-      self.__should_show_loading_indicator = False
-      self.should_show_loading_indicator_changed.emit()
+      self.__is_loading = False
+      self.is_loading_changed.emit()
       self.end_refresh_history.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
@@ -700,10 +700,10 @@ class HistoryViewModel(QtCore.QObject):
     notify=selected_scrobble_index_changed
   )
 
-  shouldShowLoadingIndicator = QtCore.Property(
+  isLoading = QtCore.Property(
     type=bool,
-    fget=lambda self: self.__should_show_loading_indicator,
-    notify=should_show_loading_indicator_changed
+    fget=lambda self: self.__is_loading,
+    notify=is_loading_changed
   )
 
   mediaPlayerName = QtCore.Property(

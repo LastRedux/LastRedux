@@ -11,7 +11,7 @@ class ProfileViewModel(QtCore.QObject):
   # Qt Property signals
   is_enabled_changed = QtCore.Signal()
   profile_statistics_changed = QtCore.Signal()
-  should_show_loading_indicator_changed = QtCore.Signal()
+  is_loading_changed = QtCore.Signal()
 
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)
@@ -21,15 +21,13 @@ class ProfileViewModel(QtCore.QObject):
     self.reset_state()
 
   def reset_state(self):
-    self.__should_show_loading_indicator: bool = False
-
     self.__profile_statistics: ProfileStatistics = None
     self.__is_loading: bool = False
 
   # --- Slots ---
   
-  @QtCore.Slot(bool)
-  def loadProfile(self, was_app_refocused: bool=False) -> None:
+  @QtCore.Slot()
+  def loadProfile(self) -> None:
     if not self.__is_enabled:
       return
 
@@ -37,17 +35,13 @@ class ProfileViewModel(QtCore.QObject):
       logging.debug('Offline, not loading profile')
       # Skip request if offline
       return
-    
-    # Update loading indicator if needed
-    # if not self.__profile_statistics or was_app_refocused:
-    self.__should_show_loading_indicator = True
-    self.should_show_loading_indicator_changed.emit()
 
     # Don't reload if the profile page is already loading
     if self.__is_loading:
       return
 
     self.__is_loading = True
+    self.is_loading_changed.emit()
     
     fetch_profile_statistics_task = FetchProfileStatistics(self.__application_reference.lastfm,)
     fetch_profile_statistics_task.finished.connect(self.__handle_profile_statistics_fetched)
@@ -79,8 +73,7 @@ class ProfileViewModel(QtCore.QObject):
 
     # Update loading indicator
     self.__is_loading = False
-    self.__should_show_loading_indicator = False
-    self.should_show_loading_indicator_changed.emit()
+    self.is_loading_changed.emit()
 
   # --- Qt Property Getters and Setters ---
 
@@ -97,7 +90,7 @@ class ProfileViewModel(QtCore.QObject):
     self.__is_enabled = is_enabled
     self.is_enabled_changed.emit()
     self.reset_state()
-    self.should_show_loading_indicator_changed.emit()
+    self.is_loading_changed.emit()
 
     if not is_enabled:
       self.profile_statistics_changed.emit()
@@ -125,8 +118,8 @@ class ProfileViewModel(QtCore.QObject):
     notify=profile_statistics_changed
   )
 
-  shouldShowLoadingIndicator = QtCore.Property(
+  isLoading = QtCore.Property(
     type=bool,
-    fget=lambda self: self.__should_show_loading_indicator,
-    notify=should_show_loading_indicator_changed,
+    fget=lambda self: self.__is_loading,
+    notify=is_loading_changed,
   )
