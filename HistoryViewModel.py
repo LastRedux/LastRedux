@@ -339,7 +339,7 @@ class HistoryViewModel(QtCore.QObject):
     for i, recent_scrobble in enumerate(recent_scrobbles.items):
       self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
 
-      self.__load_external_scrobble_data(self.scrobble_history[i])
+      # self.__load_external_scrobble_data(self.scrobble_history[i])
 
     self.end_refresh_history.emit()
 
@@ -479,6 +479,10 @@ class HistoryViewModel(QtCore.QObject):
 
     # Load Last.fm data and album art
     self.__load_external_scrobble_data(self.__current_scrobble)
+
+    # Reset scrobble meter
+    self.__current_scrobble_percentage = 0
+    self.scrobble_percentage_changed.emit()
 
   def __fetch_new_media_player_position(self) -> None:
     '''Fetch the current player position timestamp from the selected media player'''
