@@ -339,7 +339,7 @@ class HistoryViewModel(QtCore.QObject):
     for i, recent_scrobble in enumerate(recent_scrobbles.items):
       self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
 
-      # self.__load_external_scrobble_data(self.scrobble_history[i])
+      self.__load_external_scrobble_data(self.scrobble_history[i])
 
     self.end_refresh_history.emit()
 
