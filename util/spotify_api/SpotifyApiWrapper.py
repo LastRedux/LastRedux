@@ -34,10 +34,18 @@ class SpotifyApiWrapper:
       logger.warning(f'No Spotify artist results for "{artist_name}"')
       return
 
+    image_url = None
+
+    try:
+      image_url = results[0]['images'][-1]['url']
+    except IndexError:
+      # No images
+      image_url = None
+
     return SpotifyArtist(
       url=results[0]['external_urls']['spotify'],
       name=artist_name,
-      image_url=results[0]['images'][-1]['url']
+      image_url=image_url
     )
 
   def get_track_images(self,
