@@ -1,6 +1,6 @@
 import os
+import logging
 
-from loguru import logger
 from PySide2 import QtCore
 
 from util.lastfm import LastfmApiWrapper
@@ -15,7 +15,7 @@ class SubmitScrobble(QtCore.QRunnable): # Don't inherit from QObject because no 
   
   def run(self):
     if os.environ.get('MOCK'):
-      logger.success(f'MOCK submitted: {self.scrobble.title}')
+      logging.info(f'MOCK submitted: {self.scrobble.title}')
       return
 
     self.lastfm.submit_scrobble(
@@ -24,4 +24,4 @@ class SubmitScrobble(QtCore.QRunnable): # Don't inherit from QObject because no 
       album_title=self.scrobble.album_title,
       date=self.scrobble.timestamp
     )
-    logger.success(f'Submitted to Last.fm: {self.scrobble.track_title}')
+    logging.info(f'Submitted to Last.fm: {self.scrobble.track_title}')

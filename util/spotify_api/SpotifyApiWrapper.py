@@ -1,10 +1,9 @@
-import datetime
+import logging
 import json
 import re
 from typing import Dict, List
 
 from unidecode import unidecode
-from loguru import logger
 import requests
 
 from datatypes.ImageSet import ImageSet
@@ -31,7 +30,7 @@ class SpotifyApiWrapper:
     )
 
     if not results:
-      logger.warning(f'No Spotify artist results for "{artist_name}"')
+      logging.warning(f'No Spotify artist results for "{artist_name}"')
       return
 
     image_url = None
@@ -92,7 +91,7 @@ class SpotifyApiWrapper:
             ) for artist in artists
           ]
     else:
-      logger.warning(f'No Spotify track results for "{query}"')
+      logging.warning(f'No Spotify track results for "{query}"')
 
     return spotify_data
     
@@ -121,7 +120,7 @@ class SpotifyApiWrapper:
 
     # Check for cached responses
     if request_string in self.__ram_cache:
-      logger.trace(f'Used Spotify API cache: {args}')
+      logging.debug(f'Used Spotify API cache: {url} {args}')
 
       return self.__ram_cache[request_string].data
 
@@ -144,7 +143,7 @@ class SpotifyApiWrapper:
       if not is_retry:
         self.__request(url, args, is_retry=True)
       else:
-        logger.error('Could not connect to Spotify')
+        logging.error('Could not connect to Spotify')
       
       return
 
@@ -154,7 +153,7 @@ class SpotifyApiWrapper:
       if resp_json['error']['message'] == 'The access token expired':
         # Generate a new access token (lasts for 1 hour by default)
         self.__access_token = SpotifyApiWrapper.__get_access_token()
-        logger.trace('Refreshed Spotify access token')
+        logging.debug('Refreshed Spotify access token')
 
         # Retry request
         self.__request(url, args)

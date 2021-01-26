@@ -1,8 +1,7 @@
 import sys
 import webbrowser
+import logging
 from datetime import datetime
-
-from loguru import logger
 
 import util.db_helper as db_helper
 from util.lastfm.LastfmApiWrapper import LastfmApiWrapper
@@ -14,7 +13,7 @@ session = db_helper.get_lastfm_session()
 
 if session:
   lastfm.log_in_with_session(session)
-  logger.success(f'Logged in from database as {session.username} with {session.session_key}')
+  logging.info(f'Logged in from database as {session.username} with {session.session_key}')
 else:
   print('\n***** AUTH TOKEN *****\n')
   auth_token = lastfm.get_auth_token()
@@ -29,11 +28,11 @@ else:
   try:
     session = lastfm.get_session(auth_token)
     lastfm.log_in_with_session(session)
-    logger.success(f'Successfully logged in as {session.username} with {session.session_key}')
+    logging.info(f'Successfully logged in as {session.username} with {session.session_key}')
     db_helper.save_lastfm_session_to_database(session)
-    logger.success('Successfully saved session key and username to database')
+    logging.info('Successfully saved session key and username to database')
   except:
-    logger.info(f'Could not get session, auth token not authorized')
+    logging.info(f'Could not get session, auth token not authorized')
     sys.exit(1)
 
 print('\n***** USER INFO *****\n')

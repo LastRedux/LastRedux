@@ -1,7 +1,6 @@
 import sys
 import json
-
-from loguru import logger
+import logging
 
 from util.lastfm import LastfmApiWrapper
 from util.spotify_api import SpotifyApiWrapper
@@ -18,9 +17,9 @@ session = db_helper.get_lastfm_session()
 if session:
   # Set Last.fm wrapper session key and username from database
   lastfm.log_in_with_session(session)
-  logger.success(f'Logged in from database as {session.username}')
+  logging.info(f'Logged in from database as {session.username}')
 else:
-  logger.error('No login details saved, run lastfm_api_test.py to save a session to the database')
+  logging.error('No login details saved, run lastfm_api_test.py to save a session to the database')
   sys.exit(1)
 
 art_provider = ArtProvider(lastfm)

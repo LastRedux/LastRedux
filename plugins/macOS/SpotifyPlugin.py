@@ -1,4 +1,5 @@
-from loguru import logger
+import logging
+
 from ScriptingBridge import SBApplication
 from Foundation import NSDistributedNotificationCenter
 
@@ -66,7 +67,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
 
     notification_payload = notification.userInfo()
 
-    logger.trace(f'New notification from Spotify.app: {notification_payload}')
+    logging.debug(f'New notification from Spotify.app: {notification_payload}')
 
     if notification_payload['Player State'] == 'Stopped':
       self.stopped.emit()

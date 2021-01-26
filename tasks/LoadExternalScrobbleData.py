@@ -1,5 +1,6 @@
+import logging
+
 from PySide2 import QtCore
-from loguru import logger
 
 from util.lastfm import LastfmApiWrapper
 from util.art_provider import ArtProvider
@@ -30,7 +31,7 @@ class LoadExternalScrobbleData(QtCore.QObject, QtCore.QRunnable):
       )
     except Exception as err:
       self.scrobble.has_error = True
-      logger.error(err)
+      logging.error(err)
 
     self.scrobble.lastfm_track = lastfm_track # Could be None
     self.update_ui_for_scrobble.emit(self.scrobble)

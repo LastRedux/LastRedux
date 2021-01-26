@@ -1,11 +1,11 @@
 import hashlib
 import json
 import time
+import logging
 from datetime import datetime, time, timedelta
 from typing import Dict, List
 
 import requests
-from loguru import logger
 
 from .LastfmAlbum import LastfmAlbum
 from .LastfmArtist import LastfmArtist
@@ -399,7 +399,7 @@ class LastfmApiWrapper:
 
         # Return cached resource, otherwise continue with new request
         if resource.expiration_date > datetime.now():
-          logger.trace(f'Used Last.fm API cache: {args}')
+          logging.debug(f'Used Last.fm API cache: {args}')
           return resource.data
         else:
           # Remove expired resource from cache
@@ -445,7 +445,7 @@ class LastfmApiWrapper:
         elif resp.status_code == 400:
           raise Exception(f'403 Bad Request: {resp_json}')
         elif resp.status_code == 500:
-          logger.warning(f'Last.fm internal server error: {resp_json}')
+          logging.warning(f'Last.fm internal server error: {resp_json}')
 
           # Retry request
           continue
@@ -465,7 +465,7 @@ class LastfmApiWrapper:
           return_object = return_value_builder(resp_json)
       except KeyError as err:
         # There's a missing key, run the request again by continuing the for loop
-        logger.trace(f'Mising key in Last.fm request: {str(err)} for request {args}')
+        logging.debug(f'Mising key in Last.fm request: {str(err)} for request {args}')
         continue
 
       # The object creation succeeded, so we can cache it if needed and break out of the retry loop

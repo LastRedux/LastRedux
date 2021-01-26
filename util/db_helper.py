@@ -1,6 +1,6 @@
 import sys
+import logging
 
-from loguru import logger
 from PySide2 import QtCore, QtSql
 
 from util.lastfm.LastfmSession import LastfmSession
@@ -16,9 +16,9 @@ def connect():
 
   # Open the database and log connection status
   if db.open():
-    logger.success('sqlite connection succeeded')
+    logging.info('sqlite connection succeeded')
   else:
-    logger.critical('sqlite connection failed')
+    logging.critical('sqlite connection failed')
 
 def get_lastfm_session() -> LastfmSession:
   '''Fetch the user's Last.fm session key and username from the settings table'''

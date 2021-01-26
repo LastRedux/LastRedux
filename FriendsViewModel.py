@@ -1,7 +1,7 @@
+import logging
 from typing import List
 
 from PySide2 import QtCore
-from loguru import logger
 
 from ApplicationViewModel import ApplicationViewModel
 from tasks import FetchFriends, FetchFriendScrobble, FetchFriendScrobbleArt
@@ -45,7 +45,7 @@ class FriendsViewModel(QtCore.QObject):
 
     if self.__application_reference.is_offline:
       # Skip request if offline
-      logger.trace('Offline, not loading profile')
+      logging.debug('Offline, not loading profile')
       return
 
     # Don't refetch friends if they're already loading
@@ -142,7 +142,6 @@ class FriendsViewModel(QtCore.QObject):
         reverse=True
       )
 
-      print(self.__did_a_friend_track_change)
       if not self.friends or self.__did_a_friend_track_change:
         self.begin_refresh_friends.emit()
         self.end_refresh_friends.emit()

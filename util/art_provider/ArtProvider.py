@@ -1,11 +1,9 @@
-from util.spotify_api.SpotifyArtist import SpotifyArtist
-from loguru import logger
-
 from util.lastfm import LastfmApiWrapper
 from util.spotify_api import SpotifyApiWrapper
 from datatypes.ImageSet import ImageSet
 from .ScrobbleImages import ScrobbleImages
 import util.itunes_store_api_helper as itunes_store
+from util.spotify_api.SpotifyArtist import SpotifyArtist
 
 class ArtProvider:
   def __init__(self, lastfm: LastfmApiWrapper, spotify_api: SpotifyApiWrapper):

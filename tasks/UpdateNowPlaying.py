@@ -1,8 +1,8 @@
-from loguru import logger
+import logging
+
 from PySide2 import QtCore
 
 from util.lastfm import LastfmApiWrapper
-from datatypes.Scrobble import Scrobble
 
 class UpdateNowPlaying(QtCore.QRunnable): # Don't inherit from QObject because no signals are used
   def __init__(
@@ -29,4 +29,4 @@ class UpdateNowPlaying(QtCore.QRunnable): # Don't inherit from QObject because n
       duration=self.duration
     )
     
-    logger.success(f'Updated now playing on Last.fm: {self.track_title}')
+    logging.info(f'Updated now playing on Last.fm: {self.track_title}')

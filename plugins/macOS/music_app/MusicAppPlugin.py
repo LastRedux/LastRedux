@@ -1,7 +1,8 @@
+import logging
+
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 from Foundation import NSDistributedNotificationCenter
-from loguru import logger
 
 from plugins.macOS.MacMediaPlayerPlugin import MacMediaPlayerPlugin
 from datatypes.MediaPlayerState import MediaPlayerState
@@ -67,7 +68,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     )
 
   # --- Private Methods ---
-    
+
   def __handle_new_state(self, new_state: MediaPlayerState) -> None:
     # Ignore notification if there's no track title (Usually happens with radio stations)
     if not new_state.track_title:
@@ -127,7 +128,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         # Sometimes even this fails, there's nothing we can do
         self.stopped.emit()
         self.cannot_scrobble_error.emit(f'Music did not provide a track length for "{self.__state.track_title}"')
-        logger.error(f'Error getting track duration for {self.__cached_notification_payload}')
+        logging.error(f'Error getting track duration for {self.__cached_notification_payload}')
 
         # Don't emit play signal
         return
@@ -144,7 +145,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     
     self.__cached_notification_payload = notification.userInfo()
 
-    logger.trace(f'New notification from Music.app: {self.__cached_notification_payload}')
+    logging.debug(f'New notification from Music.app: {self.__cached_notification_payload}')
 
     if self.__cached_notification_payload['Player State'] == 'Stopped':
       self.stopped.emit()

@@ -1,7 +1,9 @@
+import logging
+
+from PySide2 import QtCore
+
 from datatypes.Scrobble import Scrobble
 from util.lastfm.LastfmApiWrapper import LastfmApiWrapper
-from loguru import logger
-from PySide2 import QtCore
 
 class UpdateTrackLoveOnLastfm(QtCore.QRunnable):
   def __init__(self, lastfm: LastfmApiWrapper, scrobble: Scrobble, value: bool):
@@ -18,4 +20,4 @@ class UpdateTrackLoveOnLastfm(QtCore.QRunnable):
       is_loved=self.value
     )
 
-    logger.success(f'Track love updated on Last.fm: {self.scrobble} - {self.value}')
+    logging.info(f'Track love updated on Last.fm: {self.scrobble} - {self.value}')

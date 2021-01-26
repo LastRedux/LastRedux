@@ -1,10 +1,9 @@
-from dataclasses import asdict
-
+import logging
 import os
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from typing import List
 
-from loguru import logger
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 from pypresence import Presence
@@ -71,7 +70,7 @@ class HistoryViewModel(QtCore.QObject):
     if self.__is_discord_rpc_enabled and  helpers.is_discord_open():
       self.__discord_rpc.connect()
 
-    logger.info(f'Discord RPC is set to {self.__is_discord_rpc_enabled}')
+    logging.info(f'Discord RPC is set to {self.__is_discord_rpc_enabled}')
 
     # Settings
     # TODO: Move these properties to an App view model
@@ -97,12 +96,6 @@ class HistoryViewModel(QtCore.QObject):
         # Use Music app plugin in all other cases since every Mac has it
         self.switchToMediaPlugin('musicApp')
 
-    self.__media_player.stopped.connect(self.__handle_media_player_stopped)
-    self.__media_player.playing.connect(self.__handle_media_player_playing)
-    self.__media_player.paused.connect(self.__handle_media_player_paused)
-    self.__media_player.cannot_scrobble_error.connect(
-      lambda message: self.showNotification.emit('The track you\'re playing cannot be scrobbled', message)
-    )
     self.media_player_name_changed.emit()
 
     # Start polling interval to check for new media player position
@@ -312,12 +305,15 @@ class HistoryViewModel(QtCore.QObject):
       self.__media_player = self.__music_app_plugin
 
     self.__set_is_scrobble_submission_enabled(self.__media_player.IS_SUBMISSION_ENABLED)
-    logger.success(f'Switched media player to {self.__media_player.MEDIA_PLAYER_NAME}')
+    logging.info(f'Switched media player to {self.__media_player.MEDIA_PLAYER_NAME}')
 
     # Reconnect event signals
     self.__media_player.stopped.connect(self.__handle_media_player_stopped)
     self.__media_player.playing.connect(self.__handle_media_player_playing)
     self.__media_player.paused.connect(self.__handle_media_player_paused)
+    self.__media_player.cannot_scrobble_error.connect(
+      lambda message: self.showNotification.emit('The track you\'re playing cannot be scrobbled', message)
+    )
 
     # Load initial track from newly selected media player without a notification
     if self.__media_player.is_open() and self.__is_enabled:
@@ -563,7 +559,7 @@ class HistoryViewModel(QtCore.QObject):
     else:
       self.__is_submission_enabled = value
 
-    logger.info(f'Scrobble submission is set to {self.__is_submission_enabled}')
+    logging.info(f'Scrobble submission is set to {self.__is_submission_enabled}')
 
   def __handle_media_player_stopped(self) -> None:
     '''Handle media player stop event (no track is loaded)'''

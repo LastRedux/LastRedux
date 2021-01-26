@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from PySide2 import QtCore, QtNetwork
 
@@ -65,6 +67,7 @@ class ApplicationViewModel(QtCore.QObject):
       # Set Last.fm wrapper session key and username from database
       self.lastfm.log_in_with_session(session)
       self.__set_is_logged_in(True)
+      logging.info(f'Logged in as {session.username}')
     else:
       self.openOnboarding.emit()
 

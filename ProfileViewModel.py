@@ -1,7 +1,7 @@
+import logging
 from dataclasses import asdict
 
 from PySide2 import QtCore
-from loguru import logger
 
 from ApplicationViewModel import ApplicationViewModel
 from datatypes.ProfileStatistics import ProfileStatistics
@@ -34,14 +34,14 @@ class ProfileViewModel(QtCore.QObject):
       return
 
     if self.__application_reference.is_offline:
-      logger.trace('Offline, not loading profile')
+      logging.debug('Offline, not loading profile')
       # Skip request if offline
       return
     
     # Update loading indicator if needed
-    if not self.__profile_statistics or was_app_refocused:
-      self.__should_show_loading_indicator = True
-      self.should_show_loading_indicator_changed.emit()
+    # if not self.__profile_statistics or was_app_refocused:
+    self.__should_show_loading_indicator = True
+    self.should_show_loading_indicator_changed.emit()
 
     # Don't reload if the profile page is already loading
     if self.__is_loading:
