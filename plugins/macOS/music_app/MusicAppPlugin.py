@@ -35,6 +35,10 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     # Store latest state
     self.__state: MediaPlayerState = None
 
+    # Store whether the last notification failed was missing data to notify when it's been fixed
+    self.__last_notification_had_error = False
+    self.__last_state_with_error: MediaPlayerState = None
+
   # --- Mac Media Player Implementation ---
 
   def request_initial_state(self) -> None:
@@ -49,27 +53,31 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
     track = self.__applescript_app.currentTrack()
     track_title = track.name()
+
+    # Check if the current track has a file location (file url for library tracks)
+    is_library_track = bool(track.location())
     
-    if not track_title:
+    if is_library_track:
+      self.__handle_new_state(
+        MediaPlayerState(
+          artist_name=track.artist(),
+          track_title=track_title,
+          album_title=track.album() or None, # Prevent storing empty strings in album_title key
+          is_playing=True, # We can't differentiate between paused and stopped, so we will only send a new state if playing
+          position=self.get_player_position()
+        ),
+        is_library_track=True # We would have exited out already if it wasn't
+      )
+    else:
       # User is playing a non-library track, so AppleScript can't see the data
       # Instead, we have to force a play notification
       self.__applescript_app.pause()
-      self.__applescript_app.playpause() # There is no play function for whatever reason
+      self.__applescript_app.playpause()
       return
-
-    self.__handle_new_state(
-      MediaPlayerState(
-        artist_name=track.artist(),
-        track_title=track_title,
-        album_title=track.album() or None, # Prevent storing empty strings in album_title key
-        is_playing=True, # We can't differentiate between paused and stopped, so we will only send a new state if playing
-        position=self.get_player_position()
-      )
-    )
 
   # --- Private Methods ---
 
-  def __handle_new_state(self, new_state: MediaPlayerState) -> None:
+  def __handle_new_state(self, new_state: MediaPlayerState, is_library_track: bool) -> None:
     # Ignore notification if there's no track title (Usually happens with radio stations)
     if not new_state.track_title:
       return
@@ -82,7 +90,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     # Some tracks don't have an artist and can't be scrobbled on Last.fm
     if not new_state.artist_name:
       self.stopped.emit()
-      self.cannot_scrobble_error.emit(f'Music did not provide an artist name for "{new_state.track_title}"')
+      self.showNotification.emit('Track cannot be scrobbled', f'Music did not provide an artist name for "{new_state.track_title}"')
       return
 
     # Skip fetching track crop again if the song didn't change
@@ -97,14 +105,44 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         return
     
     # Update cached state object with new state
-    self.__state = new_state 
+    self.__state = new_state
 
-    # Fetch track crop data (start and finish timestamps)
-    # Delay for 100ms to give enough time for AppleScript to update with new current track (Sometimes, AppleScript lags behind the notifications)
-    timer = QtCore.QTimer(self)
-    timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
-    timer.timeout.connect(self.__launch_fetch_track_crop_task)
-    timer.start(100)
+    if is_library_track:
+      # Fetch track crop data (start and finish timestamps)
+      # Delay for 100ms to give enough time for AppleScript to update with new current track (Sometimes, AppleScript lags behind the notifications)
+      timer = QtCore.QTimer(self)
+      timer.setSingleShot(True) # Single-shot timer, basically setTimeout from JS
+      timer.timeout.connect(self.__launch_fetch_track_crop_task)
+      timer.start(100)
+    else:
+      # Non-library tracks can't have track crops, so we can just use duration
+      total_time = self.__cached_notification_payload.get('Total Time')
+
+      # Handle missing total time value due to bug in Apple Music on Big Sur with non-library tracks
+      if not total_time:
+        self.__handle_no_track_length_error_notification()
+        
+        # Emit stopped since we can't load the current track
+        self.stopped.emit()
+
+        return
+      
+      self.__state.track_crop.finish = total_time / 1000 # Convert from ms to s
+
+      # Notify user if they fixed an error with the previously broken track
+      if self.__last_notification_had_error:
+        if (
+          self.__last_state_with_error.artist_name == new_state.artist_name
+          and self.__last_state_with_error.track_title == new_state.track_title
+        ):
+          self.showNotification.emit(
+            f'Now scrobbling "{self.__state.track_title}"',
+            'Apple Music error resolved!'
+          )
+          self.__last_notification_had_error = False
+          self.__last_state_with_error = None
+
+      self.playing.emit(self.__state)
 
   def __launch_fetch_track_crop_task(self) -> None:
     get_library_track_crop = FetchTrackCrop(self.__applescript_app)
@@ -118,28 +156,28 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       # A track finish was found, so we can use the actual crop values
       self.__state.track_crop = track_crop
     else:
-      # No track finish was found (most likely a non-library track), we'll use the total duration as the track finish instead
-      total_time = self.__cached_notification_payload.get('Total Time')
-
-      if total_time:
-        self.__state.track_crop.finish = total_time / 1000 # Convert from ms to s
-      else:
-        # Sometimes even this fails, there's nothing we can do
-        self.stopped.emit()
-        self.cannot_scrobble_error.emit(f'Music did not provide a track length for "{self.__state.track_title}"')
-        logging.error(f'Error getting track duration for {self.__cached_notification_payload}')
-
-        # Don't emit play signal
-        return
+      # No track finish was found (unlikely but possible), notify user
+      self.__handle_no_track_length_error_notification()
     
     # Finally emit play signal
     self.playing.emit(self.__state)
+
+  def __handle_no_track_length_error_notification(self) -> None:
+    self.showNotification.emit(
+      f'"{self.__state.track_title}" cannot be scrobbled',
+      'Try pausing then playing again (This is a known bug with Apple Music)'
+    )
+
+    self.__last_notification_had_error = True
+    self.__last_state_with_error = self.__state
+    logging.error(f'Error getting track duration for {self.__cached_notification_payload}')
 
   # Shows as unused because it has to be registered with pyobjc as a function name string
   def __handleNotificationFromMusic_(self, notification) -> None: # TODO: Add type annotation
     '''Handle Objective-C notifications for Music app events'''
     
     self.__cached_notification_payload = notification.userInfo()
+    self.__cached_notification = notification
 
     logging.debug(f'New notification from Music.app: {self.__cached_notification_payload}')
 
@@ -149,13 +187,14 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
     if self.__cached_notification_payload['Player State'] == 'Playing':  
       self.__handle_new_state(
-        MediaPlayerState(
+        new_state=MediaPlayerState(
           artist_name=self.__cached_notification_payload.get('Artist'),
           track_title=self.__cached_notification_payload.get('Name'),
           album_title=self.__cached_notification_payload.get('Album', None), # Prevent empty strings
           is_playing=True,
           position=self.get_player_position()
-        )
+        ),
+        is_library_track=bool(self.__cached_notification_payload.get('Location'))
       )
     else:
       self.paused.emit()

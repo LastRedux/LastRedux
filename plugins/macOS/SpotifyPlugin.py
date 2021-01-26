@@ -91,7 +91,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     # It's possible to add local files with no artist on Spotify that can't be scrobbled
     if not new_state.artist_name:
       self.stopped.emit()
-      self.cannot_scrobble_error.emit('Spotify did not provide an artist name')
+      self.showNotification.emit('Track cannot be scrobbled', 'Spotify did not provide an artist name')
       return
 
     # Update cached state object with new state

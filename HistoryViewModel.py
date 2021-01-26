@@ -311,8 +311,8 @@ class HistoryViewModel(QtCore.QObject):
     self.__media_player.stopped.connect(self.__handle_media_player_stopped)
     self.__media_player.playing.connect(self.__handle_media_player_playing)
     self.__media_player.paused.connect(self.__handle_media_player_paused)
-    self.__media_player.cannot_scrobble_error.connect(
-      lambda message: self.showNotification.emit('The track you\'re playing cannot be scrobbled', message)
+    self.__media_player.showNotification.connect(
+      lambda title, content: self.showNotification.emit(title, content)
     )
 
     # Load initial track from newly selected media player without a notification
