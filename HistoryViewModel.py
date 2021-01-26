@@ -320,7 +320,7 @@ class HistoryViewModel(QtCore.QObject):
       # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
       self.__media_player.request_initial_state()
     
-    # Update 'Listening on X'  text in history view for current scrobble
+    # Update 'Listening on X' text in history view for current scrobble
     self.media_player_name_changed.emit()
 
   @QtCore.Slot(str)
@@ -642,17 +642,13 @@ class HistoryViewModel(QtCore.QObject):
         self.__submit_scrobble(self.__current_scrobble)
 
       self.__update_current_scrobble(media_player_state)
-  
-  def __handle_media_player_paused(self, media_player_state: MediaPlayerState) -> None:
+
+  def __handle_media_player_paused(self) -> None:
     '''Handle media player pause event'''
 
     # Update playback indicator
     self.is_player_paused = True
     self.is_player_paused_changed.emit()
-
-    # Load scrobble if it's new
-    if not self.__current_scrobble:
-      self.__update_current_scrobble(media_player_state)
 
   # --- Qt Properties ---
   

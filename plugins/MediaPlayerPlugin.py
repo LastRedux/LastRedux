@@ -14,8 +14,8 @@ class MediaPlayerPlugin(QtCore.QObject):
   '''Emitted when the media player is not playing anything'''
   stopped = QtCore.Signal()
 
-  '''Emitted when the media player is paused with an updated state'''
-  paused = QtCore.Signal(MediaPlayerState)
+  '''Emitted when the media player is paused'''
+  paused = QtCore.Signal()
   
   '''Emitted when the media player is playing with an updated state'''
   playing = QtCore.Signal(MediaPlayerState)

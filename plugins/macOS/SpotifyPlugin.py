@@ -101,6 +101,6 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     if new_state.is_playing:
       self.playing.emit(self.__state)
     else:
-      self.paused.emit(self.__state)
+      self.paused.emit()
       
         

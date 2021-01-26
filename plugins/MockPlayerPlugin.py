@@ -63,7 +63,7 @@ class MockPlayerPlugin(QtCore.QObject):
       if self.__state.is_playing:
         self.__update_state()
       else:
-        self.paused.emit(self.__state)
+        self.paused.emit()
       
       self.__state.is_playing = not self.__state.is_playing
     elif event_name == 'scrubForward':
