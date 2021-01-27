@@ -52,7 +52,12 @@ class LastfmApiWrapper:
       )
     )
 
-  def get_recent_scrobbles(self, limit: int, from_timestamp: int=None, username: str=None) -> LastfmList[LastfmScrobble]:
+  def get_recent_scrobbles(
+    self,
+    limit: int,
+    from_date: datetime=None,
+    username: str=None
+  ) -> LastfmList[LastfmScrobble]:
     def lastfm_track_to_scrobble(track: dict) -> LastfmScrobble:
       return LastfmScrobble(
         artist_name=track['artist']['#text'],
@@ -76,12 +81,16 @@ class LastfmApiWrapper:
         attr_total=total_track_count
       )
 
-    return self.__lastfm_request({
-        'method': 'user.getRecentTracks',
-        'username': username or self.username, # Default arg value can't refer to self
-        'limit': limit,
-        'from': from_timestamp
-      },
+    args = {
+      'method': 'user.getRecentTracks',
+      'username': username or self.username, # Default arg value can't refer to self
+      'limit': limit
+    }
+
+    if from_date:
+      args['from'] = from_date.timestamp()
+
+    return self.__lastfm_request(args,
       main_key_getter=lambda response: response['recenttracks']['track'],
       return_value_builder=return_value_builder
     )
@@ -348,11 +357,11 @@ class LastfmApiWrapper:
 
   def get_total_scrobbles_today(self) -> int:
     # Get the unix timestamp of 12am today
-    twelve_am_today = datetime.combine(datetime.now(), time.min).timestamp()
+    twelve_am_today = datetime.combine(datetime.now(), time.min)
 
     scrobbles_today = self.get_recent_scrobbles(
       limit=1, # We don't actually care about the tracks
-      from_timestamp=int(twelve_am_today) # Trim decimal points per API requirement
+      from_date=twelve_am_today # Trim decimal points per API requirement
     )
 
     if scrobbles_today:
