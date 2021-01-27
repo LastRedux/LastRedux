@@ -5,7 +5,7 @@ import json
 from AppKit import NSScreen
 import psutil
 
-from util.lastfm import LastfmList
+from util.lastfm.LastfmList import LastfmList
 from util.lastfm.LastfmScrobble import LastfmScrobble
 
 def get_mock_recent_scrobbles(count: int) -> LastfmList[LastfmScrobble]:

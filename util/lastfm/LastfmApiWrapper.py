@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 from typing import Dict, List
 
 import requests
+from sentry_sdk import set_user, set_context
 
 from .LastfmAlbum import LastfmAlbum
 from .LastfmArtist import LastfmArtist
@@ -21,6 +22,7 @@ from .LastfmArtistLink import LastfmArtistLink
 from datatypes.CachedResource import CachedResource
 from datatypes.ImageSet import ImageSet
 from datatypes.FriendScrobble import FriendScrobble
+import util.helpers as helpers
 
 class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
@@ -294,6 +296,18 @@ class LastfmApiWrapper:
     return session
 
   def log_in_with_session(self, session: LastfmSession) -> None:
+    set_user({
+      'username': session.username
+    })
+
+    # TODO: Follow guidelines for OS context
+    set_context('system_profile', {
+      **helpers.generate_system_profile()
+    })
+    set_context('app', {
+      'app_version': 'Private Beta 2'
+    })
+
     self.username = session.username
     self.__session_key = session.session_key
 
