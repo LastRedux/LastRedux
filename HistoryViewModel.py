@@ -366,11 +366,11 @@ class HistoryViewModel(QtCore.QObject):
 
     self.__scrobbles_with_external_data_count += 1
 
+    # TODO: Find a way to account for the current scrobble also loading external data
     if self.__scrobbles_with_external_data_count == len(self.scrobble_history): # Don't use initial scrobble count because there might not be that many
       # All scrobbles have loaded their additional data
       self.__is_loading = False
       self.is_loading_changed.emit()
-      self.end_refresh_history.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
     if not self.__is_enabled:
