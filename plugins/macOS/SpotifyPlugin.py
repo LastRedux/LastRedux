@@ -66,10 +66,9 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     '''Handle Objective-C notifications for Spotify events'''
 
     notification_payload = notification.userInfo()
-
     logging.debug(f'New notification from Spotify.app: {notification_payload}')
 
-    if notification_payload['Player State'] == 'Stopped':
+    if notification_payload['Player State'] in ['Stopped', 'Paused']:
       self.stopped.emit()
       return
 
