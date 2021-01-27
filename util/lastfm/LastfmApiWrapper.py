@@ -90,7 +90,7 @@ class LastfmApiWrapper:
     }
 
     if from_date:
-      args['from'] = from_date.timestamp()
+      args['from'] = int(from_date.timestamp()) # Convert to int to trim decimal points (Last.fm doesn't like them)
 
     return self.__lastfm_request(args,
       main_key_getter=lambda response: response['recenttracks']['track'],
