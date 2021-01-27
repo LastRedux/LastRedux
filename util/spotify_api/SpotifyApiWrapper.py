@@ -51,7 +51,8 @@ class SpotifyApiWrapper:
     artist_name: str,
     track_title: str,
     album_title: str=None,
-    only_album_art: bool=False
+    only_album_art: bool=False,
+    is_retry: bool=False
   ) -> SpotifySongData:
     # Create empty return type
     spotify_data = SpotifySongData(None, None)
@@ -91,7 +92,11 @@ class SpotifyApiWrapper:
             ) for artist in artists
           ]
     else:
-      logging.warning(f'No Spotify track results for "{query}"')
+      if not is_retry:
+        # Retry request since Spotify sporadically returns no results incorrectly
+        self.get_track_images(artist_name, track_title, album_title, only_album_art, is_retry=True)
+      else:
+        logging.warning(f'No Spotify track results for "{query}"')
 
     return spotify_data
     
@@ -155,6 +160,10 @@ class SpotifyApiWrapper:
         self.__access_token = SpotifyApiWrapper.__get_access_token()
         logging.debug('Refreshed Spotify access token')
 
+        # Retry request
+        self.__request(url, args)
+        return
+      elif resp_json['error']['status'] == 502:
         # Retry request
         self.__request(url, args)
         return
