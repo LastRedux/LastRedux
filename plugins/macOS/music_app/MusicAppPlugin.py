@@ -80,6 +80,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
   def __handle_new_state(self, new_state: MediaPlayerState, is_library_track: bool) -> None:
     # Ignore notification if there's no track title (Usually happens with radio stations)
     if not new_state.track_title:
+      self.showNotification.emit('Track cannot be scrobbled', f'Music did not provide any data for the media you\'re playing')
       return
 
     # Apple Music puts Connecting... state string in the track title field for some reason
