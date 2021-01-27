@@ -29,4 +29,4 @@ class UpdateNowPlaying(QtCore.QRunnable): # Don't inherit from QObject because n
       duration=self.duration
     )
     
-    logging.info(f'Updated now playing on Last.fm: {self.track_title}')
+    logging.info(f'Now playing updated to "{self.track_title}" on Last.fm')

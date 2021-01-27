@@ -20,4 +20,4 @@ class UpdateTrackLoveOnLastfm(QtCore.QRunnable):
       is_loved=self.value
     )
 
-    logging.info(f'Track love updated on Last.fm: {self.scrobble} - {self.value}')
+    logging.info(f'Set Last.fm loved for "{self.scrobble.track_title}" to {self.value}')
