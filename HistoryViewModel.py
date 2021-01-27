@@ -47,7 +47,6 @@ class HistoryViewModel(QtCore.QObject):
   end_refresh_history = QtCore.Signal()
 
   # Signals handled from QML
-  showNotification = QtCore.Signal(str, str)
   preloadProfileAndFriends = QtCore.Signal()
 
   def __init__(self) -> None:
@@ -312,7 +311,7 @@ class HistoryViewModel(QtCore.QObject):
     self.__media_player.playing.connect(self.__handle_media_player_playing)
     self.__media_player.paused.connect(self.__handle_media_player_paused)
     self.__media_player.showNotification.connect(
-      lambda title, content: self.showNotification.emit(title, content)
+      lambda title, content: self.__application_reference.showNotification.emit(title, content)
     )
 
     # Load initial track from newly selected media player without a notification
@@ -335,11 +334,16 @@ class HistoryViewModel(QtCore.QObject):
     # Tell the history list model that we are going to change the data it relies on
     self.begin_refresh_history.emit()
 
-    # Convert scrobbles from history into scrobble objects
-    for i, recent_scrobble in enumerate(recent_scrobbles.items):
-      self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
+    if recent_scrobbles:
+      # Convert scrobbles from history into scrobble objects
+      for i, recent_scrobble in enumerate(recent_scrobbles.items):
+        self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
 
-      self.__load_external_scrobble_data(self.scrobble_history[i])
+        self.__load_external_scrobble_data(self.scrobble_history[i])
+    else:
+      # User has no scrobbles, so skip the rest of the loading process
+      self.__is_loading = False
+      self.is_loading_changed.emit()
 
     self.end_refresh_history.emit()
 

@@ -3,7 +3,10 @@ from PySide2 import QtCore
 from util.lastfm import LastfmApiWrapper
 
 class FetchFriends(QtCore.QObject, QtCore.QRunnable):
-  finished = QtCore.Signal(list)
+  '''
+  Signal emitted when the request finishes with the list of Last.fm users and whether there was an error
+  '''
+  finished = QtCore.Signal(list, bool)
 
   def __init__(self, lastfm: LastfmApiWrapper):
     QtCore.QObject.__init__(self)
@@ -12,5 +15,8 @@ class FetchFriends(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self) -> None:
-    friends = self.lastfm.get_friends()
-    self.finished.emit(friends)
+    try:
+      friends = self.lastfm.get_friends()
+      self.finished.emit(friends, False)
+    except:
+      self.finished.emit(None, True)

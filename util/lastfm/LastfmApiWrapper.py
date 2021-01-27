@@ -53,6 +53,29 @@ class LastfmApiWrapper:
     )
 
   def get_recent_scrobbles(self, limit: int, from_timestamp: int=None, username: str=None) -> LastfmList[LastfmScrobble]:
+    def lastfm_track_to_scrobble(track: dict) -> LastfmScrobble:
+      return LastfmScrobble(
+        artist_name=track['artist']['#text'],
+        track_title=track['name'],
+        album_title=track['album']['#text'] or None,
+        timestamp=datetime.fromtimestamp(int(track['date']['uts']))
+      )
+
+    def return_value_builder(tracks, response):
+      total_track_count = int(response['recenttracks']['@attr']['total'])
+
+      if total_track_count == 0:
+        return
+      
+      return LastfmList(
+        items=[
+          lastfm_track_to_scrobble(track)
+          for track in tracks
+          if not track.get('@attr') # Skip now playing tracks
+        ],
+        attr_total=total_track_count
+      )
+
     return self.__lastfm_request({
         'method': 'user.getRecentTracks',
         'username': username or self.username, # Default arg value can't refer to self
@@ -60,16 +83,7 @@ class LastfmApiWrapper:
         'from': from_timestamp
       },
       main_key_getter=lambda response: response['recenttracks']['track'],
-      return_value_builder=lambda tracks, response: LastfmList(
-        items=[LastfmScrobble(
-          artist_name=track['artist']['#text'],
-          track_title=track['name'],
-          album_title=track['album']['#text'] or None,
-          timestamp=datetime.fromtimestamp(int(track['date']['uts']))
-         ) for track in tracks if not track.get('@attr') # Skip now playing tracks
-        ],
-        attr_total=int(response['recenttracks']['@attr']['total'])
-      )
+      return_value_builder=return_value_builder
     )
 
   def get_total_loved_tracks(self) -> int:
@@ -82,20 +96,28 @@ class LastfmApiWrapper:
     )
 
   def get_friends(self) -> List[LastfmUser]:
-    return self.__lastfm_request({
-        'method': 'user.getFriends',
-        'username': self.username
-      },
-      main_key_getter=lambda response: response['friends']['user'],
-      return_value_builder=lambda friends, response: [
-        LastfmUser(
-          url=friend['url'],
-          username=friend['name'],
-          real_name=friend['realname'] or None,
-          image_url=friend['image'][0]['#text'] # All sizes are the same apparently
-        ) for friend in friends
-      ]
-    )
+    friends = None
+
+    try:
+      friends = self.__lastfm_request({
+          'method': 'user.getFriends',
+          'username': self.username
+        },
+        main_key_getter=lambda response: response['friends']['user'],
+        return_value_builder=lambda friends, response: [
+          LastfmUser(
+            url=friend['url'],
+            username=friend['name'],
+            real_name=friend['realname'] or None,
+            image_url=friend['image'][0]['#text'] # All sizes are the same apparently
+          ) for friend in friends
+        ]
+      )
+    except:
+      # Handle no friends case which throws an error for some reason
+      pass
+
+    return friends
 
   def get_top_artists(self, limit: int, period: str='overall') -> LastfmList[LastfmArtist]:
     return self.__lastfm_request({
@@ -328,10 +350,15 @@ class LastfmApiWrapper:
     # Get the unix timestamp of 12am today
     twelve_am_today = datetime.combine(datetime.now(), time.min).timestamp()
 
-    return self.get_recent_scrobbles(
+    scrobbles_today = self.get_recent_scrobbles(
       limit=1, # We don't actually care about the tracks
       from_timestamp=int(twelve_am_today) # Trim decimal points per API requirement
-    ).attr_total
+    )
+
+    if scrobbles_today:
+      return scrobbles_today.attr_total
+    else:
+      return 0
 
   def get_friend_scrobble(self, username: str) -> FriendScrobble:
     def __track_to_friend_track(track):
@@ -443,7 +470,7 @@ class LastfmApiWrapper:
         if resp.status_code == 403:
           raise PermissionError(f'403 Forbidden: {resp_json}')
         elif resp.status_code == 400:
-          raise Exception(f'403 Bad Request: {resp_json}')
+          raise Exception(f'400 Bad Request: {resp_json}')
         elif resp.status_code == 500:
           # Retry request
           continue

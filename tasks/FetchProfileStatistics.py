@@ -39,6 +39,7 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
     # Skip other requests if user_info came back blank (we're offline)
     if user_info:
       top_artists = self.lastfm.get_top_artists(limit=5)
+      top_artists_week = self.lastfm.get_top_artists(limit=5, period='7day')
 
       profile_statistics = ProfileStatistics(
         total_scrobbles_today=self.lastfm.get_total_scrobbles_today(),
@@ -47,10 +48,8 @@ class FetchProfileStatistics(QtCore.QObject, QtCore.QRunnable):
         average_daily_scrobbles=round(
           user_info.total_scrobbles / (datetime.now() - user_info.registered_date).days
         ),
-        top_artists=artists_to_profile_statistics(top_artists.items),
-        top_artists_week=artists_to_profile_statistics(
-          self.lastfm.get_top_artists(limit=5, period='7day').items
-        ),
+        top_artists=artists_to_profile_statistics(top_artists.items) if top_artists.attr_total else None,
+        top_artists_week=artists_to_profile_statistics(top_artists_week.items) if top_artists_week.attr_total else None,
         **asdict(user_info)
       )
     

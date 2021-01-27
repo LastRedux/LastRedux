@@ -59,17 +59,24 @@ class ProfileViewModel(QtCore.QObject):
     # Load new profile statistics if they changed (and there were some to begin with)
     if not self.__profile_statistics or new_profile_statistics != self.__profile_statistics:
       self.__profile_statistics = new_profile_statistics
+      self.profile_statistics_changed.emit()
 
       # Fetch Spotify artist images
-      load_profile_spotify_artists_task = LoadProfileSpotifyArtists(
-        spotify_api=self.__application_reference.spotify_api,
-        top_artists=(
-          # Concatenate both lists since we're passing by reference and we want to load all together
-          self.__profile_statistics.top_artists + self.__profile_statistics.top_artists_week
+      if self.__profile_statistics.top_artists:
+        load_profile_spotify_artists_task = LoadProfileSpotifyArtists(
+          spotify_api=self.__application_reference.spotify_api,
+          top_artists=self.__profile_statistics.top_artists
         )
-      )
-      load_profile_spotify_artists_task.finished.connect(lambda: self.profile_statistics_changed.emit())
-      QtCore.QThreadPool.globalInstance().start(load_profile_spotify_artists_task)
+        load_profile_spotify_artists_task.finished.connect(lambda: self.profile_statistics_changed.emit())
+        QtCore.QThreadPool.globalInstance().start(load_profile_spotify_artists_task)
+
+      if self.__profile_statistics.top_artists_week:
+        load_profile_spotify_artists_task = LoadProfileSpotifyArtists(
+          spotify_api=self.__application_reference.spotify_api,
+          top_artists=self.__profile_statistics.top_artists_week
+        )
+        load_profile_spotify_artists_task.finished.connect(lambda: self.profile_statistics_changed.emit())
+        QtCore.QThreadPool.globalInstance().start(load_profile_spotify_artists_task)
 
     # Update loading indicator
     self.__is_loading = False

@@ -17,6 +17,9 @@ class ApplicationViewModel(QtCore.QObject):
   # JS event signals
   openOnboarding = QtCore.Signal()
   closeOnboarding = QtCore.Signal()
+  
+  # Signals handled from QML
+  showNotification = QtCore.Signal(str, str)
 
   def __init__(self) -> None:
     QtCore.QObject.__init__(self)

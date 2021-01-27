@@ -68,12 +68,26 @@ class FriendsViewModel(QtCore.QObject):
 
   # --- Private Methods ---
 
-  def __handle_lastfm_friends_fetched(self, lastfm_users: List[LastfmUser]) -> None:
+  def __handle_lastfm_friends_fetched(self, lastfm_users: List[LastfmUser], has_error: bool) -> None:
     '''Create Friend objects from Last.fm friends and run tasks to fetch their current/recent tracks'''
 
     if not self.__is_enabled:
       return
-    
+
+    if has_error:
+      logging.error('Could not load Last.fm friend users')
+      self.__is_loading = False
+      self.is_loading_changed.emit()
+      # TODO: Show failure message
+
+      return
+
+    if not lastfm_users:
+      self.__is_loading = False
+      self.is_loading_changed.emit()
+      
+      return
+
     # Create two sets of usernames to compare for differences (check if any friends were added/removed)
     new_usernames = [user.username for user in lastfm_users]
     current_usernames = [friend.username for friend in self.friends] # Will be [] on first load

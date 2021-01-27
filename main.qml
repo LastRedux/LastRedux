@@ -144,6 +144,7 @@ Window {
 
     onOpenOnboarding: onboardingWindow.show()
     onCloseOnboarding: onboardingWindow.hide()
+    onShowNotification: (title, message) => trayIcon.showMessage(title, message)
   }
 
   // --- Onboarding ---
@@ -205,7 +206,6 @@ Window {
     id: historyViewModel
 
     applicationReference: applicationViewModel
-    onShowNotification: (title, message) => trayIcon.showMessage(title, message)
     onPreloadProfileAndFriends: {
       profileViewModel.loadProfile()
       friendsViewModel.loadFriends()
