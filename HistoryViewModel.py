@@ -293,6 +293,9 @@ class HistoryViewModel(QtCore.QObject):
     # Reset scrobble percentage
     self.__current_scrobble_percentage = 0
 
+    # Reset whether the last event was a pause
+    self.__was_last_player_event_paused = False
+
     # Disconnect event signals
     if self.__media_player:
       self.__media_player.stopped.disconnect(self.__handle_media_player_stopped)
@@ -335,18 +338,18 @@ class HistoryViewModel(QtCore.QObject):
     # Tell the history list model that we are going to change the data it relies on
     self.begin_refresh_history.emit()
 
+    # User might not have any scrobbles (new account)
     if recent_scrobbles:
       # Convert scrobbles from history into scrobble objects
       for i, recent_scrobble in enumerate(recent_scrobbles.items):
         self.scrobble_history.append(Scrobble.from_lastfm_scrobble(recent_scrobble))
 
         self.__load_external_scrobble_data(self.scrobble_history[i])
-    else:
-      # User has no scrobbles, so skip the rest of the loading process
-      self.__is_loading = False
-      self.is_loading_changed.emit()
 
     self.end_refresh_history.emit()
+
+    self.__is_loading = False
+    self.is_loading_changed.emit()
 
   def __load_external_scrobble_data(self, scrobble: Scrobble) -> None:
     if self.__application_reference.is_offline:
@@ -370,12 +373,6 @@ class HistoryViewModel(QtCore.QObject):
       return
 
     self.__scrobbles_with_external_data_count += 1
-
-    # TODO: Find a way to account for the current scrobble also loading external data
-    if self.__scrobbles_with_external_data_count == len(self.scrobble_history): # Don't use initial scrobble count because there might not be that many
-      # All scrobbles have loaded their additional data
-      self.__is_loading = False
-      self.is_loading_changed.emit()
 
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
     if not self.__is_enabled:

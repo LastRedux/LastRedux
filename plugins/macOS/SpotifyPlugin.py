@@ -43,12 +43,17 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     if not self.is_open():
       return
 
+    is_playing = self.__applescript_app.playerState() == SpotifyPlugin.PLAYING_STATE
+
+    if not is_playing:
+      return
+
     track = self.__applescript_app.currentTrack()
     album_title = track.album() or None # Prevent storing empty strings in album_title key
 
     self.__handle_new_state(
       MediaPlayerState(
-        is_playing=self.__applescript_app.playerState() == SpotifyPlugin.PLAYING_STATE,
+        is_playing=is_playing,
         position=self.get_player_position(),
         artist_name=track.artist(),
         track_title=track.name(),
@@ -68,8 +73,11 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     notification_payload = notification.userInfo()
     logging.debug(f'New notification from Spotify.app: {notification_payload}')
 
-    if notification_payload['Player State'] in ['Stopped', 'Paused']:
+    if notification_payload['Player State'] == 'Stopped':
       self.stopped.emit()
+      return
+    elif notification_payload['Player State'] == 'Paused':
+      self.paused.emit()
       return
 
     self.__handle_new_state(
@@ -96,10 +104,4 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     # Update cached state object with new state
     self.__state = new_state
 
-    # Finally emit play/pause signal
-    if new_state.is_playing:
-      self.playing.emit(self.__state)
-    else:
-      self.paused.emit()
-      
-        
+    self.playing.emit(self.__state)
