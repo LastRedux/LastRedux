@@ -665,15 +665,12 @@ class HistoryViewModel(QtCore.QObject):
 
     # If we just resumed from paused state, we don't need to continue with checking for new tracks
     if not self.__was_last_player_event_paused:
-      print('didn\'t ignore resume event')
-
       # Check if the track has changed or not
       is_same_track = None
 
       if not self.__current_scrobble:
         # This is the first track
         is_same_track = False
-        print('first track')
       else:
         is_same_track = (
           self.__current_scrobble.track_title == new_media_player_state.track_title
@@ -696,7 +693,6 @@ class HistoryViewModel(QtCore.QObject):
         # Submit current scrobble to Last.fm
         self.__submit_scrobble(self.__current_scrobble)
     else:
-      print('did ignore resume event')
       self.__was_last_player_event_paused = False
 
     # Load new track data into current scrobble
