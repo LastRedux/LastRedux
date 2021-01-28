@@ -5,11 +5,9 @@ from typing import List
 from util.lastfm.LastfmScrobble import LastfmScrobble
 from util.lastfm.LastfmTrack import LastfmTrack
 from util.lastfm.LastfmAlbum import LastfmAlbum
-from util.spotify_api import SpotifyArtist
 from util.lastfm.LastfmArtist import LastfmArtist
-from .MediaPlayerState import MediaPlayerState
+from util.spotify_api import SpotifyArtist
 from .ImageSet import ImageSet
-from .ProfileStatistic import ProfileStatistic
 
 @dataclass
 class Scrobble(LastfmScrobble):
@@ -20,8 +18,7 @@ class Scrobble(LastfmScrobble):
   spotify_artists: List[SpotifyArtist] = None
   is_loading: bool = True
   has_error: bool = False
-  lastfm_album_url: str = None # This is needed since the track info request doesn't give us an album
-  friend_artist_leaderboard: List[ProfileStatistic] = None
+  lastfm_album_url: str = None # This is needed because track info doesn't have it
 
   @staticmethod
   def from_lastfm_scrobble(lastfm_scrobble: LastfmScrobble) -> Scrobble:
