@@ -32,8 +32,7 @@ Item {
       ) :
       Math.max(
         column.y + column.height + 30,
-        friendArtistLeaderboard.y + friendArtistLeaderboard.height + 30
-        // singularArtistImageView.y + singularArtistImageView.height + 30
+        singularArtistImageView.y + singularArtistImageView.height + 30
       )
   )
   
@@ -163,75 +162,6 @@ Item {
 
         Placeholder {
           width: Math.floor(parent.width / 4)
-        }
-      }
-    }
-
-    // --- Friend Artist Leaderboard ---
-
-    Column {
-      id: friendArtistLeaderboard
-      spacing: 8
-      visible: false //!isInMiniMode
-
-      width: parent.width
-
-      Label {
-        text: 'Friend Leaderboard'
-        style: kTitleTertiary
-      }
-
-      Column {
-        spacing: 10
-
-        width: parent.width
-        visible: (
-          hasLastfmData
-          && !!viewModel.scrobble.friend_artist_leaderboard
-          && viewModel.scrobble.friend_artist_leaderboard.length
-        )
-
-        Repeater {
-          model: (
-            hasLastfmData
-            && !!viewModel.scrobble.friend_artist_leaderboard
-            && viewModel.scrobble.friend_artist_leaderboard
-          )
-
-          delegate: ProfileStatistic {
-            imageSource: modelData.image_url
-            lastfmUrl: modelData.lastfm_url
-            title: modelData.title
-            plays: modelData.plays
-            playsPercentage: modelData.percentage
-
-            width: parent.width
-          }
-        }
-      }
-
-      // --- Leaderboard Placeholder ---
-
-      Column {
-        spacing: 2
-        visible: false//!hasLastfmData || !viewModel.scrobble.friend_artist_leaderboard
-
-        width: parent.width
-
-        Placeholder {
-          width: parent.width
-        }
-
-        Placeholder {
-          width: parent.width - 40
-        }
-        
-        Placeholder {
-          width: parent.width - 60
-        }
-
-        Placeholder {
-          width: parent.width - 80
         }
       }
     }
