@@ -104,4 +104,8 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     # Update cached state object with new state
     self.__state = new_state
 
-    self.playing.emit(self.__state)
+    # Emit playing event if the track is more than 30 seconds long
+    if (new_state.track_crop.finish - new_state.track_crop.start) > 30.0:
+      self.playing.emit(self.__state)
+    else:
+      self.showNotification.emit('Track cannot be scobbled', 'Track length is less than 30 seconds')

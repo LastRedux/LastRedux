@@ -656,15 +656,17 @@ class HistoryViewModel(QtCore.QObject):
 
     # Submit the current scrobble if it hit the scrobbling threshold
     if self.__should_submit_current_scrobble:
+
       # Make sure that the current track has finished playing if it's being looped
       if is_same_track and not self.__was_last_player_event_paused:
         track_duration = self.__current_track_crop.finish - self.__current_track_crop.start
-        margin_of_error = self.__MEDIA_PLAYER_POLLING_INTERVAL + 1
+        margin_of_error = self.__MEDIA_PLAYER_POLLING_INTERVAL + 1          
 
         if (track_duration - self.__furthest_player_position_reached) > margin_of_error:
           # Track didn't finish playing
           return
 
+      # Submit current scrobble to Last.fm
       self.__submit_scrobble(self.__current_scrobble)
 
     # Load new track data into current scrobble

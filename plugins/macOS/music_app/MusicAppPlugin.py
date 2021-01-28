@@ -156,12 +156,15 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
     if track_crop.finish != 0:
       # A track finish was found, so we can use the actual crop values
       self.__state.track_crop = track_crop
+
+      # Emit playing event if the track is more than 30 seconds long
+      if (track_crop.finish - track_crop.start) > 30.0:
+        self.playing.emit(self.__state)
+      else:
+        self.showNotification.emit('Track cannot be scobbled', 'Track length is less than 30 seconds')
     else:
       # No track finish was found (unlikely but possible), notify user
       self.__handle_no_track_length_error_notification()
-    
-    # Finally emit play signal
-    self.playing.emit(self.__state)
 
   def __handle_no_track_length_error_notification(self) -> None:
     self.showNotification.emit(
