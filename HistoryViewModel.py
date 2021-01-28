@@ -23,6 +23,7 @@ import util.helpers as helpers
 class HistoryViewModel(QtCore.QObject):
   # Constants
   __INITIAL_SCROBBLE_HISTORY_COUNT = int(os.environ.get('INITIAL_HISTORY_ITEMS', 30)) # 30 is the default but can be configured
+  __MEDIA_PLAYER_POLLING_INTERVAL = 100 if os.environ.get('MOCK') else 1000
   __CURRENT_SCROBBLE_INDEX = -1
   __NO_SELECTION_INDEX = -2
 
@@ -75,6 +76,7 @@ class HistoryViewModel(QtCore.QObject):
     # TODO: Move these properties to an App view model
     self.__is_submission_enabled: bool = None
     self.is_player_paused = False
+    self.__was_last_player_event_paused: bool = False
     
     if os.environ.get('MOCK'):
       self.__media_player = MockPlayerPlugin()
@@ -196,8 +198,7 @@ class HistoryViewModel(QtCore.QObject):
       # Reset view model
       self.reset_state()
       self.__media_player.request_initial_state()
-      polling_interval = 100 if os.environ.get('MOCK') else 1000
-      self.__timer.start(polling_interval)
+      self.__timer.start(self.__MEDIA_PLAYER_POLLING_INTERVAL)
 
       # Check for network connection on open
       self.__application_reference.update_is_offline()
@@ -602,7 +603,7 @@ class HistoryViewModel(QtCore.QObject):
       self.selected_scrobble_index_changed.emit()
       self.selected_scrobble_changed.emit()
 
-  def __handle_media_player_playing(self, media_player_state: MediaPlayerState) -> None:
+  def __handle_media_player_playing(self, new_media_player_state: MediaPlayerState) -> None:
     '''Handle media player play event'''
 
     if not self.__is_enabled:
@@ -613,43 +614,64 @@ class HistoryViewModel(QtCore.QObject):
       QtCore.QThreadPool.globalInstance().start(
         UpdateNowPlaying(
           lastfm=self.__application_reference.lastfm, 
-          artist_name=media_player_state.artist_name,
-          track_title=media_player_state.track_title,
-          album_title=media_player_state.album_title,
-          duration=media_player_state.track_crop.finish - media_player_state.track_crop.start
+          artist_name=new_media_player_state.artist_name,
+          track_title=new_media_player_state.track_title,
+          album_title=new_media_player_state.album_title,
+          duration=new_media_player_state.track_crop.finish - new_media_player_state.track_crop.start
         )
       )
 
     # Update Discord rich presence
     if self.__is_discord_rpc_enabled and helpers.is_discord_open():
       self.__discord_rpc.update(
-        details=media_player_state.track_title,
-        state=media_player_state.artist_name + (
-          (' | ' + media_player_state.album_title) if media_player_state.album_title else ''
+        details=new_media_player_state.track_title,
+        state=new_media_player_state.artist_name + (
+          (' | ' + new_media_player_state.album_title) if new_media_player_state.album_title else ''
         ),
         large_image='music-logo',
         large_text='Playing on Music',
         small_image='lastredux-logo',
         small_text='Scrobbling on LastRedux',
-        start=(datetime.now() - timedelta(seconds=media_player_state.position)).timestamp() # Don't include track start to accurately reflect timestamp in uncropped track
+        start=(datetime.now() - timedelta(seconds=new_media_player_state.position)).timestamp() # Don't include track start to accurately reflect timestamp in uncropped track
       )
     
     # Update playback indicator
     self.is_player_paused = False
     self.is_player_paused_changed.emit()
 
-    current_track_changed = (
-      not self.__current_scrobble
-      or not self.__current_scrobble.is_equal_to_media_player_state(media_player_state)
-    )
+    # If we just resumed from paused state, we don't need to continue with checking for new tracks
+    if self.__was_last_player_event_paused:
+      self.__was_last_player_event_paused = False
+      return
 
-    # Only run this code when the track changes (or the first track is loaded)
-    if current_track_changed:
-      # Submit the previous track when the current track changes if it hit the scrobbling threshold
-      if self.__should_submit_current_scrobble:
-        self.__submit_scrobble(self.__current_scrobble)
+    # Check if the track has changed or not
+    is_same_track = None
 
-      self.__update_current_scrobble(media_player_state)
+    if not self.__current_scrobble:
+      # This is the first track
+      is_same_track = False
+    else:
+      is_same_track = (
+        self.__current_scrobble.track_title == new_media_player_state.track_title
+        and self.__current_scrobble.artist_name == new_media_player_state.artist_name
+        and self.__current_scrobble.album_title == new_media_player_state.album_title
+      )
+
+    # Submit the current scrobble if it hit the scrobbling threshold
+    if self.__should_submit_current_scrobble:
+      # Make sure that the current track has finished playing if it's being looped
+      if is_same_track and not self.__was_last_player_event_paused:
+        track_duration = self.__current_track_crop.finish - self.__current_track_crop.start
+        margin_of_error = self.__MEDIA_PLAYER_POLLING_INTERVAL + 1
+
+        if (track_duration - self.__furthest_player_position_reached) > margin_of_error:
+          # Track didn't finish playing
+          return
+
+      self.__submit_scrobble(self.__current_scrobble)
+
+    # Load new track data into current scrobble
+    self.__update_current_scrobble(new_media_player_state)
 
   def __handle_media_player_paused(self) -> None:
     '''Handle media player pause event'''
@@ -657,6 +679,7 @@ class HistoryViewModel(QtCore.QObject):
     # Update playback indicator
     self.is_player_paused = True
     self.is_player_paused_changed.emit()
+    self.__was_last_player_event_paused = True
 
   # --- Qt Properties ---
   
