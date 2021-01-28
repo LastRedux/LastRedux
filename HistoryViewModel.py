@@ -358,7 +358,8 @@ class HistoryViewModel(QtCore.QObject):
     load_external_scrobble_data_task = LoadExternalScrobbleData(
       lastfm=self.__application_reference.lastfm,
       art_provider=self.__application_reference.art_provider,
-      scrobble=scrobble
+      scrobble=scrobble,
+      should_load_leaderboard=scrobble == self.__current_scrobble
     )
     load_external_scrobble_data_task.update_ui_for_scrobble.connect(
       self.__emit_scrobble_ui_update_signals

@@ -50,87 +50,93 @@ Item {
     visible: canDisplayScrobble
 
     anchors.fill: parent
+
+    // --- Warning/error banner ---
+  
+    Image {
+      visible: isOffline || isTrackNotFound || hasTrackLoadingError
+
+      fillMode: Image.TileHorizontally
+      source: '../shared/resources/effects/bannerGradient.png'
+
+      width: parent.width
+      height: 30
+
+      Label {
+        text: (
+          isOffline ? 
+          'No internet connection' :
+            isTrackNotFound ? 
+            'This track isn’t in Last.fm\'s database yet' :
+            'Could not load track details from Last.fm, try restarting the app later'
+        )
+        isShadowEnabled: false
+        color: 'black'
+        elide: Text.ElideRight
+
+        anchors {
+          right: parent.right
+          left: parent.left
+
+          verticalCenter: parent.verticalCenter
+
+          leftMargin: 15
+          rightMargin: 15
+        }
+      }
+    }
+
+    TrackDetails {
+      property bool hasLastfmAlbum: (
+        canDisplayScrobble
+        && !!viewModel.scrobble.lastfm_track
+        && !!viewModel.scrobble.lastfm_album
+      )
+      
+      id: trackDetails
+
+      isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble
+      title: canDisplayScrobble && viewModel.scrobble.track_title
+      lastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.url
+      lastfmGlobalListeners: hasLastfmTrackData && viewModel.scrobble.lastfm_track.global_listeners
+      lastfmGlobalPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.global_plays
+      lastfmPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.plays
+      lastfmTags: hasLastfmTrackData && viewModel.scrobble.lastfm_track.tags
+      artistName: canDisplayScrobble && viewModel.scrobble.artist_name
+      artistLastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.artist_link.url
+      albumTitle: canDisplayScrobble && viewModel.scrobble.album_title
+      albumLastfmUrl: hasLastfmAlbum && viewModel.scrobble.lastfm_album.url
+      albumImageUrl: (
+        canDisplayScrobble
+        && !!viewModel.scrobble.image_set
+        && viewModel.scrobble.image_set.medium_url
+      )
+      isTrackNotFound: root.isTrackNotFound
+      isPlayerPaused: viewModel.isPlayerPaused
+      isInMiniMode: viewModel.isInMiniMode
+
+      width: column.width
+    }
     
     // Allow content to overflow and be scrolled
     Flickable {
       id: scrollArea
       
       contentHeight: column.height // Define scrollable area as tall as the content within
+      clip: true
 
-      anchors.fill: parent
+      anchors {
+        top: trackDetails.bottom
+        right: parent.right
+        bottom: parent.bottom
+        left: parent.left
+      }
 
       // Automatically position each component below the previous one
       Column {
         id: column
 
         width: scrollArea.width
-        
-        // --- First time scrobble banner ---
-  
-        Image {
-          visible: isOffline || isTrackNotFound || hasTrackLoadingError
-
-          fillMode: Image.TileHorizontally
-          source: '../shared/resources/effects/bannerGradient.png'
-
-          width: parent.width
-          height: 30
-
-          Label {
-            text: (
-              isOffline ? 
-              'No internet connection' :
-                isTrackNotFound ? 
-                'This track isn’t in Last.fm\'s database yet' :
-                'Could not load track details from Last.fm, try restarting the app later'
-            )
-            isShadowEnabled: false
-            color: 'black'
-            elide: Text.ElideRight
-
-            anchors {
-              right: parent.right
-              left: parent.left
-
-              verticalCenter: parent.verticalCenter
-
-              leftMargin: 15
-              rightMargin: 15
-            }
-          }
-        }
-
-        TrackDetails {
-          property bool hasLastfmAlbum: (
-            canDisplayScrobble
-            && !!viewModel.scrobble.lastfm_track
-            && !!viewModel.scrobble.lastfm_album
-          )
-          
-          id: trackDetails
-
-          isCurrentlyScrobbling: canDisplayScrobble && viewModel.isCurrentScrobble
-          title: canDisplayScrobble && viewModel.scrobble.track_title
-          lastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.url
-          lastfmGlobalListeners: hasLastfmTrackData && viewModel.scrobble.lastfm_track.global_listeners
-          lastfmGlobalPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.global_plays
-          lastfmPlays: hasLastfmTrackData && viewModel.scrobble.lastfm_track.plays
-          lastfmTags: hasLastfmTrackData && viewModel.scrobble.lastfm_track.tags
-          artistName: canDisplayScrobble && viewModel.scrobble.artist_name
-          artistLastfmUrl: hasLastfmTrackData && viewModel.scrobble.lastfm_track.artist_link.url
-          albumTitle: canDisplayScrobble && viewModel.scrobble.album_title
-          albumLastfmUrl: hasLastfmAlbum && viewModel.scrobble.lastfm_album.url
-          albumImageUrl: (
-            canDisplayScrobble
-            && !!viewModel.scrobble.image_set
-            && viewModel.scrobble.image_set.medium_url
-          )
-          isTrackNotFound: root.isTrackNotFound
-          isPlayerPaused: viewModel.isPlayerPaused
-          isInMiniMode: viewModel.isInMiniMode
-
-          width: column.width
-        }
 
         ArtistDetails {
           // visible: !isTrackNotFound

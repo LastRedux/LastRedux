@@ -1,8 +1,9 @@
+from datatypes.ProfileStatistic import ProfileStatistic
 import logging
 
 from PySide2 import QtCore
 
-from util.lastfm import LastfmApiWrapper
+from util.lastfm import LastfmApiWrapper, LastfmUser
 from util.art_provider import ArtProvider
 from datatypes.Scrobble import Scrobble
 
@@ -10,12 +11,13 @@ class LoadExternalScrobbleData(QtCore.QObject, QtCore.QRunnable):
   update_ui_for_scrobble = QtCore.Signal(Scrobble)
   finished = QtCore.Signal()
 
-  def __init__(self, lastfm: LastfmApiWrapper, art_provider: ArtProvider, scrobble: Scrobble):
+  def __init__(self, lastfm: LastfmApiWrapper, art_provider: ArtProvider, scrobble: Scrobble, should_load_leaderboard: bool=False):
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
     self.lastfm = lastfm
     self.art_provider = art_provider
     self.scrobble = scrobble
+    self.should_load_leaderboard = should_load_leaderboard
     self.setAutoDelete(True)
 
   def run(self):
@@ -58,46 +60,39 @@ class LoadExternalScrobbleData(QtCore.QObject, QtCore.QRunnable):
     self.update_ui_for_scrobble.emit(self.scrobble)
 
     self.scrobble.is_loading = False
-    self.finished.emit()
 
-    # # 4. Load friend artist leaderboard
-    # def __generate_statistic(user: LastfmUser, plays: int) -> ProfileStatistic:
-    #   return ProfileStatistic(
-    #     title=user.username,
-    #     plays=plays,
-    #     image_url=user.image_url,
-    #     lastfm_url=user.url
-    #   )
+    # 5. Fetch artist and track leaderboards
+    if self.should_load_leaderboard:      
+      friends = self.lastfm.get_friends()
+      artist_leaderboard = []
+
+      # Add logged in user to friends to list in the leaderboard
+      # TODO: Request cached data
+      friends.append(self.lastfm.get_user_info())
+
+      for user in friends:
+        artist_info = self.lastfm.get_artist_info(self.scrobble.lastfm_artist.name, user.username)
+
+        if artist_info.plays:
+          artist_leaderboard.append(ProfileStatistic(
+            title=user.username,
+            plays=artist_info.plays,
+            image_url=user.image_url,
+            lastfm_url=user.url
+          ))
+
+      artist_leaderboard = sorted(
+        artist_leaderboard, 
+        key=lambda stat: stat.plays,
+        reverse=True
+      )
+
+      highest = artist_leaderboard[0].plays
+
+      for stat in artist_leaderboard:
+        stat.percentage = stat.plays / highest
+
+      self.scrobble.friend_artist_leaderboard = artist_leaderboard
+      self.update_ui_for_scrobble.emit(self.scrobble)
     
-    # friends = self.lastfm.get_friends()
-    # artist_leaderboard = []
-    # # track_leaderboard = []
-
-    # # Add logged in user to friends to list in the leaderboard
-    # # TODO: Request cached data
-    # friends.append(self.lastfm.get_user_info())
-
-    # for user in friends:
-    #   artist_info = self.lastfm.get_artist_info(self.scrobble.lastfm_artist.name, user.username)
-    #   # track_info = self.lastfm.get_track_info(self.scrobble.lastfm_artist.name, self.scrobble.lastfm_track.title, user.username)
-
-    #   if artist_info.plays:
-    #     artist_leaderboard.append(__generate_statistic(user, artist_info.plays))
-      
-    #   # if track_info.plays:
-    #   #   track_leaderboard.append(__generate_statistic(user, track_info.plays))
-
-    # self.scrobble.friend_artist_leaderboard = sorted(
-    #   artist_leaderboard, 
-    #   key=lambda stat: stat.plays,
-    #   reverse=True
-    # )
-
-    # highest = self.scrobble.friend_artist_leaderboard[0].plays
-
-    # for stat in self.scrobble.friend_artist_leaderboard:
-    #   stat.percentage = stat.plays / highest
-
-    # track_leaderboard = sorted(track_leaderboard, key=lambda stat: stat.plays, reverse=True)
-
-    # self.update_ui_for_scrobble.emit()
+    self.finished.emit()
