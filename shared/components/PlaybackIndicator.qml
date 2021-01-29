@@ -2,6 +2,9 @@ import QtQuick 2.14
 
 Item {
   id: root
+
+  property int bottomPosition: isLarge ? 3 : 2
+  property int topPosition: isLarge ? 17 : 10
   
   property bool isLarge: false
   property bool isPaused: false
@@ -25,11 +28,17 @@ Item {
     delegate: Rectangle {
       id: bar
 
+      property int cachedIndex: 0
+
       radius: width / 2
 
       x: (isLarge ? 7 : 4) * (model.index + 1)
       y: isLarge ? 7 + (17 - height) : 4 + (10 - height)
       width: isLarge ? 3 : 2
+
+      Component.onCompleted: {
+        cachedIndex = model.index
+      }
 
       Rectangle {
         color: Qt.rgba(0, 0, 0, 0.25)
@@ -72,15 +81,17 @@ Item {
         NumberAnimation {
           target: bar
           property: 'height'
-          to: isLarge ? 17 : 10
-          duration: 175 * (model.index + 1)
+          from: root.bottomPosition
+          to: root.topPosition
+          duration: 175 * (cachedIndex + 1)
         }
 
         NumberAnimation {
           target: bar
           property: 'height'
-          to: isLarge ? 3 : 2
-          duration: 175 * (model.index + 1)
+          from: root.topPosition
+          to: root.bottomPosition
+          duration: 175 * (cachedIndex + 1)
         }
       }
     }
