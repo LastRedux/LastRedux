@@ -14,6 +14,8 @@ Window {
   property int currentTabIndex: 0
   property bool hasAttemptedLogin: false
   property bool isInMiniMode: (detailsViewModel && detailsViewModel.isInMiniMode) || false
+  property int cachedWindowWidth: 957
+  property int cachedWindowHeight: 600
 
   color: '#171717'
   flags: Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint | Qt.WindowMinMaxButtonsHint // Disable fullscreen on macOS
@@ -22,8 +24,9 @@ Window {
 
   minimumWidth: isInMiniMode ? 0 : 755
   minimumHeight: isInMiniMode ? 0 : 470
-  width: 957
-  height: 600
+
+  width: cachedWindowWidth
+  height: cachedWindowHeight
 
   function switchToTab(tabIndex, isSameTab) {
     if (historyViewModel.isEnabled) {
@@ -101,7 +104,23 @@ Window {
       MenuItem {
         text: qsTr('Toggle Mini Mode')
 
-        onTriggered: detailsViewModel.toggleMiniMode()
+        onTriggered: {
+          if (isInMiniMode) {
+            // Restore old dimensions
+            application.width = cachedWindowWidth
+            application.height = cachedWindowHeight
+          } else {
+            // Save dimensions to restore later
+            cachedWindowWidth = application.width
+            cachedWindowHeight = application.height
+
+            application.width = 615
+            application.height = 400
+          }
+
+          // Update isInMiniMode value in details view model
+          detailsViewModel.toggleMiniMode()
+        }
       }
 
       MenuItem {

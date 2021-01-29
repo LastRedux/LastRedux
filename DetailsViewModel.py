@@ -63,9 +63,6 @@ class DetailsViewModel(QtCore.QObject):
 
   @QtCore.Slot()
   def toggleMiniMode(self) -> None:
-    if not self.__is_enabled:
-      return
-
     self.__is_in_mini_mode = not self.__is_in_mini_mode
     self.is_in_mini_mode_changed.emit()
 
