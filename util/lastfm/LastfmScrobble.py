@@ -8,9 +8,11 @@ class LastfmScrobble(SimpleTrack):
   timestamp: datetime
 
   def __repr__(self) -> str:
-    string = super().__repr__() + ' '
+    string = super().__repr__()
     
     if self.timestamp:
-      return string + self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+      string += f' {self.timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
     else:
-      return string + '(Now Playing)'
+      string += ' (Now Playing)'
+
+    return string

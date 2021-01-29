@@ -11,12 +11,15 @@ class FriendScrobble(SimpleTrack):
   is_playing: bool
   is_loved: bool
 
+  def __repr__(self) -> str:
+    return super().__repr__()
+
   def __eq__(self, o: FriendScrobble) -> bool:
+    if not isinstance(o, FriendScrobble):
+      return False
+    
     return (
       self.url == o.url
       and self.is_loved == o.is_loved
       and self.is_playing == o.is_playing
     )
-
-  def __repr__(self):
-      return super().__repr__()
