@@ -77,7 +77,7 @@ class NetworkImage(QtQuick.QQuickItem):
   """Convert recieved network data into QImage and update"""
   def handle_reply(self):
     if self._reply:
-      if self._reply.error() == QtNetwork.QNetworkReply.NoError:
+      if self._reply.error() == QtNetwork.QNetworkReply.NetworkError.NoError:
         image = QtGui.QImage.fromData(self._reply.readAll())
 
         # Add image to cache if not in cache

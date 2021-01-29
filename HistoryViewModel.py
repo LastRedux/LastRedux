@@ -20,6 +20,7 @@ from tasks import (
   UpdateNowPlaying
 )
 from util.lastfm import LastfmList, LastfmScrobble
+from util.iTunesStoreRequest import iTunesStoreRequest
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 from plugins.MockPlayerPlugin import MockPlayerPlugin
 from plugins.macOS.music_app import MusicAppPlugin
@@ -212,7 +213,7 @@ class HistoryViewModel(QtCore.QObject):
 
       if not self.__application_reference.is_offline:
         self.reloadHistory()
-        self.preloadProfileAndFriends.emit()
+        # self.preloadProfileAndFriends.emit()
     else:
       self.begin_refresh_history.emit()
       self.reset_state()
@@ -361,25 +362,38 @@ class HistoryViewModel(QtCore.QObject):
     if self.__application_reference.is_offline:
       return
 
-    load_lastfm_track_info = LoadLastfmTrackInfo(self.__application_reference.lastfm, scrobble)
-    load_lastfm_track_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    QtCore.QThreadPool.globalInstance().start(load_lastfm_track_info)
+    request = iTunesStoreRequest(self.__application_reference.network_manager)
+    request.finished.connect(lambda image_set: self.__hanl(image_set, scrobble))
 
-    load_lastfm_artist_info = LoadLastfmArtistInfo(self.__application_reference.lastfm, scrobble)
-    load_lastfm_artist_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    QtCore.QThreadPool.globalInstance().start(load_lastfm_artist_info)
-
-    load_lastfm_album_info = LoadLastfmAlbumInfo(self.__application_reference.lastfm, scrobble)
-    load_lastfm_album_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    QtCore.QThreadPool.globalInstance().start(load_lastfm_album_info)
-    
-    load_track_images = LoadTrackImages(
-      self.__application_reference.lastfm,
-      self.__application_reference.art_provider,
-      scrobble
+    request.get_album_art(
+      scrobble.artist_name,
+      scrobble.track_title,
+      scrobble.album_title
     )
-    load_track_images.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    QtCore.QThreadPool.globalInstance().start(load_track_images)
+
+    # load_lastfm_track_info = LoadLastfmTrackInfo(self.__application_reference.lastfm, scrobble)
+    # load_lastfm_track_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
+    # QtCore.QThreadPool.globalInstance().start(load_lastfm_track_info)
+
+    # load_lastfm_artist_info = LoadLastfmArtistInfo(self.__application_reference.lastfm, scrobble)
+    # load_lastfm_artist_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
+    # QtCore.QThreadPool.globalInstance().start(load_lastfm_artist_info)
+
+    # load_lastfm_album_info = LoadLastfmAlbumInfo(self.__application_reference.lastfm, scrobble)
+    # load_lastfm_album_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
+    # QtCore.QThreadPool.globalInstance().start(load_lastfm_album_info)
+    
+    # load_track_images = LoadTrackImages(
+    #   self.__application_reference.lastfm,
+    #   self.__application_reference.art_provider,
+    #   scrobble
+    # )
+    # load_track_images.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
+    # QtCore.QThreadPool.globalInstance().start(load_track_images)
+
+  def __hanl(self, image_set, scrobble: Scrobble):
+    scrobble.image_set = image_set
+    self.__emit_scrobble_ui_update_signals(scrobble)
 
   def __handle_piece_of_external_scrobble_data_loaded(self, scrobble: Scrobble):
     if not self.__is_enabled:
