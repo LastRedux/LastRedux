@@ -2,7 +2,6 @@ import urllib
 import json
 import logging
 
-import requests
 from PySide2 import QtCore
 from PySide2.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 
@@ -31,6 +30,7 @@ class iTunesStoreRequest(QtCore.QObject):
     if album_title:
       self.__query += f' {album_title}'
 
+    # Build the request url (must be a QUrl)
     url = QtCore.QUrl(
       f'https://itunes.apple.com/search?media=music&limit=1&term={self.__query}'
     )
@@ -38,11 +38,15 @@ class iTunesStoreRequest(QtCore.QObject):
     # Do a generic search for music with the track, artist, and album name
     self.__reply = self.__network_manager.get(QNetworkRequest(url))
 
+    # Handle the response to the request
+    # TODO: Figure out why passing the function directly doesn't work
     self.__reply.finished.connect(lambda: self.__handle_album_art_fetched())
 
   def __handle_album_art_fetched(self) -> None:
     if self.__reply.error() != QNetworkReply.NetworkError.NoError:
-      logging.warning(f'Error searching iTunes store for "{self.__query}": {self.__reply.readAll()}')
+      logging.warning(
+        f'Error searching iTunes store for "{self.__query}": {self.__reply.readAll()}'
+      )
 
     reply_data = bytes(self.__reply.readAll()).decode()
     track_results = json.loads(reply_data)['results']

@@ -7,6 +7,7 @@ from shared.components.NetworkImage import NetworkImage
 from util.lastfm import LastfmApiWrapper, LastfmSession
 from util.art_provider import ArtProvider
 from util.spotify_api import SpotifyApiWrapper
+from util.HTTPRequest import HTTPRequest
 from util import db_helper
 
 class ApplicationViewModel(QtCore.QObject):
@@ -34,6 +35,7 @@ class ApplicationViewModel(QtCore.QObject):
     # Create network request manager and expose it to all NetworkImage instances
     self.network_manager = QtNetwork.QNetworkAccessManager()
     NetworkImage.NETWORK_MANAGER = self.network_manager
+    HTTPRequest.NETWORK_MANAGER = self.network_manager
 
     # Connect to SQLite
     db_helper.connect()
