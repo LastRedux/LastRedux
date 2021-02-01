@@ -29,9 +29,6 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       None
     )
 
-    # Store the latest notification from NSNotificationObserver
-    self.__cached_notification_payload: dict = None
-
     # Store latest state
     self.__state: MediaPlayerState = None
 
@@ -77,7 +74,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
   # --- Private Methods ---
 
-  def __handle_new_state(self, new_state: MediaPlayerState, is_library_track: bool) -> None:
+  def __handle_new_state(self, new_state: MediaPlayerState, is_library_track: bool, total_time: float) -> None:
     # Ignore notification if there's no track title (Usually happens with radio stations)
     if not new_state.track_title:
       self.showNotification.emit('Track cannot be scrobbled', f'Music did not provide any data for the media you\'re playing')
@@ -117,7 +114,6 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
       timer.start(100)
     else:
       # Non-library tracks can't have track crops, so we can just use duration
-      total_time = self.__cached_notification_payload.get('Total Time')
 
       # Handle missing total time value due to bug in Apple Music on Big Sur with non-library tracks
       if not total_time:
@@ -174,31 +170,31 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
     self.__last_notification_had_error = True
     self.__last_state_with_error = self.__state
-    logging.error(f'Error getting track duration for {self.__cached_notification_payload}')
+    logging.error(f'Error getting track duration for {self.__state}')
 
   # Shows as unused because it has to be registered with pyobjc as a function name string
   def __handleNotificationFromMusic_(self, notification) -> None: # TODO: Add type annotation
     '''Handle Objective-C notifications for Music app events'''
     
-    self.__cached_notification_payload = notification.userInfo()
-    self.__cached_notification = notification
+    notification_payload = notification.userInfo()
 
-    logging.debug(f'New notification from Music.app: {self.__cached_notification_payload}')
+    logging.debug(f'New notification from Music.app: {notification_payload}')
 
-    if self.__cached_notification_payload['Player State'] == 'Stopped':
+    if notification_payload['Player State'] == 'Stopped':
       self.stopped.emit()
       return
 
-    if self.__cached_notification_payload['Player State'] == 'Playing':  
+    if notification_payload['Player State'] == 'Playing':  
       self.__handle_new_state(
         new_state=MediaPlayerState(
-          artist_name=self.__cached_notification_payload.get('Artist'),
-          track_title=self.__cached_notification_payload.get('Name'),
-          album_title=self.__cached_notification_payload.get('Album', None), # Prevent empty strings
+          artist_name=notification_payload.get('Artist'),
+          track_title=notification_payload.get('Name'),
+          album_title=notification_payload.get('Album', None), # Prevent empty strings
           is_playing=True,
           position=self.get_player_position()
         ),
-        is_library_track=bool(self.__cached_notification_payload.get('Location'))
+        is_library_track=bool(notification_payload.get('Location')),
+        total_time=notification_payload.get('Total Time')
       )
     else:
       self.paused.emit()
