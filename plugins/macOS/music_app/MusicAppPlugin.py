@@ -74,7 +74,12 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
   # --- Private Methods ---
 
-  def __handle_new_state(self, new_state: MediaPlayerState, is_library_track: bool, total_time: float) -> None:
+  def __handle_new_state(
+    self,
+    new_state: MediaPlayerState,
+    is_library_track: bool,
+    total_time: float=None
+   ) -> None:
     # Ignore notification if there's no track title (Usually happens with radio stations)
     if not new_state.track_title:
       self.showNotification.emit('Track cannot be scrobbled', f'Music did not provide any data for the media you\'re playing')
