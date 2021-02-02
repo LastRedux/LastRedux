@@ -633,7 +633,7 @@ class HistoryViewModel(QtCore.QObject):
     if not self.__is_enabled:
       return
 
-    # Update now playing on Last.fm
+    # Update now playing on Last.fm regardless of whether it's a new play
     if self.__is_submission_enabled:
       QtCore.QThreadPool.globalInstance().start(
         UpdateNowPlaying(
@@ -645,7 +645,7 @@ class HistoryViewModel(QtCore.QObject):
         )
       )
 
-    # Update Discord rich presence
+    # Update Discord rich presence regardless of whether it's a new play
     if self.__is_discord_rpc_enabled and helpers.is_discord_open():
       self.__discord_rpc.update(
         details=new_media_player_state.track_title,
@@ -664,37 +664,38 @@ class HistoryViewModel(QtCore.QObject):
     self.is_player_paused_changed.emit()
 
     # If we just resumed from paused state, we don't need to continue with checking for new tracks
-    if not self.__was_last_player_event_paused:
-      # Check if the track has changed or not
-      is_same_track = None
-
-      if not self.__current_scrobble:
-        # This is the first track
-        is_same_track = False
-      else:
-        is_same_track = (
-          self.__current_scrobble.track_title == new_media_player_state.track_title
-          and self.__current_scrobble.artist_name == new_media_player_state.artist_name
-          and self.__current_scrobble.album_title == new_media_player_state.album_title
-        )
-
-      # Submit the current scrobble if it hit the scrobbling threshold
-      if self.__should_submit_current_scrobble:
-
-        # Make sure that the current track has finished playing if it's being looped
-        if is_same_track and not self.__was_last_player_event_paused:
-          track_duration = self.__current_track_crop.finish - self.__current_track_crop.start
-          margin_of_error = self.__MEDIA_PLAYER_POLLING_INTERVAL + 1          
-
-          if (track_duration - self.__furthest_player_position_reached) > margin_of_error:
-            # Track didn't finish playing
-            return
-
-        # Submit current scrobble to Last.fm
-        self.__submit_scrobble(self.__current_scrobble)
-    else:
+    if self.__was_last_player_event_paused:
       self.__was_last_player_event_paused = False
+      return
+    
+    # Check if the track has changed or not
+    is_same_track = None
 
+    if not self.__current_scrobble:
+      # This is the first track
+      is_same_track = False
+    else:
+      is_same_track = (
+        self.__current_scrobble.track_title == new_media_player_state.track_title
+        and self.__current_scrobble.artist_name == new_media_player_state.artist_name
+        and self.__current_scrobble.album_title == new_media_player_state.album_title
+      )
+
+    # Submit the current scrobble if it hit the scrobbling threshold
+    if self.__should_submit_current_scrobble:
+
+      # Make sure that the current track has finished playing if it's being looped
+      if is_same_track and not self.__was_last_player_event_paused:
+        track_duration = self.__current_track_crop.finish - self.__current_track_crop.start
+        margin_of_error = self.__MEDIA_PLAYER_POLLING_INTERVAL + 1          
+
+        if (track_duration - self.__furthest_player_position_reached) > margin_of_error:
+          # Track didn't finish playing
+          return
+
+      # Submit current scrobble to Last.fm
+      self.__submit_scrobble(self.__current_scrobble)
+      
     # Load new track data into current scrobble
     self.__update_current_scrobble(new_media_player_state)
 
