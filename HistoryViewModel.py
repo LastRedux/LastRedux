@@ -666,6 +666,7 @@ class HistoryViewModel(QtCore.QObject):
     # If we just resumed from paused state, we don't need to continue with checking for new tracks
     if self.__was_last_player_event_paused:
       self.__was_last_player_event_paused = False
+      logging.debug(f'Ignoring resume event for {new_media_player_state.track_title}')
       return
     
     # Check if the track has changed or not
