@@ -1,4 +1,4 @@
-from .LastfmApiWrapper import LastfmApiWrapper
+from .LastfmRequest import LastfmRequest
 from .LastfmList import LastfmList
 from .LastfmTrack import LastfmTrack
 from .LastfmArtist import LastfmArtist

@@ -16,15 +16,6 @@ class LastfmArtist:
   tags: List[LastfmTag] = None
   similar_artists: LastfmList[LastfmArtist] = None
 
-  def __str__(self) -> str:
-    return '\n'.join((
-      repr(self),
-      f'Global Listeners: {self.global_listeners}',
-      f'Global Plays: {self.global_plays}',
-      f'Tags: {self.tags}',
-      f'Similar Artists: {self.similar_artists}'
-    ))
-
   def __repr__(self):
     return self.name + (f' [{self.plays} plays]' if self.plays else '')
 

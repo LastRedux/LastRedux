@@ -14,15 +14,15 @@ class HTTPRequest(QtCore.QObject):
     self,
     url: str,
     headers: dict=None,
-    data: dict=None,
-    http_method: str='GET'
+    params: dict=None,
+    method: str='GET'
   ) -> None:
     QtCore.QObject.__init__(self)
 
     self.url = url
     self.headers = headers
-    self.data = data
-    self.http_method = http_method
+    self.data = params
+    self.http_method = method
 
     self.__reply: QNetworkReply = None
 
