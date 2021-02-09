@@ -99,7 +99,7 @@ class SpotifyApiWrapper:
       if retry_num == 0:
         # Retry request with the same parameters since Spotify sporadically returns no results incorrectly
         return self.get_track_images(artist_name, track_title, album_title, only_album_art, retry_num=1)
-      elif retry_num == 1 and os.environ.get('NO_ALBUM_SEARCH'):
+      elif retry_num == 1:# and os.environ.get('NO_ALBUM_SEARCH'):
         # Try new search with no album title (useful for pre-release albums or any other mismatch between platforms)
         return self.get_track_images(artist_name, track_title, None, only_album_art, retry_num=0) # Retry 0 because the parameters have changed
       else:
