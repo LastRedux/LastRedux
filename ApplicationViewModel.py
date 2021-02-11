@@ -1,4 +1,5 @@
 import logging
+from util.lastfm.LastfmRequest import LastfmRequest
 
 import requests
 from PySide2 import QtCore, QtNetwork
@@ -71,6 +72,7 @@ class ApplicationViewModel(QtCore.QObject):
     if session:
       # Set Last.fm wrapper session key and username from database
       self.lastfm.log_in_with_session(session)
+      LastfmRequest.log_in_with_session(session)
       self.__set_is_logged_in(True)
       logging.info(f'Logged in as {session.username}')
     else:

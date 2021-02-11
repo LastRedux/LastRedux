@@ -10,16 +10,12 @@ from pypresence import Presence
 
 from tasks import (
   FetchPlayerPosition,
-  LoadLastfmTrackInfo,
-  LoadLastfmArtistInfo,
-  LoadLastfmAlbumInfo,
-  LoadTrackImages,
+  LoadExternalScrobbleData,
   UpdateTrackLoveOnLastfm,
-  FetchRecentScrobbles,
   SubmitScrobble,
   UpdateNowPlaying
 )
-from util.lastfm import LastfmList, LastfmScrobble
+from util.lastfm import LastfmList, LastfmScrobble, LastfmRequest
 from util.iTunesStoreRequest import iTunesStoreRequest
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 from plugins.MockPlayerPlugin import MockPlayerPlugin
@@ -252,13 +248,17 @@ class HistoryViewModel(QtCore.QObject):
     self.end_refresh_history.emit()
 
     # Fetch and load recent scrobbles
-    fetch_recent_scrobbles_task = FetchRecentScrobbles(
-      lastfm=self.__application_reference.lastfm, 
-      count=self.__INITIAL_SCROBBLE_HISTORY_COUNT
-    )
-    fetch_recent_scrobbles_task.finished.connect(self.__handle_recent_scrobbles_fetched)
-    QtCore.QThreadPool.globalInstance().start(fetch_recent_scrobbles_task)
-    
+    if os.environ.get('MOCK'):
+      self.__handle_recent_scrobbles_fetched(
+        helpers.datetimeget_mock_recent_scrobbles(self.count)
+      )
+    else:
+      request = LastfmRequest()
+      request.finished.connect(
+        lambda recent_scrobbles: self.__handle_recent_scrobbles_fetched(recent_scrobbles)
+      )
+      request.get_recent_scrobbles(self.__INITIAL_SCROBBLE_HISTORY_COUNT)
+
   @QtCore.Slot(int)
   def toggleLastfmIsLoved(self, scrobble_index: int) -> None:
     
@@ -362,53 +362,42 @@ class HistoryViewModel(QtCore.QObject):
     if self.__application_reference.is_offline:
       return
 
-    request = iTunesStoreRequest(self.__application_reference.network_manager)
-    request.finished.connect(lambda image_set: self.__hanl(image_set, scrobble))
+    # request = iTunesStoreRequest(self.__application_reference.network_manager)
+    # request.finished.connect(lambda image_set: self.__hanl(image_set, scrobble))
 
-    request.get_album_art(
-      scrobble.artist_name,
-      scrobble.track_title,
-      scrobble.album_title
-    )
+    # request.get_album_art(
+    #   scrobble.artist_name,
+    #   scrobble.track_title,
+    #   scrobble.album_title
+    # )
 
-    # load_lastfm_track_info = LoadLastfmTrackInfo(self.__application_reference.lastfm, scrobble)
-    # load_lastfm_track_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    # QtCore.QThreadPool.globalInstance().start(load_lastfm_track_info)
-
-    # load_lastfm_artist_info = LoadLastfmArtistInfo(self.__application_reference.lastfm, scrobble)
-    # load_lastfm_artist_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    # QtCore.QThreadPool.globalInstance().start(load_lastfm_artist_info)
-
-    # load_lastfm_album_info = LoadLastfmAlbumInfo(self.__application_reference.lastfm, scrobble)
-    # load_lastfm_album_info.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
-    # QtCore.QThreadPool.globalInstance().start(load_lastfm_album_info)
+    load_external_data = LoadExternalScrobbleData(scrobble)
+    load_external_data.finished.connect(lambda: self.__emit_scrobble_ui_update_signals(scrobble))
+    load_external_data.run()
+    # QtCore.QThreadPool.globalInstance().start(load_external_data)
     
     # load_track_images = LoadTrackImages(
     #   self.__application_reference.lastfm,
     #   self.__application_reference.art_provider,
     #   scrobble
     # )
-    # load_track_images.finished.connect(self.__handle_piece_of_external_scrobble_data_loaded)
     # QtCore.QThreadPool.globalInstance().start(load_track_images)
 
-  def __hanl(self, image_set, scrobble: Scrobble):
-    scrobble.image_set = image_set
-    self.__emit_scrobble_ui_update_signals(scrobble)
+  # def __handle_piece_of_external_scrobble_data_loaded(self, scrobble: Scrobble, type_of_data: int):
+  #   if not self.__is_enabled:
+  #     return
 
-  def __handle_piece_of_external_scrobble_data_loaded(self, scrobble: Scrobble):
-    if not self.__is_enabled:
-      return
+  #   # TODO: Find a better way to do this that's less hacky
+  #   if type_of_data == 1:
+      
 
-    # TODO: Find a better way to do this that's less hacky
-    if not getattr(scrobble, 'TEMP_things_loaded', False):
-      scrobble.TEMP_things_loaded = 0
+  #   if not getattr(scrobble, 'TEMP_things_loaded', False):
+  #     scrobble.TEMP_things_loaded = 0
     
-    scrobble.TEMP_things_loaded += 1
+  #   scrobble.TEMP_things_loaded += 1
 
-    if scrobble.TEMP_things_loaded == 4:
-      scrobble.is_loading = False
-
-    self.__emit_scrobble_ui_update_signals(scrobble)
+  #   if scrobble.TEMP_things_loaded == 4:
+  #     scrobble.is_loading = False
 
   def __emit_scrobble_ui_update_signals(self, scrobble: Scrobble) -> None:
     if not self.__is_enabled:

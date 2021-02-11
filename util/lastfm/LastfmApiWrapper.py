@@ -1,18 +1,13 @@
-from datatypes.CachedResource import CachedResource
 import hashlib
 import json
 import time
 import logging
 from datetime import datetime, time, timedelta
-from typing import Any, Callable, Dict, List, Union
-from util.lastfm import LastfmArtistLink
-from util.lastfm.LastfmTrack import LastfmTrack
+from typing import Dict, List
 
-from PySide2 import QtCore
-from PySide2.QtNetwork import QNetworkRequest
+import requests
 from sentry_sdk import set_user, set_context
 
-from util.HTTPRequest import HTTPRequest
 from .LastfmAlbum import LastfmAlbum
 from .LastfmArtist import LastfmArtist
 from .LastfmList import LastfmList
@@ -29,26 +24,24 @@ from datatypes.ImageSet import ImageSet
 from datatypes.FriendScrobble import FriendScrobble
 import util.helpers as helpers
 
-class LastfmRequest(QtCore.QObject):
-  finished = QtCore.Signal(LastfmArtist)
-
+class LastfmApiWrapper:
   API_KEY = 'c9205aee76c576c84dc372de469dcb00'
   CLIENT_SECRET = 'a643753f16e5c147a0416ecb7bb66eca'
   USER_AGENT = 'LastRedux v0.0.0' # TODO: Update this on release
   MAX_RETRIES = 3
   NOT_FOUND_ERRORS = ['The artist you supplied could not be found', 'Track not found', 'Album not found']
-  SESSION: LastfmSession = None
-  __RAM_CACHE: Dict[str, CachedResource] = {}
-  
+
   def __init__(self) -> None:
-    QtCore.QObject.__init__(self)
+    self.username: str = None
+    self.__session_key: str = None
+    self.__ram_cache: Dict[str, CachedResource] = {}
 
   # --- User Request Wrappers ---
 
   def get_user_info(self) -> LastfmUserInfo:
     return self.__lastfm_request({
         'method': 'user.getInfo',
-        'username': self.SESSION.username
+        'username': self.username
       },
       main_key_getter=lambda response: response['user'],
       return_value_builder=lambda user_info, response: LastfmUserInfo(
@@ -92,7 +85,7 @@ class LastfmRequest(QtCore.QObject):
 
     args = {
       'method': 'user.getRecentTracks',
-      'username': username or self.SESSION.username, # Default arg value can't refer to self
+      'username': username or self.username, # Default arg value can't refer to self
       'limit': limit
     }
 
@@ -107,7 +100,7 @@ class LastfmRequest(QtCore.QObject):
   def get_total_loved_tracks(self) -> int:
     return self.__lastfm_request({
         'method': 'user.getLovedTracks',
-        'user': self.SESSION.username,
+        'user': self.username,
         'limit': 1 # We don't actually want any loved tracks
       },
       return_value_builder=lambda response: int(response['lovedtracks']['@attr']['total'])
@@ -119,7 +112,7 @@ class LastfmRequest(QtCore.QObject):
     try:
       friends = self.__lastfm_request({
           'method': 'user.getFriends',
-          'username': self.SESSION.username
+          'username': self.username
         },
         main_key_getter=lambda response: response['friends']['user'],
         return_value_builder=lambda friends, response: [
@@ -140,7 +133,7 @@ class LastfmRequest(QtCore.QObject):
   def get_top_artists(self, limit: int, period: str='overall') -> LastfmList[LastfmArtist]:
     return self.__lastfm_request({
         'method': 'user.getTopArtists',
-        'username': self.SESSION.username,
+        'username': self.username,
         'limit': limit,
         'period': period
       },
@@ -158,7 +151,7 @@ class LastfmRequest(QtCore.QObject):
   def get_top_tracks(self, limit: int, period: str='overall') -> LastfmList[LastfmTrack]:
       return self.__lastfm_request({
         'method': 'user.getTopTracks',
-        'username': self.SESSION.username,
+        'username': self.username,
         'limit': limit,
         'period': period,
         'extended': 1
@@ -180,7 +173,7 @@ class LastfmRequest(QtCore.QObject):
   def get_top_albums(self, limit: int, period: str='overall') -> List[LastfmAlbum]:
     return self.__lastfm_request({
         'method': 'user.getTopAlbums',
-        'username': self.SESSION.username,
+        'username': self.username,
         'limit': limit,
         'period': period
       },
@@ -193,7 +186,7 @@ class LastfmRequest(QtCore.QObject):
             url=album['artist']['url'],
             name=album['artist']['name']
           ),
-          image_set=self.__images_to_image_set(album['image']),
+          image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
           plays=int(album['playcount'])
         ) for album in albums
       ]
@@ -204,7 +197,7 @@ class LastfmRequest(QtCore.QObject):
   def get_artist_info(self, artist_name: str, username: str=None) -> LastfmArtist:
     return self.__lastfm_request({
         'method': 'artist.getInfo',
-        'username': username or self.SESSION.username,
+        'username': username or self.username,
         'artist': artist_name
       },
       main_key_getter=lambda response: response['artist'],
@@ -217,7 +210,6 @@ class LastfmRequest(QtCore.QObject):
         bio=artist['bio']['content'].split(' <')[0].strip(), # Remove the "Read more on Last.fm" html link at the end
         tags=[self.__tag_to_lastfm_tag(tag) for tag in artist['tags']['tag']],
         similar_artists=[
-          # TODO: Use LastfmArtistLink
           LastfmArtist(
             name=similar_artist['name'],
             url=similar_artist['url']
@@ -229,7 +221,7 @@ class LastfmRequest(QtCore.QObject):
   def get_track_info(self, artist_name: str, track_title: str, username: str=None) -> LastfmTrack:
     return self.__lastfm_request({
         'method': 'track.getInfo',
-        'username': username or self.SESSION.username,
+        'username': username or self.username,
         'artist': artist_name,
         'track': track_title
       },
@@ -245,14 +237,14 @@ class LastfmRequest(QtCore.QObject):
         is_loved=bool(int(track['userloved'])), # Convert '0'/'1' to False/True,
         global_listeners=int(track['listeners']),
         global_plays=int(track['playcount']),
-        tags=[self.__tag_to_lastfm_tag(tag) for tag in track['toptags']['tag']]
+        tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in track['toptags']['tag']]
       )
     )
 
   def get_album_info(self, artist_name: str, album_title: str, username: str=None) -> LastfmAlbum:
     return self.__lastfm_request({
         'method': 'album.getInfo',
-        'username': username or self.SESSION.username,
+        'username': username or self.username,
         'artist': artist_name,
         'album': album_title
       },
@@ -260,15 +252,15 @@ class LastfmRequest(QtCore.QObject):
       return_value_builder=lambda album, response: LastfmAlbum(
         url=album['url'],
         title=album['name'],
-        artist_link=LastfmArtist( # TODO: Use LastfmArtistLink
+        artist_link=LastfmArtist(
           url=None,
           name=album['artist']
         ),
-        image_set=self.__images_to_image_set(album['image']),
+        image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
         plays=int(album['userplaycount']),
         global_listeners=int(album['listeners']),
         global_plays=int(album['playcount']),
-        tags=[self.__tag_to_lastfm_tag(tag) for tag in album['tags']['tag']]
+        tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in album['tags']['tag']]
       ),
       cache=True # Cache since we don't display plays anywhere
     )
@@ -303,8 +295,7 @@ class LastfmRequest(QtCore.QObject):
 
     return session
 
-  @staticmethod
-  def log_in_with_session(session: LastfmSession) -> None:
+  def log_in_with_session(self, session: LastfmSession) -> None:
     set_user({
       'username': session.username
     })
@@ -317,14 +308,15 @@ class LastfmRequest(QtCore.QObject):
       'app_version': 'Private Beta 2'
     })
 
-    LastfmRequest.SESSION = session
+    self.username = session.username
+    self.__session_key = session.session_key
 
   # --- POST request wrappers ---
 
   def submit_scrobble(self, artist_name: str, track_title: str, date: datetime, album_title: str=None) -> LastfmSubmissionStatus:
     args = {
       'method': 'track.scrobble',
-      'username': self.SESSION.username,
+      'username': self.username,
       'artist': artist_name,
       'track': track_title,
       'timestamp': date.timestamp()
@@ -435,16 +427,16 @@ class LastfmRequest(QtCore.QObject):
   def generate_authorization_url(auth_token):
     '''Generate a Last.fm authentication url for the user to allow access to their account'''
     
-    return f'https://www.last.fm/api/auth/?api_key={LastfmRequest.API_KEY}&token={auth_token}'
+    return f'https://www.last.fm/api/auth/?api_key={LastfmApiWrapper.API_KEY}&token={auth_token}'
 
   # --- Private Methods ---
 
   def __lastfm_request(
     self,
-    args: dict,
-    main_key_getter: Callable=None,
-    return_value_builder: Callable=None,
-    http_method: str='GET',
+    args,
+    main_key_getter=None,
+    return_value_builder=None,
+    http_method='GET',
     cache=False
   ) -> dict:
     # Convert request arguments to string to use as a key to the cache
@@ -452,8 +444,8 @@ class LastfmRequest(QtCore.QObject):
 
     # Check for cached responses
     if cache:
-      if request_string in self.__RAM_CACHE:
-        resource = self.__RAM_CACHE[request_string]
+      if request_string in self.__ram_cache:
+        resource = self.__ram_cache[request_string]
 
         # Return cached resource, otherwise continue with new request
         if resource.expiration_date > datetime.now():
@@ -461,77 +453,80 @@ class LastfmRequest(QtCore.QObject):
           return resource.data
         else:
           # Remove expired resource from cache
-          del self.__RAM_CACHE[request_string]
+          del self.__ram_cache[request_string]
 
     params = {
-      'api_key': self.API_KEY, 
+      'api_key': LastfmApiWrapper.API_KEY, 
       'format': 'json',
       **args
     }
 
     if http_method == 'POST':
-      params['sk'] = self.SESSION.session_key
+      params['sk'] = self.__session_key
 
     if http_method == 'POST' or args.get('method') == 'auth.getSession':
       params['api_sig'] = self.__generate_method_signature(params)
 
-    request = HTTPRequest(
-      method=http_method,
-      url='https://ws.audioscrobbler.com/2.0/',
-      headers={
-        QNetworkRequest.UserAgentHeader: self.USER_AGENT
-      },
-      params=params
-    )
-    request.finished.connect(lambda resp_json: self.__handle_response(
-      resp_json,
-      request_string,
-      main_key_getter,
-      return_value_builder,
-      cache
-    ))
-    request.run()
-
-  def __handle_response(
-    self,
-    resp_json: dict,
-    request_string: str,
-    main_key_getter: Callable=None,
-    return_value_builder: Callable=None,
-    cache: bool=False
-  ):
-    if resp_json is None:
-      raise Exception(f'No response for {request_string}')
-    
-    if 'error' in resp_json:
-      # Ignore not found errors
-      if resp_json['message'] in self.NOT_FOUND_ERRORS:
-        self.finished.emit(None)
-        return
-      else:
-        raise Exception(f'Unknown Last.fm error: {resp_json}')
-
-    return_object = None
-
-    try:
-      if main_key_getter:
-        return_object = return_value_builder(main_key_getter(resp_json), resp_json)
-      else:
-        return_object = return_value_builder(resp_json)
-    except KeyError as err:
-      # There's a missing key, run the request again by continuing the for loop
-      logging.debug(f'Mising key in Last.fm request: {str(err)} for request {self.__args}')
+    # Make the request with automatic retries up to a limit
+    for _ in range(LastfmApiWrapper.MAX_RETRIES):
+      resp = None
+      resp_json = None
       
-      # TODO: Retry request
-    
-    # The object creation succeeded, so we can cache it if needed and break out of the retry loop
-    if cache:
-      self.__RAM_CACHE[request_string] = CachedResource(
-        data=return_object,
-        expiration_date=datetime.now() + timedelta(minutes=1)
-      )
+      try:
+        resp = requests.request(
+          method=http_method,
+          url='https://ws.audioscrobbler.com/2.0/', 
+          headers={'user-agent': LastfmApiWrapper.USER_AGENT},
+          params=params if http_method == 'GET' else None,
+          data=params if http_method == 'POST' else None
+        )
+      except requests.exceptions.ConnectionError:
+        # Retry request since Last.fm drops connections randomly
+        continue
+      try:
+        resp_json = resp.json()
+      except json.decoder.JSONDecodeError:
+        # Retry request
+        continue
 
-    self.finished.emit(return_object)
+      if not resp.status_code == 200:
+        if resp.status_code == 403:
+          raise PermissionError(f'403 Forbidden: {resp_json}')
+        elif resp.status_code == 400:
+          raise Exception(f'400 Bad Request: {resp_json}')
+        elif resp.status_code == 500:
+          # Retry request
+          continue
+
+      # Handle other non-fatal errors
+      if 'error' in resp_json:
+        # Ignore not found errors
+        if resp_json['message'] in LastfmApiWrapper.NOT_FOUND_ERRORS:
+          return None
+        else:
+          raise Exception(f'Unknown Last.fm error: {resp_json}')
+      
+      try:
+        if main_key_getter:
+          return_object = return_value_builder(main_key_getter(resp_json), resp_json)
+        else:
+          return_object = return_value_builder(resp_json)
+      except KeyError as err:
+        # There's a missing key, run the request again by continuing the for loop
+        logging.debug(f'Mising key in Last.fm request: {str(err)} for request {args}')
+        continue
+
+      # The object creation succeeded, so we can cache it if needed and break out of the retry loop
+      if cache:
+        self.__ram_cache[request_string] = CachedResource(
+          data=return_object,
+          expiration_date=datetime.now() + timedelta(minutes=1)
+        )
+
+      return return_object
+    else:
+      # The for loop completed without breaking (The key was not found after the max number of retries)
+      raise Exception(f'Could not request {args["method"]} after {LastfmApiWrapper.MAX_RETRIES} retries')
 
   @staticmethod
   def __generate_method_signature(payload: dict) -> str:
@@ -551,7 +546,7 @@ class LastfmRequest(QtCore.QObject):
     param = [key + str(data[key]) for key in keys]
 
     # Append client secret to the param string
-    param = ''.join(param) + LastfmRequest.CLIENT_SECRET
+    param = ''.join(param) + LastfmApiWrapper.CLIENT_SECRET
 
     # Unicode encode param before hashing
     param = param.encode()
@@ -560,7 +555,7 @@ class LastfmRequest(QtCore.QObject):
     api_sig = hashlib.md5(param).hexdigest()
     
     return api_sig
-
+ 
   @staticmethod
   def __tag_to_lastfm_tag(tag: dict) -> LastfmTag:
     return LastfmTag(
