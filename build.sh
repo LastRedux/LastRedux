@@ -1,4 +1,4 @@
-pyinstaller app.spec --noconfirm
+pyinstaller app.spec --noconfirm || exit
 rm "dist/LastRedux.app/Contents/MacOS/QtWebSockets"
 rm "dist/LastRedux.app/Contents/MacOS/QtGamepad"
 rm "dist/LastRedux.app/Contents/MacOS/QtQuick3DAssetImport"
