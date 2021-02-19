@@ -1,4 +1,8 @@
 [{
+  "artist_name": "stereofield",
+  "track_title": "Waiting (feat. SanaB)",
+  "album_title": "Waiting - Single"
+}, {
   "reason": "Test song with artist that has a comma in it",
   "track_title": "Just the Two of Us (feat. Bill Withers)",
   "artist_name": "Grover Washington, Jr.",

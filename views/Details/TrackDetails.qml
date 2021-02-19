@@ -116,7 +116,7 @@ PictureBackground {
     }
   }
 
-  // --- Album Name ---
+  // --- Album Title ---
   
   Item {
     id: albumView

@@ -53,7 +53,7 @@ class SpotifyApiWrapper:
     track_title: str=None, # Some searches are only for an album
     album_title: str=None, # Some searches are only for a track
     only_album_art: bool=False,
-    retry_num: int=0
+    is_retry: bool=False
   ) -> SpotifySongData:
     # Create empty return type
     spotify_data = SpotifySongData(None, None)
@@ -96,12 +96,9 @@ class SpotifyApiWrapper:
             ) for artist in artists
           ]
     else:
-      if retry_num == 0:
-        # Retry request with the same parameters since Spotify sporadically returns no results incorrectly
-        return self.get_track_images(artist_name, track_title, album_title, only_album_art, retry_num=1)
-      elif retry_num == 1:# and os.environ.get('NO_ALBUM_SEARCH'):
-        # Try new search with no album title (useful for pre-release albums or any other mismatch between platforms)
-        return self.get_track_images(artist_name, track_title, None, only_album_art, retry_num=0) # Retry 0 because the parameters have changed
+      # Try new search with no album title (useful for pre-release albums or any other mismatch between platforms)
+      if not is_retry and album_title:
+        return self.get_track_images(artist_name, track_title, None, only_album_art, is_retry=True) # Retry 0 because the parameters have changed
       else:
         logging.warning(f'No Spotify track results for "{query}"')
 
@@ -176,7 +173,7 @@ class SpotifyApiWrapper:
         return
       else:
         raise Exception(f'Spotify search error: {resp_json}')
-
+    
     self.__ram_cache[request_string] = CachedResource(
       data=resp_json,
       expiration_date=None # Spotify data shouldn't change

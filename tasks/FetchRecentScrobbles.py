@@ -17,7 +17,6 @@ class FetchRecentScrobbles(QtCore.QObject, QtCore.QRunnable):
     self.setAutoDelete(True)
 
   def run(self) -> None:
-
     recent_scrobbles = None
 
     if os.environ.get('MOCK'):

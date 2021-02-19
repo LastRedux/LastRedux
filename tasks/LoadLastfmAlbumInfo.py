@@ -15,7 +15,7 @@ class LoadLastfmAlbumInfo(QtCore.QObject, QtCore.QRunnable):
 
   def run(self):
     self.scrobble.lastfm_album = self.lastfm.get_album_info(
-      artist_name=self.scrobble.artist_name,
+      artist_name=self.scrobble.album_artist_name or self.scrobble.artist_name,
       album_title=self.scrobble.album_title
     )
     self.finished.emit(self.scrobble)

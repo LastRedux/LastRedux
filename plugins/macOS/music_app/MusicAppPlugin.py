@@ -59,8 +59,9 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         MediaPlayerState(
           artist_name=track.artist(),
           track_title=track_title,
-          album_title=track.album() or None, # Prevent storing empty strings in album_title key
-          is_playing=True, # We can't differentiate between paused and stopped, so we will only send a new state if playing
+          album_title=track.album() or None,
+          album_artist_name=track.albumArtist() or None,
+          is_playing=True, # We can't differentiate between paused and stopped, so we will only send a new state if playing TODO: Actually we probably can if we check for a track title?
           position=self.get_player_position()
         ),
         is_library_track=True # We would have exited out already if it wasn't
@@ -194,7 +195,8 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
         new_state=MediaPlayerState(
           artist_name=notification_payload.get('Artist'),
           track_title=notification_payload.get('Name'),
-          album_title=notification_payload.get('Album', None), # Prevent empty strings
+          album_title=notification_payload.get('Album', None),
+          album_artist_name=notification_payload.get('Album Artist', None),
           is_playing=True,
           position=self.get_player_position()
         ),

@@ -67,9 +67,6 @@ class HistoryViewModel(QtCore.QObject):
     self.__application_reference: ApplicationViewModel = None
     self.__is_enabled: bool = False
     
-    # Initialize media player plugins
-    self.__spotify_plugin = SpotifyPlugin()
-    self.__music_app_plugin = MusicAppPlugin()
     self.__media_player: MediaPlayerPlugin = None
     self.__is_spotify_plugin_available = False # This is set to true if Spotify is installed
     
@@ -90,7 +87,12 @@ class HistoryViewModel(QtCore.QObject):
     
     if os.environ.get('MOCK'):
       self.__media_player = MockPlayerPlugin()
+      self.__connect_media_player_signals()
     else:
+      # Initialize media player plugins
+      self.__spotify_plugin = SpotifyPlugin()
+      self.__music_app_plugin = MusicAppPlugin()
+
       use_spotify = False
       spotify_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
       
@@ -212,7 +214,10 @@ class HistoryViewModel(QtCore.QObject):
 
       if not self.__application_reference.is_offline:
         self.reloadHistory()
-        self.preloadProfileAndFriends.emit()
+
+        # Don't preload profile and friends in mock mode since it sends off tons of requests
+        if not os.environ.get('MOCK'):
+          self.preloadProfileAndFriends.emit()
     else:
       self.begin_refresh_history.emit()
       self.reset_state()
@@ -316,6 +321,12 @@ class HistoryViewModel(QtCore.QObject):
     self.__set_is_scrobble_submission_enabled(self.__media_player.IS_SUBMISSION_ENABLED)
     logging.info(f'Switched media player to {self.__media_player.MEDIA_PLAYER_NAME}')
 
+    self.__connect_media_player_signals()
+    
+    # Update 'Listening on X' text in history view for current scrobble
+    self.media_player_name_changed.emit()
+
+  def __connect_media_player_signals(self):
     # Reconnect event signals
     self.__media_player.stopped.connect(self.__handle_media_player_stopped)
     self.__media_player.playing.connect(self.__handle_media_player_playing)
@@ -323,14 +334,6 @@ class HistoryViewModel(QtCore.QObject):
     self.__media_player.showNotification.connect(
       lambda title, content: self.__application_reference.showNotification.emit(title, content)
     )
-
-    # Load initial track from newly selected media player without a notification
-    if self.__media_player.is_open() and self.__is_enabled:
-      # Avoid making an AppleScript request if the app isn't running (if we do, the app will launch)
-      self.__media_player.request_initial_state()
-    
-    # Update 'Listening on X' text in history view for current scrobble
-    self.media_player_name_changed.emit()
 
   @QtCore.Slot(str)
   def mock_event(self, event_name):
@@ -476,6 +479,7 @@ class HistoryViewModel(QtCore.QObject):
       artist_name=media_player_state.artist_name,
       track_title=media_player_state.track_title,
       album_title=media_player_state.album_title,
+      album_artist_name=media_player_state.album_artist_name,
       timestamp=datetime.now()
     )
 
@@ -641,6 +645,7 @@ class HistoryViewModel(QtCore.QObject):
           artist_name=new_media_player_state.artist_name,
           track_title=new_media_player_state.track_title,
           album_title=new_media_player_state.album_title,
+          album_artist_name=new_media_player_state.album_artist_name,
           duration=new_media_player_state.track_crop.finish - new_media_player_state.track_crop.start
         )
       )

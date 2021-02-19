@@ -10,9 +10,10 @@ from datatypes.MediaPlayerState import MediaPlayerState
 class MockPlayerPlugin(QtCore.QObject):
   # Media player signals
   stopped = QtCore.Signal()
-  paused = QtCore.Signal(MediaPlayerState)
+  paused = QtCore.Signal()
   playing = QtCore.Signal(MediaPlayerState)
   cannot_scrobble_error = QtCore.Signal(str)
+  showNotification = QtCore.Signal(str, str)
 
   MEDIA_PLAYER_NAME = 'Mock'
 
@@ -47,49 +48,55 @@ class MockPlayerPlugin(QtCore.QObject):
   # --- Mock Specific Functions ---
 
   def mock_event(self, event_name):
-    if not self.__state:
-      if event_name == 'playPause':
-        # Load first track
-        self.__update_state()
-
-      # Ignore other events since nothing is playing
-      return
-
-    if event_name == 'previous':
-      self.__track_index -= 1
-      self.__player_position = 0
-      self.__update_state()
-    elif event_name == 'playPause':
-      if self.__state.is_playing:
-        self.__update_state()
+    if event_name == 'playPause':
+      if self.__state:
+        if self.__state.is_playing:
+          self.__state.is_playing = False
+          self.paused.emit()
+        else:
+          self.__state.is_playing = True
+          self.playing.emit(self.__state)
       else:
-        self.paused.emit()
-      
-      self.__state.is_playing = not self.__state.is_playing
-    elif event_name == 'scrubForward':
-      self.__player_position = 0.75 * MockPlayerPlugin.MOCK_TRACK_LENGTH
-    elif event_name == 'next':
-      self.__track_index += 1
-      self.__player_position = 0
-      self.__update_state()
+        self.__state = self.__get_player_state()
+        self.playing.emit(self.__state)
+    else:
+      # Ignore other events since there's nothing playing
+      if not self.__state:
+        return
 
-  def __update_state(self):
+      if event_name == 'previous':
+        self.__track_index -= 1
+        self.__player_position = 0
+        self.__state = self.__get_player_state()
+
+        if self.__state.is_playing:
+          self.playing.emit(self.__state)
+      elif event_name == 'scrubForward':
+        self.__player_position = 0.75 * MockPlayerPlugin.MOCK_TRACK_LENGTH
+      elif event_name == 'next':
+        self.__track_index += 1
+        self.__player_position = 0
+        self.__state = self.__get_player_state()
+
+        if self.__state.is_playing:
+          self.playing.emit(self.__state)
+
+  def __get_player_state(self) -> MediaPlayerState:
     mock_track = MockPlayerPlugin.MOCK_TRACKS[self.__track_index % len(MockPlayerPlugin.MOCK_TRACKS)]
 
-    if not mock_track['artist_name'] or not mock_track['track_title']:
+    if not mock_track.get('artist_name') or not mock_track['track_title']:
       self.cannot_scrobble_error.emit('No track title or artist name')
       return
 
-    self.__state = MediaPlayerState(
-      is_playing=True,
+    return MediaPlayerState(
+      is_playing=self.__state.is_playing if self.__state else True,
       position=0,
       track_title=mock_track['track_title'], 
       artist_name=mock_track.get('artist_name'),
-      album_title=mock_track.get('album_title'), 
+      album_title=mock_track.get('album_title'),
+      album_artist_name=None,
       track_crop=TrackCrop(
         start=0,
         finish=MockPlayerPlugin.MOCK_TRACK_LENGTH
       )
     )
-
-    self.playing.emit(self.__state)

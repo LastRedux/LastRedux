@@ -65,6 +65,7 @@ class LastfmApiWrapper:
         artist_name=track['artist']['#text'],
         track_title=track['name'],
         album_title=track['album']['#text'] or None,
+        album_artist_name=None, # Last.fm doesn't provide the album artist for recent scrobbles TODO: Double check this
         timestamp=datetime.fromtimestamp(int(track['date']['uts']))
       )
 
@@ -313,7 +314,14 @@ class LastfmApiWrapper:
 
   # --- POST request wrappers ---
 
-  def submit_scrobble(self, artist_name: str, track_title: str, date: datetime, album_title: str=None) -> LastfmSubmissionStatus:
+  def submit_scrobble(
+    self,
+    artist_name: str,
+    track_title: str,
+    date: datetime,
+    album_title: str=None,
+    album_artist_name: str=None
+  ) -> LastfmSubmissionStatus:
     args = {
       'method': 'track.scrobble',
       'username': self.username,
@@ -324,6 +332,10 @@ class LastfmApiWrapper:
 
     if album_title:
       args['album'] = album_title
+
+      # Album artist is optional
+      if album_artist_name:
+        args['albumArtist'] = album_artist_name
 
     return self.__lastfm_request(args,
       http_method='POST',
@@ -347,7 +359,14 @@ class LastfmApiWrapper:
       )
     )
   
-  def update_now_playing(self, artist_name: str, track_title: str, duration: float, album_title: str=None) -> LastfmSubmissionStatus:
+  def update_now_playing(
+    self,
+    artist_name: str,
+    track_title: str,
+    duration: float,
+    album_title: str=None,
+    album_artist_name: str=None
+  ) -> LastfmSubmissionStatus:
     args = {
       'method': 'track.updateNowPlaying',
       'artist': artist_name,
@@ -357,6 +376,10 @@ class LastfmApiWrapper:
 
     if album_title:
       args['album'] = album_title
+
+      # Album artist is optional
+      if album_artist_name:
+        args['albumArtist'] = album_artist_name
 
     return self.__lastfm_request(args,
       http_method='POST',
@@ -400,6 +423,7 @@ class LastfmApiWrapper:
         artist_name=track['artist']['name'],
         artist_url=track['artist']['url'],
         album_title=track['album']['#text'] or None,
+        album_artist_name=None,
         image_url=None, # Will be populated later
         is_loved=bool(int(track['loved'])),
         is_playing=is_playing

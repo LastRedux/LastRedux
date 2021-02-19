@@ -49,7 +49,6 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
       return
 
     track = self.__applescript_app.currentTrack()
-    album_title = track.album() or None # Prevent storing empty strings in album_title key
 
     self.__handle_new_state(
       MediaPlayerState(
@@ -57,7 +56,8 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
         position=self.get_player_position(),
         artist_name=track.artist(),
         track_title=track.name(),
-        album_title=album_title,
+        album_title=track.album() or None,
+        album_artist_name=track.albumArtist() or None,
         track_crop=TrackCrop(
           # Spotify tracks can't be cropped so we use duration
           finish=track.duration() / 1000 # Convert from ms to s
@@ -84,7 +84,8 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
       MediaPlayerState(
         artist_name=notification_payload.get('Artist'),
         track_title=notification_payload.get('Name'),
-        album_title=notification_payload.get('Album', None), # Prevent empty strings
+        album_title=notification_payload.get('Album', None),
+        album_artist_name=notification_payload.get('Album Artist', None),
         is_playing=notification_payload['Player State'] == 'Playing',
         position=self.get_player_position(),
         track_crop=TrackCrop(

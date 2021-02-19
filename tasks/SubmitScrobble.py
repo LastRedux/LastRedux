@@ -22,6 +22,7 @@ class SubmitScrobble(QtCore.QRunnable): # Don't inherit from QObject because no 
       artist_name=self.scrobble.artist_name,
       track_title=self.scrobble.track_title,
       album_title=self.scrobble.album_title,
+      album_artist_name=self.scrobble.album_artist_name,
       date=self.scrobble.timestamp
     )
     logging.info(f'Submitted "{self.scrobble.track_title}" to Last.fm')
