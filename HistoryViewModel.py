@@ -226,7 +226,6 @@ class HistoryViewModel(QtCore.QObject):
     if is_enabled:
       # Reset view model
       self.reset_state()
-      self.__media_player.request_initial_state()
       self.__timer.start(self.__MEDIA_PLAYER_POLLING_INTERVAL)
 
       # Check for network connection on open
@@ -342,6 +341,7 @@ class HistoryViewModel(QtCore.QObject):
     logging.info(f'Switched media player to {self.__media_player.MEDIA_PLAYER_NAME}')
 
     self.__connect_media_player_signals()
+    self.__media_player.request_initial_state()
     
     # Update 'Listening on X' text in history view for current scrobble
     self.media_player_name_changed.emit()
