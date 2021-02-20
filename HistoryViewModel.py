@@ -7,6 +7,7 @@ from typing import List
 from PySide2 import QtCore
 from ScriptingBridge import SBApplication
 from pypresence import Presence
+from pypresence.exceptions import InvalidID
 
 from tasks import (
   FetchPlayerPosition,
@@ -36,6 +37,7 @@ class HistoryViewModel(QtCore.QObject):
   __MEDIA_PLAYER_POLLING_INTERVAL = 100 if os.environ.get('MOCK') else 1000
   __CURRENT_SCROBBLE_INDEX = -1
   __NO_SELECTION_INDEX = -2
+  __DISCORD_RPC_MAX_RETRIES = 5
 
   # Qt Property changed signals
   is_enabled_changed = QtCore.Signal()
@@ -44,6 +46,7 @@ class HistoryViewModel(QtCore.QObject):
   is_player_paused_changed = QtCore.Signal()
   is_spotify_plugin_available_changed = QtCore.Signal()
   is_using_mock_player_changed = QtCore.Signal()
+  is_discord_rich_presence_enabled_changed = QtCore.Signal()
   selected_scrobble_changed = QtCore.Signal()
   selected_scrobble_index_changed = QtCore.Signal()
   is_loading_changed = QtCore.Signal()
@@ -72,12 +75,11 @@ class HistoryViewModel(QtCore.QObject):
     
     # Set up Discord presence
     self.__is_discord_rpc_enabled = bool(os.environ.get('DISCORD_PRESENCE'))
+    self.__is_discord_rpc_connected = False
     self.__discord_rpc = Presence('799678908819439646')
 
-    if self.__is_discord_rpc_enabled and  helpers.is_discord_open():
-      self.__discord_rpc.connect()
-
-    logging.info(f'Discord RPC is set to {self.__is_discord_rpc_enabled}')
+    if self.__is_discord_rpc_enabled and helpers.is_discord_open():
+      self.__connect_discord_rpc_if_open()
 
     # Settings
     # TODO: Move these properties to an App view model
@@ -149,6 +151,24 @@ class HistoryViewModel(QtCore.QObject):
     self.__current_track_crop: TrackCrop = None
 
   # --- Qt Property Getters and Setters ---
+
+  def set_is_discord_rich_presence_enabled(self, is_enabled):
+    self.__is_discord_rpc_enabled = is_enabled
+
+    if is_enabled:
+      if self.__connect_discord_rpc_if_open():
+        # If there is a track playing when rich presence is enabled, update the rich presence immediately
+        # This is nested because we want to the __connect_discord_rpc_if_open logic to run regardless
+        if self.__current_scrobble:
+          self.__update_discord_rpc(self.__current_scrobble.track_title, self.__current_scrobble.artist_name, self.__current_scrobble.album_title, self.__cached_playback_position)
+    else:
+      if self.__is_discord_rpc_connected:
+        self.__is_discord_rpc_connected = False
+
+        if helpers.is_discord_open():
+          self.__discord_rpc.close()
+    
+    self.is_discord_rich_presence_enabled_changed.emit()
 
   def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
     if not new_reference:
@@ -342,6 +362,60 @@ class HistoryViewModel(QtCore.QObject):
     self.__media_player.mock_event(event_name)
 
   # --- Private Methods ---
+
+  def __connect_discord_rpc_if_open(self) -> None:
+    '''Check if Discord is open; if open, connect with a new client ID if not already connected. If closed, disconnect'''
+
+    if helpers.is_discord_open():
+      if not self.__is_discord_rpc_connected:
+        self.__discord_rpc.connect()
+        self.__is_discord_rpc_connected = True
+        logging.info(f'Discord RPC connected')
+    else:
+      if self.__is_discord_rpc_connected:
+        self.__is_discord_rpc_connected = False
+        self.__discord_rpc.close()
+        logging.info(f'Discord RPC disconnected')
+    
+    return self.__is_discord_rpc_connected
+
+  def __run_discord_rpc_request(self, request):
+    '''Runs "request" lambda if Discord is open. If InvalidID occurs due to Discord generating a new client ID on relaunch, retry the request'''
+
+    # Don't run any request if Discord isn't open
+    if self.__connect_discord_rpc_if_open():
+      did_request_succeed = False
+      number_of_retries = 0
+
+      while not did_request_succeed and number_of_retries < self.__DISCORD_RPC_MAX_RETRIES:
+        try:
+          request(self)
+          did_request_succeed = True
+        except InvalidID:
+          self.__is_discord_rpc_connected = False
+
+          if self.__connect_discord_rpc_if_open():
+            logging.info(f'Discord RPC reconnected to new client (at retry #{number_of_retries})')
+
+          number_of_retries += 1
+      
+      if number_of_retries == self.__DISCORD_RPC_MAX_RETRIES:
+        logging.warning('Max retries exceeded on Discord RPC request')
+  
+  def __update_discord_rpc(self, track_title: str, artist_name: str, album_title: str, player_position: float):
+    '''Update Discord RPC with new track details'''
+
+    self.__discord_rpc.update(
+      details=track_title,
+      state=artist_name + (
+        (' | ' + album_title) if album_title else ''
+      ),
+      large_image='music-logo',
+      large_text='Playing on Music',
+      small_image='lastredux-logo',
+      small_text='Scrobbling on LastRedux',
+      start=(datetime.now() - timedelta(seconds=player_position)).timestamp() # Don't include track start to accurately reflect timestamp in uncropped track
+    )
 
   def __handle_recent_scrobbles_fetched(self, recent_scrobbles: LastfmList[LastfmScrobble]):
     # Tell the history list model that we are going to change the data it relies on
@@ -548,10 +622,8 @@ class HistoryViewModel(QtCore.QObject):
       self.__ticks_since_position_change += 1
 
       # Clear discord status if paused for more than 60 seconds
-      if self.__ticks_since_position_change > 60 and self.__is_discord_rpc_enabled:
-        # Skip next check since they have a cost
-        if helpers.is_discord_open():
-          self.__discord_rpc.clear()
+      if self.__ticks_since_position_change == 60 and self.__is_discord_rpc_enabled:
+        self.__run_discord_rpc_request(lambda self: self.__discord_rpc.clear())
     else:
       self.__ticks_since_position_change = 0
     
@@ -609,8 +681,8 @@ class HistoryViewModel(QtCore.QObject):
     ):
       return
 
-    if self.__is_discord_rpc_enabled and helpers.is_discord_open():
-      self.__discord_rpc.clear()
+    if self.__is_discord_rpc_enabled:
+      self.__run_discord_rpc_request(lambda self: self.__discord_rpc.clear())
     
     # Submit if the music player stops as well, not just when a new track starts
     if self.__should_submit_current_scrobble:
@@ -651,18 +723,13 @@ class HistoryViewModel(QtCore.QObject):
       )
 
     # Update Discord rich presence regardless of whether it's a new play
-    if self.__is_discord_rpc_enabled and helpers.is_discord_open():
-      self.__discord_rpc.update(
-        details=new_media_player_state.track_title,
-        state=new_media_player_state.artist_name + (
-          (' | ' + new_media_player_state.album_title) if new_media_player_state.album_title else ''
-        ),
-        large_image='music-logo',
-        large_text='Playing on Music',
-        small_image='lastredux-logo',
-        small_text='Scrobbling on LastRedux',
-        start=(datetime.now() - timedelta(seconds=new_media_player_state.position)).timestamp() # Don't include track start to accurately reflect timestamp in uncropped track
-      )
+    if self.__is_discord_rpc_enabled:
+      self.__run_discord_rpc_request(lambda self: self.__update_discord_rpc(
+        new_media_player_state.track_title,
+        new_media_player_state.artist_name,
+        new_media_player_state.album_title,
+        new_media_player_state.position
+      ))
     
     # Update playback indicator
     self.is_player_paused = False
@@ -751,6 +818,13 @@ class HistoryViewModel(QtCore.QObject):
     type=bool,
     fget=lambda self: isinstance(self.__media_player, MockPlayerPlugin),
     notify=is_using_mock_player_changed
+  )
+
+  isDiscordRichPresenceEnabled = QtCore.Property(
+    type=bool,
+    fget=lambda self: self.__is_discord_rpc_enabled,
+    fset=set_is_discord_rich_presence_enabled,
+    notify=is_discord_rich_presence_enabled_changed
   )
 
   selectedScrobbleIndex = QtCore.Property(

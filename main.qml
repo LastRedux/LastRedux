@@ -85,7 +85,6 @@ Window {
     icon.mask: true
 
     menu: Menu {
-
       MenuItem {
         text: qsTr('Show Window')
         shortcut: 'Ctrl+Meta+S'
@@ -102,7 +101,7 @@ Window {
       }
 
       MenuItem {
-        text: qsTr('Toggle Mini Mode')
+        text: isInMiniMode ? qsTr('Switch from Mini Mode') : qsTr('Switch to Mini Mode')
 
         onTriggered: {
           if (isInMiniMode) {
@@ -124,15 +123,22 @@ Window {
       }
 
       MenuItem {
+        checkable: true
+        text: qsTr('Enable Discord Rich Presence')
+
+        onTriggered: historyViewModel.isDiscordRichPresenceEnabled = checked
+      }
+
+      MenuItem {
         text: qsTr('Use Music App as Media Player')
-        visible: historyViewModel.isSpotifyPluginAvailable
+        visible: historyViewModel.isSpotifyPluginAvailable && detailsViewModel.mediaPlayerName != 'Music'
 
         onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
       }
 
       MenuItem {
         text: qsTr('Use Spotify as Media Player')
-        visible: historyViewModel.isSpotifyPluginAvailable
+        visible: historyViewModel.isSpotifyPluginAvailable && detailsViewModel.mediaPlayerName != 'Spotify'
 
         onTriggered: historyViewModel.switchToMediaPlugin('spotify')
       }
@@ -380,11 +386,5 @@ Window {
     sequence: 'Ctrl+3'
     context: Qt.ApplicationShortcut
     onActivated: switchToTab(2)
-  }
-
-  Shortcut {
-    sequence: 'Ctrl+m'
-    context: Qt.ApplicationShortcut
-    onActivated: detailsViewModel.toggleMiniMode()
   }
 }
