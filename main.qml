@@ -397,4 +397,10 @@ Window {
     context: Qt.ApplicationShortcut
     onActivated: switchToTab(2)
   }
+
+  Shortcut {
+    sequence: 'Ctrl+Shift+m'
+    context: Qt.ApplicationShortcut
+    onActivated: applicationViewModel.toggleMiniMode()
+  }
 }
