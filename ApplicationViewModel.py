@@ -19,6 +19,7 @@ class ApplicationViewModel(QtCore.QObject):
   closeOnboarding = QtCore.Signal()
   
   # Signals handled from QML
+  isInMiniModeChanged = QtCore.Signal()
   showNotification = QtCore.Signal(str, str)
 
   def __init__(self) -> None:
@@ -30,6 +31,9 @@ class ApplicationViewModel(QtCore.QObject):
     self.art_provider = ArtProvider(self.lastfm, self.spotify_api)
     self.is_logged_in = False
     self.is_offline = False
+
+    # Store whether the app is in mini mode
+    self.__is_in_mini_mode: bool = None
     
     # Create network request manager and expose it to all NetworkImage instances
     self.network_manager = QtNetwork.QNetworkAccessManager()
@@ -38,13 +42,14 @@ class ApplicationViewModel(QtCore.QObject):
     # Connect to SQLite
     db_helper.connect()
 
-  def log_in_after_onboarding(self, session: LastfmSession) -> None:
+  def log_in_after_onboarding(self, session: LastfmSession, media_player_preference: str) -> None:
     '''Save new login details to db, log in, and close onboarding'''
 
     self.lastfm.log_in_with_session(session)
 
-    # Save Last.fm details to the db
+    # Save Last.fm details and app preferences to the database
     db_helper.save_lastfm_session_to_database(session)
+    db_helper.save_default_preferences_to_database(media_player_preference)
 
     # Close onboarding and start app
     self.__set_is_logged_in(True)
@@ -73,13 +78,38 @@ class ApplicationViewModel(QtCore.QObject):
       logging.info(f'Logged in as {session.username}')
     else:
       self.openOnboarding.emit()
+  
+  @QtCore.Slot()
+  def toggleMiniMode(self) -> None:
+    self.__is_in_mini_mode = not self.__is_in_mini_mode
+    self.isInMiniModeChanged.emit()
+    db_helper.set_preference('is_in_mini_mode', self.__is_in_mini_mode)
 
   # --- Private Methods ---
 
   def __set_is_logged_in(self, is_logged_in: bool) -> None:
+    if is_logged_in:
+      # Load mini moce preference from database
+      self.__is_in_mini_mode = db_helper.get_preference('is_in_mini_mode')
+      self.isInMiniModeChanged.emit()
+
     self.is_logged_in = is_logged_in
     self.is_logged_in_changed.emit()
 
   def __set_is_offline(self, is_offline: bool) -> None:
     self.is_offline = is_offline
     self.is_offline_changed.emit()
+  
+  # --- Qt Properties ---
+  
+  isInMiniMode = QtCore.Property(
+    type=bool,
+    fget=lambda self: self.__is_in_mini_mode,
+    notify=isInMiniModeChanged
+  )
+
+  isLoggedIn = QtCore.Property(
+    type=bool,
+    fget=lambda self: self.is_logged_in,
+    notify=is_logged_in_changed
+  )

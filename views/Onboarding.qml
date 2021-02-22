@@ -33,10 +33,25 @@ Item {
     anchors.fill: parent
   }
 
+  OnboardingChooseMediaPlayer {
+    id: chooseMediaPlayer
+
+    selectedMediaPlayer: viewModel.selectedMediaPlayer
+    visible: viewModel && viewModel.currentPageIndex === 2
+
+    onMediaPlayerOptionSelected: (mediaPlayerName) => {
+      viewModel.selectedMediaPlayer = mediaPlayerName
+    }
+
+    onNextPage: viewModel.currentPageIndex = 3
+
+    anchors.fill: parent
+  }
+
   OnboardingReady {
     id: ready
 
-    visible: viewModel && viewModel.currentPageIndex === 2
+    visible: viewModel && viewModel.currentPageIndex === 3
 
     onFinish: viewModel.handleFinish()
 

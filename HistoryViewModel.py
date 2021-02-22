@@ -30,6 +30,7 @@ from datatypes.TrackCrop import TrackCrop
 from datatypes.MediaPlayerState import MediaPlayerState
 from ApplicationViewModel import ApplicationViewModel
 import util.helpers as helpers
+from util import db_helper
 
 class HistoryViewModel(QtCore.QObject):
   # Constants
@@ -74,12 +75,9 @@ class HistoryViewModel(QtCore.QObject):
     self.__is_spotify_plugin_available = False # This is set to true if Spotify is installed
     
     # Set up Discord presence
-    self.__is_discord_rpc_enabled = bool(os.environ.get('DISCORD_PRESENCE'))
+    self.__is_discord_rpc_enabled = False
     self.__is_discord_rpc_connected = False
     self.__discord_rpc = Presence('799678908819439646')
-
-    if self.__is_discord_rpc_enabled and helpers.is_discord_open():
-      self.__connect_discord_rpc_if_open()
 
     # Settings
     # TODO: Move these properties to an App view model
@@ -97,19 +95,10 @@ class HistoryViewModel(QtCore.QObject):
 
       use_spotify = False
       spotify_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
-      
-      # TODO: Use better method to figure out if Spotify is installed without logged error
-      if spotify_app:
-        self.__is_spotify_plugin_available = True
 
-        if spotify_app.isRunning():
-          use_spotify = True
-      
-      if use_spotify:
-        self.switchToMediaPlugin('spotify')
-      else:
-        # Use Music app plugin in all other cases since every Mac has it
-        self.switchToMediaPlugin('musicApp')
+      # Use Music app plugin by default since every Mac has it (this will be changed when the user preference is loaded from the database)
+      # TODO: Make it possible for no media player to be set during onboarding so we don't need to have this temporary value?
+      self.switchToMediaPlugin('musicApp', should_update_in_database=False)
 
     self.media_player_name_changed.emit()
 
@@ -150,6 +139,42 @@ class HistoryViewModel(QtCore.QObject):
     # Store the current track's crop values since they aren't part of the scrobble object
     self.__current_track_crop: TrackCrop = None
 
+    if (self.__is_enabled):
+      self.__is_spotify_plugin_available = False
+
+      # Load preferences from database
+      media_player_preference = db_helper.get_preference('media_player')
+      is_rich_presence_enabled = db_helper.get_preference('rich_presence_enabled')
+
+      # Check if Spotify is installed; show option to switch media player in status bar menu if it's installed
+      spotify_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
+
+      if spotify_app:
+        self.__is_spotify_plugin_available = True
+        self.is_spotify_plugin_available_changed.emit()
+
+      if media_player_preference == 'spotify':
+        # If Spotify is not installed, reset media player preference back to Music.app
+        # TODO: Use better method to figure out if Spotify is installed without logged error
+        if self.__is_spotify_plugin_available:
+          self.switchToMediaPlugin('spotify', should_update_in_database=False)
+        else:
+          logging.info('Spotify not detected on device; switching back to Music.app as media player')
+          db_helper.set_preference('media_player', 'musicApp')
+          media_player_preference = 'musicApp'
+      
+      if media_player_preference == 'musicApp':
+        self.switchToMediaPlugin('musicApp', should_update_in_database=False)
+      
+      self.media_player_name_changed.emit()
+
+      # Try connecting to Discord rich presence if enabled
+      self.__is_discord_rpc_enabled = db_helper.get_preference('rich_presence_enabled')
+      self.is_discord_rich_presence_enabled_changed.emit()
+
+      if self.__is_discord_rpc_enabled and helpers.is_discord_open():
+        self.__connect_discord_rpc_if_open()
+
   # --- Qt Property Getters and Setters ---
 
   def set_is_discord_rich_presence_enabled(self, is_enabled):
@@ -169,6 +194,7 @@ class HistoryViewModel(QtCore.QObject):
           self.__discord_rpc.close()
     
     self.is_discord_rich_presence_enabled_changed.emit()
+    db_helper.set_preference('rich_presence_enabled', is_enabled)
 
   def set_application_reference(self, new_reference: ApplicationViewModel) -> None:
     if not new_reference:
@@ -316,7 +342,7 @@ class HistoryViewModel(QtCore.QObject):
     )
 
   @QtCore.Slot(str)
-  def switchToMediaPlugin(self, media_plugin_name: str) -> None:
+  def switchToMediaPlugin(self, media_plugin_name: str, should_update_in_database: bool=True) -> None:
     # Fake stopped event to un-load the current scrobble
     self.__handle_media_player_stopped()
 
@@ -336,6 +362,9 @@ class HistoryViewModel(QtCore.QObject):
       self.__media_player = self.__spotify_plugin
     elif media_plugin_name == 'musicApp':
       self.__media_player = self.__music_app_plugin
+    
+    if should_update_in_database:
+      db_helper.set_preference('media_player', media_plugin_name)
 
     self.__set_is_scrobble_submission_enabled(self.__media_player.IS_SUBMISSION_ENABLED)
     logging.info(f'Switched media player to {self.__media_player.MEDIA_PLAYER_NAME}')

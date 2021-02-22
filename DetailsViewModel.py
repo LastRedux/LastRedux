@@ -8,7 +8,6 @@ from ApplicationViewModel import ApplicationViewModel
 class DetailsViewModel(QtCore.QObject):
   # Qt Property changed signals
   scrobble_changed = QtCore.Signal()
-  is_in_mini_mode_changed = QtCore.Signal()
   is_player_paused_changed = QtCore.Signal()
   media_player_name_changed = QtCore.Signal()
   is_offline_changed = QtCore.Signal()
@@ -21,9 +20,6 @@ class DetailsViewModel(QtCore.QObject):
 
     # Store a reference to the application view model
     self.__application_reference: ApplicationViewModel = None
-
-    # Store whether the app is in mini mode
-    self.__is_in_mini_mode: bool = None
 
   # --- Qt Property Getters and Setters ---
 
@@ -58,13 +54,6 @@ class DetailsViewModel(QtCore.QObject):
     self.__application_reference.is_offline_changed.connect(
       lambda: self.is_offline_changed.emit()
     )
-
-  # --- Slots ---
-
-  @QtCore.Slot()
-  def toggleMiniMode(self) -> None:
-    self.__is_in_mini_mode = not self.__is_in_mini_mode
-    self.is_in_mini_mode_changed.emit()
 
   # --- Qt Properties ---
 
@@ -105,12 +94,6 @@ class DetailsViewModel(QtCore.QObject):
       if self.__application_reference else None
     ),
     notify=is_offline_changed
-  )
-
-  isInMiniMode = QtCore.Property(
-    type=bool,
-    fget=lambda self: self.__is_in_mini_mode,
-    notify=is_in_mini_mode_changed
   )
 
   isPlayerPaused = QtCore.Property(

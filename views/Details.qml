@@ -20,7 +20,9 @@ Item {
     canDisplayScrobble && !viewModel.scrobble.lastfm_track && !viewModel.scrobble.is_loading
   )
   property bool hasTrackLoadingError: canDisplayScrobble && viewModel.scrobble.has_error
+  property bool isInMiniMode: false
   property bool isOffline: viewModel && viewModel.isOffline
+  property bool shouldShowMediaPlayerName: true
 
   signal switchToCurrentScrobble
 
@@ -38,6 +40,7 @@ Item {
         opacity: 0.5
         style: kTitleSecondary
         horizontalAlignment: Qt.AlignHCenter
+        visible: shouldShowMediaPlayerName
         
         text: `No Scrobble Selected\n\n${viewModel.mediaPlayerName} is currently selected as your media player.`
       }
@@ -127,7 +130,7 @@ Item {
           )
           isTrackNotFound: root.isTrackNotFound
           isPlayerPaused: viewModel.isPlayerPaused
-          isInMiniMode: viewModel.isInMiniMode
+          isInMiniMode: root.isInMiniMode
 
           width: column.width
         }
@@ -149,7 +152,7 @@ Item {
           spotifyArtists: canDisplayScrobble && viewModel.scrobble.spotify_artists
           isReadMoreLinkVisible: hasLastfmArtistData && viewModel.scrobble.lastfm_artist.bio
           hasLastfmData: hasLastfmArtistData
-          isInMiniMode: viewModel.isInMiniMode
+          isInMiniMode: root.isInMiniMode
 
           width: column.width
         }

@@ -7,6 +7,7 @@ class OnboardingViewModel(QtCore.QObject):
   has_error_changed = QtCore.Signal()
   auth_url_changed = QtCore.Signal()
   current_page_index_changed = QtCore.Signal()
+  selected_media_player_changed = QtCore.Signal()
 
   # Signals handled by QML
   openUrl = QtCore.Signal(str)
@@ -23,6 +24,9 @@ class OnboardingViewModel(QtCore.QObject):
     
     # Keep track of which onboarding page is showing
     self.__current_page_index = 0
+
+    # Store media player preference, will be written to preferences table in db
+    self.__selected_media_player = ''
 
     # Store Last.fm authorization url and auth token to share between methods
     self.__auth_url = None
@@ -57,6 +61,10 @@ class OnboardingViewModel(QtCore.QObject):
 
     self.current_page_index_changed.emit()
   
+  def set_selected_media_player(self, media_player_name):
+    self.__selected_media_player = media_player_name
+    self.selected_media_player_changed.emit()
+  
   # --- Slots ---
 
   @QtCore.Slot()
@@ -89,14 +97,14 @@ class OnboardingViewModel(QtCore.QObject):
       self.set_has_error(True)
       return
 
-    # Continue to finished page if there wasn't an error
+    # Continue to choose media player page if there wasn't an error
     self.set_current_page(2)
   
   @QtCore.Slot()
   def handleFinish(self) -> None:
     '''Tell ApplicationViewModel to log in'''
     
-    self.__application_reference.log_in_after_onboarding(self.__session)
+    self.__application_reference.log_in_after_onboarding(self.__session, self.__selected_media_player)
 
   # --- Private Methods ---
 
@@ -134,4 +142,11 @@ class OnboardingViewModel(QtCore.QObject):
     fget=lambda self: self.__current_page_index,
     fset=set_current_page,
     notify=current_page_index_changed
+  )
+
+  selectedMediaPlayer = QtCore.Property(
+    type=str,
+    fget=lambda self: self.__selected_media_player,
+    fset=set_selected_media_player,
+    notify=selected_media_player_changed
   )

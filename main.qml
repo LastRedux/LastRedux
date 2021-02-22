@@ -13,7 +13,7 @@ Window {
 
   property int currentTabIndex: 0
   property bool hasAttemptedLogin: false
-  property bool isInMiniMode: (detailsViewModel && detailsViewModel.isInMiniMode) || false
+  property bool isInMiniMode: (applicationViewModel && applicationViewModel.isInMiniMode) || false
   property int cachedWindowWidth: 957
   property int cachedWindowHeight: 600
 
@@ -104,26 +104,14 @@ Window {
         text: isInMiniMode ? qsTr('Switch from Mini Mode') : qsTr('Switch to Mini Mode')
 
         onTriggered: {
-          if (isInMiniMode) {
-            // Restore old dimensions
-            application.width = cachedWindowWidth
-            application.height = cachedWindowHeight
-          } else {
-            // Save dimensions to restore later
-            cachedWindowWidth = application.width
-            cachedWindowHeight = application.height
-
-            application.width = 615
-            application.height = 400
-          }
-
           // Update isInMiniMode value in details view model
-          detailsViewModel.toggleMiniMode()
+          applicationViewModel.toggleMiniMode()
         }
       }
 
       MenuItem {
         checkable: true
+        checked: historyViewModel.isDiscordRichPresenceEnabled
         text: qsTr('Enable Discord Rich Presence')
 
         onTriggered: historyViewModel.isDiscordRichPresenceEnabled = checked
@@ -167,9 +155,27 @@ Window {
   ApplicationViewModel {
     id: applicationViewModel
 
-    onOpenOnboarding: onboardingWindow.show()
+    onOpenOnboarding: {
+      onboardingWindow.show()
+    }
+    
     onCloseOnboarding: onboardingWindow.hide()
     onShowNotification: (title, message) => trayIcon.showMessage(title, message)
+
+    onIsInMiniModeChanged: {
+      if (isInMiniMode) {
+        // Save dimensions to restore later
+        cachedWindowWidth = application.width
+        cachedWindowHeight = application.height
+
+        application.width = 615
+        application.height = 400
+      } else {
+        // Restore old dimensions
+        application.width = cachedWindowWidth
+        application.height = cachedWindowHeight
+      }
+    }
   }
 
   // --- Onboarding ---
@@ -214,14 +220,18 @@ Window {
   Details {
     id: details
 
+    isInMiniMode: application.isInMiniMode
     viewModel: detailsViewModel
     onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
+
+    // Hide media player name while it's still being retrieved from the database
+    shouldShowMediaPlayerName: historyViewModel.isEnabled
 
     anchors {
       top: parent.top
       right: parent.right
       bottom: parent.bottom
-      left: isInMiniMode ? parent.left : sidebar.right
+      left: application.isInMiniMode ? parent.left : sidebar.right
     }
   }
 
