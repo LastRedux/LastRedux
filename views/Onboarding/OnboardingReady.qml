@@ -17,14 +17,20 @@ Item {
 
     Column {
       width: 512
-      spacing: 30
+      spacing: 28
 
-      anchors.centerIn: parent
+      anchors {
+        horizontalCenter: parent.horizontalCenter
+
+        top: parent.top
+
+        topMargin: 40
+      }
 
       Item {
         x: parent.width / 2 - (width / 2) // Center horizontally
-        width: 289
-        height: 134
+        width: 277
+        height: 132
 
         Image {
           source: '../../shared/resources/onboarding-trayIconPreview.png'
