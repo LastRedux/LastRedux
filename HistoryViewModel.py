@@ -536,7 +536,7 @@ class HistoryViewModel(QtCore.QObject):
     # The list model will call the data function in the background to get the new data
     self.post_append_scrobble.emit()
 
-    if self.__selected_scrobble_index:
+    if not self.__selected_scrobble_index is None:
       # Shift down the selected scrobble index if new scrobble has been added to the top
       # This is because if the user has a scrobble in the history selected and a new scrobble is 
       # submitted, it will display the wrong data if the index isn't updated
