@@ -57,12 +57,12 @@ Window {
     }
   }
 
-  onClosing: { 
-    application.hide()
+  // onClosing: { 
+  //   application.hide()
 
-    // Prevent the window close event from being accepted by the system
-    close.accepted = false // close is a hidden parameter to the onClosing function
-  }
+  //   // Prevent the window close event from being accepted by the system
+  //   close.accepted = false // close is a hidden parameter to the onClosing function
+  // }
 
   // Wait 100ms after the window loads because onboarding window dissapears if shown immediately
   Timer {
@@ -97,7 +97,7 @@ Window {
       }
 
       MenuSeparator {
-        visible: historyViewModel.isSpotifyPluginAvailable
+        visible: historyViewModel && historyViewModel.isSpotifyPluginAvailable
       }
 
       MenuItem {
@@ -105,13 +105,13 @@ Window {
 
         onTriggered: {
           // Update isInMiniMode value in details view model
-          applicationViewModel.toggleMiniMode()
+          applicationViewModel && applicationViewModel.toggleMiniMode()
         }
       }
 
       MenuItem {
         checkable: true
-        checked: historyViewModel.isDiscordRichPresenceEnabled
+        checked: historyViewModel && historyViewModel.isDiscordRichPresenceEnabled
         text: qsTr('Enable Discord Rich Presence')
 
         onTriggered: historyViewModel.isDiscordRichPresenceEnabled = checked
@@ -119,14 +119,14 @@ Window {
 
       MenuItem {
         text: qsTr('Use Music App as Media Player')
-        visible: historyViewModel.isSpotifyPluginAvailable && detailsViewModel.mediaPlayerName != 'Music'
+        visible: historyViewModel && detailsViewModel && historyViewModel.isSpotifyPluginAvailable && detailsViewModel.mediaPlayerName != 'Music'
 
         onTriggered: historyViewModel.switchToMediaPlugin('musicApp')
       }
 
       MenuItem {
         text: qsTr('Use Spotify as Media Player')
-        visible: historyViewModel.isSpotifyPluginAvailable && detailsViewModel.mediaPlayerName != 'Spotify'
+        visible: historyViewModel && detailsViewModel && historyViewModel.isSpotifyPluginAvailable && detailsViewModel.mediaPlayerName != 'Spotify'
 
         onTriggered: historyViewModel.switchToMediaPlugin('spotify')
       }
@@ -225,7 +225,7 @@ Window {
     onSwitchToCurrentScrobble: historyViewModel.selectedScrobbleIndex = -1
 
     // Hide media player name while it's still being retrieved from the database
-    shouldShowMediaPlayerName: historyViewModel.isEnabled
+    shouldShowMediaPlayerName: historyViewModel && historyViewModel.isEnabled
 
     anchors {
       top: parent.top

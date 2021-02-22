@@ -159,7 +159,7 @@ Item {
     Flickable {
       id: flickable
 
-      visible: viewModel.isEnabled
+      visible: viewModel && viewModel.isEnabled
 
       anchors.fill: parent
       
@@ -200,7 +200,7 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.profileStatistics && viewModel.profileStatistics.top_artists_week
+              model: viewModel && viewModel.profileStatistics && viewModel.profileStatistics.top_artists_week
 
               delegate: ProfileStatistic {
                 imageSource: modelData.image_url
@@ -235,7 +235,7 @@ Item {
             width: parent.width
 
             Repeater {
-              model: viewModel.profileStatistics && viewModel.profileStatistics.top_artists
+              model: viewModel && viewModel.profileStatistics && viewModel.profileStatistics.top_artists
 
               delegate: ProfileStatistic {
                 imageSource: modelData.image_url

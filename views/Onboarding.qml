@@ -36,7 +36,7 @@ Item {
   OnboardingChooseMediaPlayer {
     id: chooseMediaPlayer
 
-    selectedMediaPlayer: viewModel.selectedMediaPlayer
+    selectedMediaPlayer: viewModel && viewModel.selectedMediaPlayer
     visible: viewModel && viewModel.currentPageIndex === 2
 
     onMediaPlayerOptionSelected: (mediaPlayerName) => {

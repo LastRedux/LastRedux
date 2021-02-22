@@ -33,7 +33,7 @@ Item {
       isTrackPlaying: model.isTrackPlaying
       isTrackLoved: model.isTrackLoved
       isLoading: model.isLoading
-      isContextMenuEnabled: !viewModel.isLoading // Prevent crash by disabling context menu when the list view is about to be refreshed
+      isContextMenuEnabled: viewModel && !viewModel.isLoading // Prevent crash by disabling context menu when the list view is about to be refreshed
       z: listView.count - model.index // Topmost items should appear highest in the z stack so shadows are not covered by subsequent items
 
       width: listView.width
@@ -41,7 +41,7 @@ Item {
   }
 
   Item {
-    visible: listView.count == 0 && !viewModel.isLoading
+    visible: listView.count == 0 && viewModel && !viewModel.isLoading
 
     anchors.fill: parent
 
@@ -51,7 +51,7 @@ Item {
       text: 'You haven\'t added any friends on Last.fm yet.'
       wrapMode: Text.Wrap
       horizontalAlignment: Qt.AlignHCenter
-      visible: viewModel.isEnabled
+      visible: viewModel && viewModel.isEnabled
 
       anchors {
         verticalCenter: parent.verticalCenter

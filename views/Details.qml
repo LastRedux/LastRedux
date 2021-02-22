@@ -42,7 +42,7 @@ Item {
         horizontalAlignment: Qt.AlignHCenter
         visible: shouldShowMediaPlayerName
         
-        text: `No Scrobble Selected\n\n${viewModel.mediaPlayerName} is currently selected as your media player.`
+        text: `No Scrobble Selected\n\n${viewModel && viewModel.mediaPlayerName} is currently selected as your media player.`
       }
     }
   }
@@ -129,7 +129,7 @@ Item {
             && viewModel.scrobble.image_set.medium_url
           )
           isTrackNotFound: root.isTrackNotFound
-          isPlayerPaused: viewModel.isPlayerPaused
+          isPlayerPaused: viewModel && viewModel.isPlayerPaused
           isInMiniMode: root.isInMiniMode
 
           width: column.width

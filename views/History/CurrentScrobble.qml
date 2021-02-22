@@ -42,7 +42,7 @@ Column {
     ScrobbleMeter {
       id: scrobbleMeter
 
-      percentage: scrobblePercentage
+      percentage: scrobblePercentage || 0
 
       anchors {
         right: parent.right

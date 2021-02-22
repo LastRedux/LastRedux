@@ -109,7 +109,7 @@ Item {
   // --- History List ---
 
   HistoryList {
-    canReload: !viewModel.isLoading
+    canReload: viewModel && !viewModel.isLoading
     model: listModel
     selectedScrobbleIndex: viewModel ? viewModel.selectedScrobbleIndex : -2
     visible: viewModel && viewModel.isEnabled
