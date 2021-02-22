@@ -57,12 +57,24 @@ Window {
     }
   }
 
-  // onClosing: { 
-  //   application.hide()
+  onClosing: {
+    application.hide()
 
-  //   // Prevent the window close event from being accepted by the system
-  //   close.accepted = false // close is a hidden parameter to the onClosing function
-  // }
+    // Prevent the window close event from being accepted by the system
+    close.accepted = false // close is a hidden parameter to the onClosing function
+  }
+
+  Connections {
+    target: Qt.application
+    
+    // Listen for applicationStateChanged event
+    function onStateChanged(e) {
+      if (Qt.application.state == Qt.ApplicationActive) {
+        // Show app whenever the app becomes active to enable re-activating the app with the dock icon
+        application.show()
+      }
+    }
+  }
 
   // Wait 100ms after the window loads because onboarding window dissapears if shown immediately
   Timer {
