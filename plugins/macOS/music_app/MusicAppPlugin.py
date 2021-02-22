@@ -176,7 +176,7 @@ class MusicAppPlugin(MacMediaPlayerPlugin):
 
     self.__last_notification_had_error = True
     self.__last_state_with_error = self.__state
-    logging.error(f'Error getting track duration for {self.__state}')
+    logging.warning(f'Error getting track duration for {self.__state}')
 
   # Shows as unused because it has to be registered with pyobjc as a function name string
   def __handleNotificationFromMusic_(self, notification) -> None: # TODO: Add type annotation

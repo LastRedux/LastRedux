@@ -25,7 +25,7 @@ class LoadLastfmTrackInfo(QtCore.QObject, QtCore.QRunnable):
       )
     except Exception as err:
       self.scrobble.has_error = True
-      logging.error(err)
+      logging.warning(err)
 
     self.scrobble.lastfm_track = lastfm_track # Could be None
     self.finished.emit(self.scrobble)
