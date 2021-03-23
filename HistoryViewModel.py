@@ -552,6 +552,10 @@ class HistoryViewModel(QtCore.QObject):
 
     # Submit scrobble to Last.fm
     if self.__is_submission_enabled:
+      # Use end time to submit to play more nicely with apps like Marvis
+      # TODO: Make this a setting
+      self.__current_scrobble.timestamp = datetime.now()
+
       submit_scrobble_task = SubmitScrobble(
         lastfm=self.__application_reference.lastfm,
         scrobble=self.__current_scrobble
@@ -583,7 +587,7 @@ class HistoryViewModel(QtCore.QObject):
       track_title=media_player_state.track_title,
       album_title=media_player_state.album_title,
       album_artist_name=media_player_state.album_artist_name,
-      timestamp=datetime.now()
+      timestamp=None # TODO: Make this configurable, it should default to datetime.now() to match official app
     )
 
     # Update UI content in current scrobble sidebar item
