@@ -49,7 +49,7 @@ coll = COLLECT(exe,
 
 app = BUNDLE(coll,
              name='LastRedux.app',
-             icon='AppIcon.icns',
+             icon='shared/resources/AppIcon.icns',
              bundle_identifier=None,
              info_plist={
                'CFBundleShortVersionString': 'Private Beta 2',

@@ -18,7 +18,7 @@ class MockPlayerPlugin(QtCore.QObject):
   MEDIA_PLAYER_NAME = 'Mock'
 
   # Mock player constants
-  MOCK_TRACKS = json.load(open('mock_data/mock_tracks.json')) + [{
+  MOCK_TRACKS = json.load(open('util/mock_tracks.json')) + [{
     "reason": "Test track not on Last.fm",
     "track_title": f'Fake Track {random.getrandbits(128)}',
     "artist_name": random.getrandbits(128),

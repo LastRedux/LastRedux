@@ -2,8 +2,7 @@ import QtQuick 2.14
 
 import Kale 1.0
 
-import 'Details'
-import '../shared/components'
+import '../../shared/components'
 
 Item {
   id: root
@@ -74,7 +73,7 @@ Item {
           visible: isOffline || isTrackNotFound || hasTrackLoadingError
 
           fillMode: Image.TileHorizontally
-          source: '../shared/resources/effects/bannerGradient.png'
+          source: '../../shared/resources/effects/bannerGradient.png'
 
           width: parent.width
           height: 30

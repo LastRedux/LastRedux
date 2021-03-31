@@ -18,7 +18,7 @@ def get_mock_recent_scrobbles(count: int) -> LastfmList[LastfmScrobble]:
         album_artist_name=mock_track.get('artist_name', None), # TODO: Use an actual album artist for mock tracks
         timestamp=datetime.datetime.now() - datetime.timedelta(minutes=3 * i)
       ) for i, mock_track in enumerate(
-        json.load(open('mock_data/mock_tracks.json'))[1:count + 1]
+        json.load(open('util/mock_tracks.json'))[1:count + 1]
       ) if mock_track.get('artist_name')
     ],
     attr_total=count

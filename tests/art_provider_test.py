@@ -31,7 +31,7 @@ print(spotify_api.get_artist('Ariana Grande'))
 print(spotify_api.get_artist('Madeon'))
 
 print('\n***** ALBUM ART AND ARTIST IMAGES (MOCK TRACKS) *****\n')
-for mock_track in json.load(open('mock_data/mock_tracks.json')):
+for mock_track in json.load(open('util/mock_tracks.json')):
   # Remove unneeded key for unpacking later
   del mock_track['reason']
 

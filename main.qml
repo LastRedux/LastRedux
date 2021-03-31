@@ -6,7 +6,11 @@ import Qt.labs.platform 1.1
 import Kale 1.0
 
 import './shared/components'
-import './views'
+import './views/Details'
+import './views/Friends'
+import './views/History'
+import './views/Onboarding'
+import './views/Profile'
 
 Window {
   id: application
@@ -213,7 +217,7 @@ Window {
     maximumWidth: 632
     maximumHeight: 427
     
-    Onboarding {
+    OnboardingView {
       viewModel: onboardingViewModel
 
       anchors.fill: parent
@@ -229,7 +233,7 @@ Window {
     applicationReference: applicationViewModel
   }
 
-  Details {
+  DetailsView {
     id: details
 
     isInMiniMode: application.isInMiniMode
@@ -310,7 +314,7 @@ Window {
         left: parent.left
       }
 
-      History {
+      HistoryView {
         id: history
 
         listModel: historyListModel
@@ -320,7 +324,7 @@ Window {
         anchors.fill: parent
       }
 
-      Profile {
+      ProfileView {
         id: profile
 
         viewModel: profileViewModel
@@ -329,7 +333,7 @@ Window {
         anchors.fill: parent
       }
 
-      Friends {
+      FriendsView {
         id: friends
 
         listModel: friendsListModel

@@ -2,8 +2,7 @@ import QtQuick 2.14
 
 import Kale 1.0
 
-import 'History'
-import '../shared/components'
+import '../../shared/components'
 
 Item {
   id: root

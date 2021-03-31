@@ -2,8 +2,7 @@ import QtQuick 2.14
 
 import Kale 1.0
 
-import 'Profile'
-import '../shared/components'
+import '../../shared/components'
 
 Item {
   id: root
@@ -421,7 +420,7 @@ Item {
     // Shadow
     Image {
       fillMode: Image.TileHorizontally
-      source: '../shared/resources/effects/tabBarShadow.png'
+      source: '../../shared/resources/effects/tabBarShadow.png'
 
       height: 32
 

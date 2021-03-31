@@ -2,7 +2,7 @@ from typing import Union
 
 from PySide2 import QtCore
 
-from FriendsViewModel import FriendsViewModel
+from .FriendsViewModel import FriendsViewModel
 
 class FriendsListModel(QtCore.QAbstractListModel):
   __URL_ROLE = QtCore.Qt.UserRole

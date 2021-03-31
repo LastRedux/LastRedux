@@ -1,6 +1,6 @@
 from PySide2 import QtCore
 
-from HistoryViewModel import HistoryViewModel
+from .HistoryViewModel import HistoryViewModel
 
 class HistoryListModel(QtCore.QAbstractListModel):
   # Store role constants that are used as object keys in JS

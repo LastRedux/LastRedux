@@ -2,8 +2,6 @@ import QtQuick 2.14
 
 import Kale 1.0
 
-import 'Onboarding'
-
 Item {
   id: root
 

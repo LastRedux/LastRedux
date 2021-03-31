@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from PySide2 import QtCore
 
-from HistoryViewModel import HistoryViewModel
+from ..History.HistoryViewModel import HistoryViewModel
 from ApplicationViewModel import ApplicationViewModel
 
 class DetailsViewModel(QtCore.QObject):

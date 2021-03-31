@@ -17,7 +17,7 @@ MINOR_VERSION = 0
 
 if __name__ == '__main__':
   # Install rich traceback handler
-  install(show_locals=True)
+  install(show_locals=False)
 
   # Install rich logging handler
   logging.basicConfig(
@@ -53,13 +53,13 @@ if __name__ == '__main__':
   # Create QML components from Python classes
   # major_version and minor_version represent major and minor version numbers for when we import it in QML
   from ApplicationViewModel import ApplicationViewModel
-  from OnboardingViewModel import OnboardingViewModel
-  from HistoryViewModel import HistoryViewModel
-  from HistoryListModel import HistoryListModel
-  from ProfileViewModel import ProfileViewModel
-  from FriendsViewModel import FriendsViewModel
-  from FriendsListModel import FriendsListModel
-  from DetailsViewModel import DetailsViewModel
+  from views.Onboarding.OnboardingViewModel import OnboardingViewModel
+  from views.History.HistoryViewModel import HistoryViewModel
+  from views.History.HistoryListModel import HistoryListModel
+  from views.Profile.ProfileViewModel import ProfileViewModel
+  from views.Friends.FriendsViewModel import FriendsViewModel
+  from views.Friends.FriendsListModel import FriendsListModel
+  from views.Details.DetailsViewModel import DetailsViewModel
   from shared.components.NetworkImage import NetworkImage
   
   QtQml.qmlRegisterType(ApplicationViewModel, MODULE_NAME, MAJOR_VERSION, MINOR_VERSION, 'ApplicationViewModel')
