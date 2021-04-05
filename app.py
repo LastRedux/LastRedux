@@ -15,15 +15,15 @@ MODULE_NAME = 'Kale'
 MAJOR_VERSION = 1
 MINOR_VERSION = 0
 
-if __name__ == '__main__':
+if __name__ == '_main_':
   # Install rich traceback handler
   install(show_locals=False)
 
   # Install rich logging handler
   logging.basicConfig(
     level=LOG_LEVEL,
-    format="%(message)s",
-    datefmt="[%X]",
+    format='%(message)s',
+    datefmt='[%X]',
     handlers=[RichHandler()]
   )
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # If the application is run as a bundle, the PyInstaller bootloader extends the sys module by a flag frozen=True and sets the app path into variable sys.executable
     application_path = os.path.dirname(sys.executable)
   else:
-    application_path = os.path.dirname(os.path.abspath(__file__))
+    application_path = os.path.dirname(os.path.abspath(_file_))
 
   # Enable Ctrl-C to kill app
   signal.signal(signal.SIGINT, signal.SIG_DFL)

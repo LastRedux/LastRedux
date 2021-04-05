@@ -17,7 +17,7 @@ class ArtProvider:
 
     # 1. Try geting album art from Last.fm if there's an album title to work with
     if album_title:
-      album_art = self.__get_lastfm_album_art(artist_name, album_title)
+      album_art = self._get_lastfm_album_art(artist_name, album_title)
 
     if not album_art:
       # 2. Try geting album art from the Spotify api (doesn't need an album title, has more art)
@@ -46,7 +46,7 @@ class ArtProvider:
     spotify_data = self.spotify_api.get_track_images(artist_name, track_title, album_title)
     
     # 2. Try getting album art from Last.fm (we prefer Last.fm art to Spotify art if it exists)
-    album_art = self.__get_lastfm_album_art(artist_name, album_title)
+    album_art = self._get_lastfm_album_art(artist_name, album_title)
 
     if not album_art:
       if spotify_data.album_art:
@@ -60,7 +60,7 @@ class ArtProvider:
 
   # --- Private Methods ---
 
-  def __get_lastfm_album_art(self, artist_name: str, album_title: str) -> ImageSet:
+  def _get_lastfm_album_art(self, artist_name: str, album_title: str) -> ImageSet:
     '''Get an album's artwork from Last.fm'''
 
     album_info = self.lastfm.get_album_info(artist_name, album_title)

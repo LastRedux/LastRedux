@@ -18,14 +18,14 @@ class SpotifyApiWrapper:
 
   def __init__(self) -> None:
     # Store Spotify access token
-    self.__access_token: str = None
-    self.__ram_cache: Dict[str, CachedResource] = {}
+    self._access_token: str = None
+    self._ram_cache: Dict[str, CachedResource] = {}
 
   # --- Search Wrappers ---
   
   def get_artist(self, artist_name: str) -> SpotifyArtist:
-    results = self.__search(
-      query=SpotifyApiWrapper.__simplify_artist_name(artist_name),
+    results = self._search(
+      query=SpotifyApiWrapper._simplify_artist_name(artist_name),
       media_type='artist',
       limit=1
     )
@@ -59,21 +59,21 @@ class SpotifyApiWrapper:
     spotify_data = SpotifySongData(None, None)
 
     query = '{} {} {}'.format(
-      SpotifyApiWrapper.__simplify_artist_name(artist_name),
-      SpotifyApiWrapper.__simplify_title(track_title) if track_title else '',
-      SpotifyApiWrapper.__simplify_title(album_title) if album_title else '' 
+      SpotifyApiWrapper._simplify_artist_name(artist_name),
+      SpotifyApiWrapper._simplify_title(track_title) if track_title else '',
+      SpotifyApiWrapper._simplify_title(album_title) if album_title else '' 
     )
 
     # Remove extra spaces from query
     query = ' '.join(query.split())
 
-    results = self.__search(
+    results = self._search(
       query=query,
       media_type='track'
     )
 
     if results:
-      track = self.__find_track_match(results, artist_name)
+      track = self._find_track_match(results, artist_name)
 
       # Find track with matching artists
       if track:
@@ -83,7 +83,7 @@ class SpotifyApiWrapper:
         )
 
         if not only_album_art:
-          artists = self.__get_artists_by_id(track['artists'])
+          artists = self._get_artists_by_id(track['artists'])
 
           spotify_data.artists = [
             SpotifyArtist(
@@ -106,8 +106,8 @@ class SpotifyApiWrapper:
     
   # --- Private Methods ---
 
-  def __search(self, query: str, media_type: str, limit: int=20) -> ImageSet:
-    result = self.__request(
+  def _search(self, query: str, media_type: str, limit: int=20) -> ImageSet:
+    result = self._request(
       url='https://api.spotify.com/v1/search/',
       args={
         'q': query,
@@ -121,22 +121,22 @@ class SpotifyApiWrapper:
     
     return result.get(f'{media_type}s', {}).get('items')
 
-  def __request(self, url: str, args: dict, is_retry=False) -> dict:
+  def _request(self, url: str, args: dict, is_retry=False) -> dict:
     '''Make a request to Spotify and handle the potential errors'''
 
     # Convert request arguments to string to use as a key to the cache
     request_string = json.dumps(args, sort_keys=True)
 
     # Check for cached responses
-    if request_string in self.__ram_cache:
+    if request_string in self._ram_cache:
       logging.debug(f'Used Spotify API cache: {url} {args}')
 
-      return self.__ram_cache[request_string].data
+      return self._ram_cache[request_string].data
 
     resp = None
 
-    if not self.__access_token:
-      self.__access_token = self.__get_access_token()
+    if not self._access_token:
+      self._access_token = self._get_access_token()
     
     try:
       resp = requests.get(
@@ -144,13 +144,13 @@ class SpotifyApiWrapper:
         params=args, 
         headers={
           'Accept': 'application/json',
-          'Authorization': f'Bearer {self.__access_token}'
+          'Authorization': f'Bearer {self._access_token}'
         }
       )
     except (ConnectionResetError, ConnectionError):
       # Retry one time (Spotify doesn't usually have connection problems)
       if not is_retry:
-        self.__request(url, args, is_retry=True)
+        self._request(url, args, is_retry=True)
       else:
         logging.error('Could not connect to Spotify')
       
@@ -161,20 +161,20 @@ class SpotifyApiWrapper:
     if 'error' in resp_json:
       if resp_json['error']['message'] == 'The access token expired':
         # Generate a new access token (lasts for 1 hour by default)
-        self.__access_token = SpotifyApiWrapper.__get_access_token()
+        self._access_token = SpotifyApiWrapper._get_access_token()
         logging.debug('Refreshed Spotify access token')
 
         # Retry request
-        self.__request(url, args)
+        self._request(url, args)
         return
       elif resp_json['error']['status'] == 502:
         # Retry request
-        self.__request(url, args)
+        self._request(url, args)
         return
       else:
         raise Exception(f'Spotify search error: {resp_json}')
     
-    self.__ram_cache[request_string] = CachedResource(
+    self._ram_cache[request_string] = CachedResource(
       data=resp_json,
       expiration_date=None # Spotify data shouldn't change
     )
@@ -182,23 +182,23 @@ class SpotifyApiWrapper:
     return resp_json
 
   @staticmethod
-  def __find_track_match(results: List[dict], artist_string: str) -> dict:
+  def _find_track_match(results: List[dict], artist_string: str) -> dict:
     '''Select a match from a list of Spotify search results'''
     
     for match in results:
       for artist in match['artists']:
         # Check if the artist from Spotify is in the list of artist names
         # (Apple Music formats collaborations as a string of comma separated names)
-        nuked_artist_string = SpotifyApiWrapper.__nuke_artist_name(artist_string)
-        nuked_spotify_artist = SpotifyApiWrapper.__nuke_artist_name(artist['name'])
+        nuked_artist_string = SpotifyApiWrapper._nuke_artist_name(artist_string)
+        nuked_spotify_artist = SpotifyApiWrapper._nuke_artist_name(artist['name'])
         
         if nuked_spotify_artist in nuked_artist_string:
           return match
 
     return None
 
-  def __get_artists_by_id(self, artists: List[dict]) -> List[SpotifyArtist]:
-    return self.__request(
+  def _get_artists_by_id(self, artists: List[dict]) -> List[SpotifyArtist]:
+    return self._request(
       url='https://api.spotify.com/v1/artists/',
       args={
         # Create comma separated list of Spotify artist ids
@@ -207,7 +207,7 @@ class SpotifyApiWrapper:
     )['artists']
 
   @staticmethod
-  def __get_access_token() -> dict:
+  def _get_access_token() -> dict:
     '''Get an access token from Spotify using client credentials authentication'''
 
     return requests.post('https://accounts.spotify.com/api/token', data={
@@ -215,7 +215,7 @@ class SpotifyApiWrapper:
     }, auth=(SpotifyApiWrapper.CLIENT_ID, SpotifyApiWrapper.CLIENT_SECRET)).json()['access_token']
 
   @staticmethod
-  def __simplify_title(title: str) -> str:
+  def _simplify_title(title: str) -> str:
     '''
     Simplify track and album titles to improve matching on Spotify
     
@@ -249,7 +249,7 @@ class SpotifyApiWrapper:
     return title
 
   @staticmethod
-  def __simplify_artist_name(artist_name: str) -> str:
+  def _simplify_artist_name(artist_name: str) -> str:
     '''
     Simplify artist name to improve matching on Spotify
     
@@ -267,7 +267,7 @@ class SpotifyApiWrapper:
     return artist_name
 
   @staticmethod
-  def __nuke_artist_name(artist_name: str) -> str:
+  def _nuke_artist_name(artist_name: str) -> str:
     '''
     Totally reduce artist name to check matches between a simplified string and a list of individual artists
     

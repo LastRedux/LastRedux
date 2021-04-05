@@ -1,4 +1,4 @@
-from __future__ import annotations
+from _future_ import annotations
 from dataclasses import dataclass
 
 from .SimpleTrack import SimpleTrack
@@ -12,7 +12,7 @@ class FriendScrobble(SimpleTrack):
   is_loved: bool
 
   def __repr__(self) -> str:
-    return super().__repr__()
+    return super()._repr_()
 
   def __eq__(self, o: FriendScrobble) -> bool:
     if not isinstance(o, FriendScrobble):

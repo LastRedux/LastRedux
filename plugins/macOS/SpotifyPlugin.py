@@ -14,24 +14,24 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
 
   def __init__(self) -> None:
     # Store reference to Spotify app in AppleScript
-    self.__applescript_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
+    self._applescript_app = SBApplication.applicationWithBundleIdentifier_('com.spotify.client')
 
-    super().__init__(self.__applescript_app)
+    super().__init__(self._applescript_app)
 
     self.is_plugin_available = False
 
     # Store the current media player state
-    self.__state: MediaPlayerState = None
+    self._state: MediaPlayerState = None
 
-    if self.__applescript_app:
+    if self._applescript_app:
       self.is_plugin_available = True
 
       # Set up NSNotificationCenter (refer to https://lethain.com/how-to-use-selectors-in-pyobjc)
-      self.__default_center = NSDistributedNotificationCenter.defaultCenter()
+      self._default_center = NSDistributedNotificationCenter.defaultCenter()
 
-      self.__default_center.addObserver_selector_name_object_(
+      self._default_center.addObserver_selector_name_object_(
         self,
-        '__handleNotificationFromSpotify:',
+        '_handleNotificationFromSpotify:',
         'com.spotify.client.PlaybackStateChanged',
         None
       )
@@ -43,14 +43,14 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
     if not self.is_open():
       return
 
-    is_playing = self.__applescript_app.playerState() == SpotifyPlugin.PLAYING_STATE
+    is_playing = self._applescript_app.playerState() == SpotifyPlugin.PLAYING_STATE
 
     if not is_playing:
       return
 
-    track = self.__applescript_app.currentTrack()
+    track = self._applescript_app.currentTrack()
 
-    self.__handle_new_state(
+    self._handle_new_state(
       MediaPlayerState(
         is_playing=is_playing,
         position=self.get_player_position(),
@@ -67,7 +67,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
 
   # --- Private Methods ---
 
-  def __handleNotificationFromSpotify_(self, notification) -> None:
+  def _handleNotificationFromSpotify_(self, notification) -> None:
     '''Handle Objective-C notifications for Spotify events'''
 
     notification_payload = notification.userInfo()
@@ -80,7 +80,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
       self.paused.emit()
       return
 
-    self.__handle_new_state(
+    self._handle_new_state(
       MediaPlayerState(
         artist_name=notification_payload.get('Artist'),
         track_title=notification_payload.get('Name'),
@@ -95,7 +95,7 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
       )
     )
     
-  def __handle_new_state(self, new_state: MediaPlayerState) -> None:
+  def _handle_new_state(self, new_state: MediaPlayerState) -> None:
     # It's possible to add local files with no artist on Spotify that can't be scrobbled
     if not new_state.artist_name:
       self.stopped.emit()
@@ -103,10 +103,10 @@ class SpotifyPlugin(MacMediaPlayerPlugin):
       return
 
     # Update cached state object with new state
-    self.__state = new_state
+    self._state = new_state
 
     # Emit playing event if the track is more than 30 seconds long
     if (new_state.track_crop.finish - new_state.track_crop.start) > 30.0:
-      self.playing.emit(self.__state)
+      self.playing.emit(self._state)
     else:
       self.showNotification.emit('Track cannot be scobbled', 'Track length is less than 30 seconds')

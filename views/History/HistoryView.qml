@@ -11,7 +11,7 @@ Item {
   property HistoryListModel listModel
   property HistoryViewModel viewModel
 
-  property bool canDisplayCurrentScrobble: !!(viewModel && viewModel.currentScrobble)
+  property bool canDisplayCurrentScrobble: !!(viewModel && viewModel.currentScrobbleData)
 
   // --- Mock Player Plugin Controls ---
 
@@ -71,12 +71,12 @@ Item {
   CurrentScrobble {
     property bool hasLastfmData: {
       canDisplayCurrentScrobble ?
-        !!viewModel.currentScrobble.lastfm_track :
+        !!viewModel.currentScrobbleData.lastfm_track :
         false
     }
     property bool hasAlbumArt: {
       canDisplayCurrentScrobble ?
-          !!viewModel.currentScrobble.image_set :
+          !!viewModel.currentScrobbleData.image_set :
           false
     }
     
@@ -85,10 +85,10 @@ Item {
 
     mediaPlayerName: viewModel ? viewModel.mediaPlayerName : ''
     scrobblePercentage: viewModel ? viewModel.scrobblePercentage : undefined
-    trackTitle: canDisplayCurrentScrobble ? viewModel.currentScrobble.track_title : ''
-    artistName: canDisplayCurrentScrobble ? viewModel.currentScrobble.artist_name : ''
-    lastfmIsLoved: hasLastfmData ? viewModel.currentScrobble.lastfm_track.is_loved : false
-    imageSource: hasAlbumArt ? viewModel.currentScrobble.image_set.small_url : ''
+    trackTitle: canDisplayCurrentScrobble ? viewModel.currentScrobbleData.track_title : ''
+    artistName: canDisplayCurrentScrobble ? viewModel.currentScrobbleData.artist_name : ''
+    lastfmIsLoved: hasLastfmData ? viewModel.currentScrobbleData.lastfm_track.is_loved : false
+    imageSource: hasAlbumArt ? viewModel.currentScrobbleData.image_set.small_url : ''
     isSelected: canDisplayCurrentScrobble && viewModel.selectedScrobbleIndex === -1
     canLove: hasLastfmData
 
@@ -133,7 +133,7 @@ Item {
     sequence: 'Ctrl+]'
     context: Qt.ApplicationShortcut
     onActivated: {
-      if (viewModel.selectedScrobbleIndex == -2 && !viewModel.currentScrobble) {
+      if (viewModel.selectedScrobbleIndex == -2 && !viewModel.currentScrobbleData) {
         // Select first history item if there is scrobble selected and no current scrobble
         viewModel.selectedScrobbleIndex = 0
       } else {

@@ -257,6 +257,10 @@ Window {
     id: historyViewModel
 
     applicationReference: applicationViewModel
+
+    //
+    // Move this to Application
+    //
     onPreloadProfileAndFriends: {
       profileViewModel.loadProfile()
       friendsViewModel.loadFriends()

@@ -8,7 +8,7 @@ class FetchTrackCrop(QtCore.QObject, QtCore.QRunnable):
   def __init__(self, applescript_music_app) -> None:
     QtCore.QObject.__init__(self)
     QtCore.QRunnable.__init__(self)
-    self.__applescript_music_app = applescript_music_app
+    self._applescript_music_app = applescript_music_app
     self.setAutoDelete(True)
 
   def run(self) -> None:
@@ -17,7 +17,7 @@ class FetchTrackCrop(QtCore.QObject, QtCore.QRunnable):
     Note: This often fails and returns 0.0 for both
     '''
 
-    current_track = self.__applescript_music_app.currentTrack()
+    current_track = self._applescript_music_app.currentTrack()
     
     track_crop = TrackCrop(
       start=current_track.start(),

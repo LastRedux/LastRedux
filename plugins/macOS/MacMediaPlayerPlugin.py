@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
 class MacMediaPlayerPlugin(MediaPlayerPlugin):
-  __metaclass__ = ABCMeta
+  _metaclass_ = ABCMeta
 
   # Constants from BridgeSupport enum definitions used by the Music.app and Spotify AppleScript APIs
   PLAYING_STATE = 1800426320
@@ -13,15 +13,15 @@ class MacMediaPlayerPlugin(MediaPlayerPlugin):
   def __init__(self, applescript_app) -> None:
     super().__init__()
 
-    self.__applescript_app = applescript_app
+    self._applescript_app = applescript_app
 
   # --- Media Player Implementation ---
 
   def get_player_position(self) -> float:
-    return self.__applescript_app.playerPosition()
+    return self._applescript_app.playerPosition()
 
   def is_open(self) -> bool:
-    return self.is_available and self.__applescript_app.isRunning()
+    return self.is_available and self._applescript_app.isRunning()
 
   @abstractmethod
   def request_initial_state(self) -> None:

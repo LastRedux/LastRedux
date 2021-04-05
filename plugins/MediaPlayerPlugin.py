@@ -5,7 +5,7 @@ from PySide2 import QtCore
 from datatypes.MediaPlayerState import MediaPlayerState
 
 class MediaPlayerPlugin(QtCore.QObject):
-  __metaclass__ = ABCMeta
+  _metaclass_ = ABCMeta
 
   MEDIA_PLAYER_NAME: str
   MEDIA_PLAYER_ID: str

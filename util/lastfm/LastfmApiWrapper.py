@@ -33,13 +33,13 @@ class LastfmApiWrapper:
 
   def __init__(self) -> None:
     self.username: str = None
-    self.__session_key: str = None
-    self.__ram_cache: Dict[str, CachedResource] = {}
+    self._session_key: str = None
+    self._ram_cache: Dict[str, CachedResource] = {}
 
   # --- User Request Wrappers ---
 
   def get_user_info(self) -> LastfmUserInfo:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'user.getInfo',
         'username': self.username
       },
@@ -93,13 +93,13 @@ class LastfmApiWrapper:
     if from_date:
       args['from'] = int(from_date.timestamp()) # Convert to int to trim decimal points (Last.fm doesn't like them)
 
-    return self.__lastfm_request(args,
+    return self._lastfm_request(args,
       main_key_getter=lambda response: response['recenttracks']['track'],
       return_value_builder=return_value_builder
     )
 
   def get_total_loved_tracks(self) -> int:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'user.getLovedTracks',
         'user': self.username,
         'limit': 1 # We don't actually want any loved tracks
@@ -111,7 +111,7 @@ class LastfmApiWrapper:
     friends = None
 
     try:
-      friends = self.__lastfm_request({
+      friends = self._lastfm_request({
           'method': 'user.getFriends',
           'username': self.username
         },
@@ -132,7 +132,7 @@ class LastfmApiWrapper:
     return friends
 
   def get_top_artists(self, limit: int, period: str='overall') -> LastfmList[LastfmArtist]:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'user.getTopArtists',
         'username': self.username,
         'limit': limit,
@@ -150,7 +150,7 @@ class LastfmApiWrapper:
     )
 
   def get_top_tracks(self, limit: int, period: str='overall') -> LastfmList[LastfmTrack]:
-      return self.__lastfm_request({
+      return self._lastfm_request({
         'method': 'user.getTopTracks',
         'username': self.username,
         'limit': limit,
@@ -172,7 +172,7 @@ class LastfmApiWrapper:
     )
 
   def get_top_albums(self, limit: int, period: str='overall') -> List[LastfmAlbum]:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'user.getTopAlbums',
         'username': self.username,
         'limit': limit,
@@ -187,7 +187,7 @@ class LastfmApiWrapper:
             url=album['artist']['url'],
             name=album['artist']['name']
           ),
-          image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
+          image_set=LastfmApiWrapper._images_to_image_set(album['image']),
           plays=int(album['playcount'])
         ) for album in albums
       ]
@@ -196,7 +196,7 @@ class LastfmApiWrapper:
   # --- Info Request Wrappers ---
 
   def get_artist_info(self, artist_name: str, username: str=None) -> LastfmArtist:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'artist.getInfo',
         'username': username or self.username,
         'artist': artist_name
@@ -209,7 +209,7 @@ class LastfmApiWrapper:
         global_listeners=int(artist['stats']['listeners']),
         global_plays=int(artist['stats']['playcount']),
         bio=artist['bio']['content'].split(' <')[0].strip(), # Remove the "Read more on Last.fm" html link at the end
-        tags=[self.__tag_to_lastfm_tag(tag) for tag in artist['tags']['tag']],
+        tags=[self._tag_to_lastfm_tag(tag) for tag in artist['tags']['tag']],
         similar_artists=[
           LastfmArtist(
             name=similar_artist['name'],
@@ -220,7 +220,7 @@ class LastfmApiWrapper:
     )
 
   def get_track_info(self, artist_name: str, track_title: str, username: str=None) -> LastfmTrack:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'track.getInfo',
         'username': username or self.username,
         'artist': artist_name,
@@ -238,12 +238,12 @@ class LastfmApiWrapper:
         is_loved=bool(int(track['userloved'])), # Convert '0'/'1' to False/True,
         global_listeners=int(track['listeners']),
         global_plays=int(track['playcount']),
-        tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in track['toptags']['tag']]
+        tags=[LastfmApiWrapper._tag_to_lastfm_tag(tag) for tag in track['toptags']['tag']]
       )
     )
 
   def get_album_info(self, artist_name: str, album_title: str, username: str=None) -> LastfmAlbum:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'album.getInfo',
         'username': username or self.username,
         'artist': artist_name,
@@ -257,11 +257,11 @@ class LastfmApiWrapper:
           url=None,
           name=album['artist']
         ),
-        image_set=LastfmApiWrapper.__images_to_image_set(album['image']),
+        image_set=LastfmApiWrapper._images_to_image_set(album['image']),
         plays=int(album['userplaycount']),
         global_listeners=int(album['listeners']),
         global_plays=int(album['playcount']),
-        tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in album['tags']['tag']]
+        tags=[LastfmApiWrapper._tag_to_lastfm_tag(tag) for tag in album['tags']['tag']]
       ),
       cache=True # Cache since we don't display plays anywhere
     )
@@ -271,7 +271,7 @@ class LastfmApiWrapper:
   def get_auth_token(self) -> str:
     '''Request an authorization token used to get a the session key (lasts 60 minutes)'''
     
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'auth.getToken'
       },
       return_value_builder=lambda response: response['token']
@@ -280,7 +280,7 @@ class LastfmApiWrapper:
   def get_session(self, auth_token: str) -> LastfmSession:
     '''Get and save a session key and username to enable other functions'''
 
-    session = self.__lastfm_request({
+    session = self._lastfm_request({
         'method': 'auth.getSession',
         'token': auth_token
       },
@@ -310,7 +310,7 @@ class LastfmApiWrapper:
     })
 
     self.username = session.username
-    self.__session_key = session.session_key
+    self._session_key = session.session_key
 
   # --- POST request wrappers ---
 
@@ -337,7 +337,7 @@ class LastfmApiWrapper:
       if album_artist_name:
         args['albumArtist'] = album_artist_name
 
-    return self.__lastfm_request(args,
+    return self._lastfm_request(args,
       http_method='POST',
       main_key_getter=lambda response: response['scrobbles']['scrobble'],
       return_value_builder=lambda status, response: LastfmSubmissionStatus(
@@ -348,7 +348,7 @@ class LastfmApiWrapper:
     )
   
   def set_track_is_loved(self, artist_name: str, track_title: str, is_loved: bool) -> LastfmSubmissionStatus:
-    return self.__lastfm_request({
+    return self._lastfm_request({
         'method': 'track.love' if is_loved else 'track.unlove',
         'artist': artist_name,
         'track': track_title
@@ -381,7 +381,7 @@ class LastfmApiWrapper:
       if album_artist_name:
         args['albumArtist'] = album_artist_name
 
-    return self.__lastfm_request(args,
+    return self._lastfm_request(args,
       http_method='POST',
       main_key_getter=lambda response: response['nowplaying'],
       return_value_builder=lambda status, response: LastfmSubmissionStatus(
@@ -407,7 +407,7 @@ class LastfmApiWrapper:
       return 0
 
   def get_friend_scrobble(self, username: str) -> FriendScrobble:
-    def __track_to_friend_track(track):
+    def _track_to_friend_track(track):
       is_playing = bool(track.get('@attr', {}).get('nowplaying')) # 'true' when true, misssing when false
 
       if not is_playing:
@@ -432,14 +432,14 @@ class LastfmApiWrapper:
     friend_scrobble = None
     
     try:
-      friend_scrobble = self.__lastfm_request({
+      friend_scrobble = self._lastfm_request({
           'method': 'user.getRecentTracks',
           'username': username,
           'limit': 1, # We only want the last scrobble
           'extended': 1
         },
         main_key_getter=lambda response: response['recenttracks']['track'][0] if len(response['recenttracks']['track']) else None, # Not all users have a scrobble
-        return_value_builder=lambda track, response:  __track_to_friend_track(track) if track else None
+        return_value_builder=lambda track, response:  _track_to_friend_track(track) if track else None
       )
     except PermissionError:
       # Friend has recent scrobbles hidden
@@ -455,7 +455,7 @@ class LastfmApiWrapper:
 
   # --- Private Methods ---
 
-  def __lastfm_request(
+  def _lastfm_request(
     self,
     args,
     main_key_getter=None,
@@ -468,8 +468,8 @@ class LastfmApiWrapper:
 
     # Check for cached responses
     if cache:
-      if request_string in self.__ram_cache:
-        resource = self.__ram_cache[request_string]
+      if request_string in self._ram_cache:
+        resource = self._ram_cache[request_string]
 
         # Return cached resource, otherwise continue with new request
         if resource.expiration_date > datetime.now():
@@ -477,7 +477,7 @@ class LastfmApiWrapper:
           return resource.data
         else:
           # Remove expired resource from cache
-          del self.__ram_cache[request_string]
+          del self._ram_cache[request_string]
 
     params = {
       'api_key': LastfmApiWrapper.API_KEY, 
@@ -486,10 +486,10 @@ class LastfmApiWrapper:
     }
 
     if http_method == 'POST':
-      params['sk'] = self.__session_key
+      params['sk'] = self._session_key
 
     if http_method == 'POST' or args.get('method') == 'auth.getSession':
-      params['api_sig'] = self.__generate_method_signature(params)
+      params['api_sig'] = self._generate_method_signature(params)
 
     # Make the request with automatic retries up to a limit
     for _ in range(LastfmApiWrapper.MAX_RETRIES):
@@ -542,7 +542,7 @@ class LastfmApiWrapper:
 
       # The object creation succeeded, so we can cache it if needed and break out of the retry loop
       if cache:
-        self.__ram_cache[request_string] = CachedResource(
+        self._ram_cache[request_string] = CachedResource(
           data=return_object,
           expiration_date=datetime.now() + timedelta(minutes=1)
         )
@@ -553,7 +553,7 @@ class LastfmApiWrapper:
       raise Exception(f'Could not request {args["method"]} after {LastfmApiWrapper.MAX_RETRIES} retries')
 
   @staticmethod
-  def __generate_method_signature(payload: dict) -> str:
+  def _generate_method_signature(payload: dict) -> str:
     '''
     Create an api method signature from the request payload (in alphabetical order by key) with the client secret
 
@@ -581,14 +581,14 @@ class LastfmApiWrapper:
     return api_sig
  
   @staticmethod
-  def __tag_to_lastfm_tag(tag: dict) -> LastfmTag:
+  def _tag_to_lastfm_tag(tag: dict) -> LastfmTag:
     return LastfmTag(
       name=tag['name'],
       url=tag['url']
     )
 
   @staticmethod
-  def __images_to_image_set(images: List[dict]) -> ImageSet:
+  def _images_to_image_set(images: List[dict]) -> ImageSet:
     return ImageSet(
       small_url=images[1]['#text'] or None,
       medium_url=images[-1]['#text'] or None

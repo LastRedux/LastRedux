@@ -1,4 +1,4 @@
-from __future__ import annotations
+from _future_ import annotations
 from dataclasses import dataclass, asdict
 
 from util.lastfm.LastfmUser import LastfmUser
