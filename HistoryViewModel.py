@@ -436,9 +436,7 @@ class HistoryViewModel(QtCore.QObject):
 
     self.__discord_rpc.update(
       details=track_title,
-      state=artist_name + (
-        (' | ' + album_title) if album_title else ''
-      ),
+      state=artist_name,
       large_image='music-logo',
       large_text='Playing on Music',
       small_image='lastredux-logo',
