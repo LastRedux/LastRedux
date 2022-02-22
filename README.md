@@ -6,7 +6,7 @@
 
 ### Install ⚡️
 
-If you can figure out how to build from source, go for it, but you can join the beta program in the Discord server](https://discord.gg/DMCE4kV3kk)
+If you can figure out how to build from source, go for it, but you can join the beta program in the [Discord server](https://discord.gg/DMCE4kV3kk)
 
 ### How to use LastRedux ✨🦄
 - Run LastRedux in the background while listening to music
