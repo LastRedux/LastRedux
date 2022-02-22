@@ -2,6 +2,8 @@
 
 [![Screen-Shot-2020-12-26-at-1-15-36-AM.png](https://i.postimg.cc/C5gJ1FM8/Screen-Shot-2020-12-26-at-1-15-36-AM.png)](https://postimg.cc/TLtnNvD2)
 
+**🚨 Warning! LastRedux is in beta and we are not liable for any lost data or related problems with your Last.fm scrobbles or computer**
+
 ### Install ⚡️
 
 If you can figure out how to build from source, go for it, but you can join the beta program in the Discord server](https://discord.gg/DMCE4kV3kk)
