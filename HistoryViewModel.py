@@ -153,18 +153,19 @@ class HistoryViewModel(QtCore.QObject):
         self.__is_spotify_plugin_available = True
         self.is_spotify_plugin_available_changed.emit()
 
-      if media_player_preference == 'spotify':
-        # If Spotify is not installed, reset media player preference back to Music.app
-        # TODO: Use better method to figure out if Spotify is installed without logged error
-        if self.__is_spotify_plugin_available:
-          self.switchToMediaPlugin('spotify', should_update_in_database=False)
-        else:
-          logging.info('Spotify not detected on device; switching back to Music.app as media player')
-          db_helper.set_preference('media_player', 'musicApp')
-          media_player_preference = 'musicApp'
-      
-      if media_player_preference == 'musicApp':
-        self.switchToMediaPlugin('musicApp', should_update_in_database=False)
+      if not os.environ.get('MOCK'):
+        if media_player_preference == 'spotify':
+          # If Spotify is not installed, reset media player preference back to Music.app
+          # TODO: Use better method to figure out if Spotify is installed without logged error
+          if self.__is_spotify_plugin_available:
+            self.switchToMediaPlugin('spotify', should_update_in_database=False)
+          else:
+            logging.info('Spotify not detected on device; switching back to Music.app as media player')
+            db_helper.set_preference('media_player', 'musicApp')
+            media_player_preference = 'musicApp'
+        
+        if media_player_preference == 'musicApp':
+          self.switchToMediaPlugin('musicApp', should_update_in_database=False)
       
       self.media_player_name_changed.emit()
 
