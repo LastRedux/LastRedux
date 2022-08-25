@@ -243,6 +243,9 @@ class LastfmApiWrapper:
     )
 
   def get_album_info(self, artist_name: str, album_title: str, username: str=None) -> LastfmAlbum:
+    if not album_title:
+      return
+
     return self.__lastfm_request({
         'method': 'album.getInfo',
         'username': username or self.username,
@@ -261,7 +264,7 @@ class LastfmApiWrapper:
         plays=int(album['userplaycount']),
         global_listeners=int(album['listeners']),
         global_plays=int(album['playcount']),
-        tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in album['tags']['tag']]
+        tags=[LastfmApiWrapper.__tag_to_lastfm_tag(tag) for tag in album['tags']['tag']] if album['tags'] else []
       ),
       cache=True # Cache since we don't display plays anywhere
     )
