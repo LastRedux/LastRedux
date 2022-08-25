@@ -146,7 +146,7 @@ Window {
       MenuSeparator { }
       
       MenuItem {
-        text: qsTr('LastRedux Private Beta 2')
+        text: qsTr('LastRedux Beta 3')
         enabled: false
       }
 

@@ -309,7 +309,7 @@ class LastfmApiWrapper:
       **helpers.generate_system_profile()
     })
     set_context('app', {
-      'app_version': 'Private Beta 2'
+      'app_version': 'Beta 3'
     })
 
     self.username = session.username
