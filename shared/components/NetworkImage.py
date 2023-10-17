@@ -26,7 +26,7 @@ class NetworkImage(QtQuick.QQuickItem):
     self.__source: str = None
 
     # Tell Qt that this component should render onscreen
-    self.setFlag(QtQuick.QQuickItem.ItemHasContents, True)
+    self.setFlag(QtQuick.QQuickItem.Flag.ItemHasContents, True)
   
   def updatePaintNode(self, old_node, data):
     if self.__has_image:
@@ -39,7 +39,7 @@ class NetworkImage(QtQuick.QQuickItem):
       
       if self.__should_refresh_node_texture:
         new_texture = self.window().createTextureFromImage(self.__image)
-        texture_node.setFiltering(QtQuick.QSGTexture.Linear)
+        texture_node.setFiltering(QtQuick.QSGTexture.Filtering.Linear)
         texture_node.setTexture(new_texture)
         self.__should_refresh_node_texture = False
       
