@@ -1,6 +1,6 @@
 import logging
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 from ScriptingBridge import SBApplication
 from Foundation import NSDistributedNotificationCenter
 

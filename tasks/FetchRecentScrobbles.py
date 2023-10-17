@@ -1,7 +1,7 @@
 import os
 from util.lastfm.LastfmList import LastfmList
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from util.helpers import get_mock_recent_scrobbles
 from util.lastfm import LastfmApiWrapper

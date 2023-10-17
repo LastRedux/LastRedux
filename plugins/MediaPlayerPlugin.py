@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from datatypes.MediaPlayerState import MediaPlayerState
 

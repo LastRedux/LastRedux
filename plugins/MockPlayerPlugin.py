@@ -4,7 +4,7 @@ import os
 import random
 from typing import Dict
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 from datatypes.MediaPlayerState import MediaPlayerState
 
 class MockPlayerPlugin(QtCore.QObject):

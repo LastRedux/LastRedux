@@ -1,7 +1,7 @@
 import sys
 import logging
 
-from PySide2 import QtCore, QtSql
+from PySide6 import QtCore, QtSql
 
 from util.lastfm.LastfmSession import LastfmSession
 

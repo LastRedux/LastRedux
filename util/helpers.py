@@ -35,9 +35,9 @@ def generate_system_profile() -> dict:
   hardware_info = json.loads(subprocess.check_output('system_profiler SPHardwareDataType -json', shell=True))['SPHardwareDataType'][0]
   hardware_string = ' '.join((
     hardware_info['machine_model'],
-    hardware_info['cpu_type'],
+    hardware_info.get('cpu_type', hardware_info.get('chip_type', 'Unknown CPU type')),
     hardware_info['physical_memory'],
-    hardware_info['current_processor_speed'],
+    hardware_info.get('current_processor_speed', 'Unknown current processor speed'),
   ))
 
   return {

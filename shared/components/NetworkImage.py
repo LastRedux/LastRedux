@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui, QtQuick, QtQml, QtNetwork
+from PySide6 import QtCore, QtGui, QtQuick, QtQml, QtNetwork
 
 class NetworkImage(QtQuick.QQuickItem):
   has_image_changed = QtCore.Signal()

@@ -1,6 +1,6 @@
 from typing import Union
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from FriendsViewModel import FriendsViewModel
 

@@ -1,9 +1,9 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from datatypes.TrackCrop import TrackCrop
 
 class FetchTrackCrop(QtCore.QObject, QtCore.QRunnable):
-  finished = QtCore.Signal(dict)
+  finished = QtCore.Signal(TrackCrop)
 
   def __init__(self, applescript_music_app) -> None:
     QtCore.QObject.__init__(self)

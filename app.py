@@ -5,7 +5,7 @@ import logging
 
 from rich.traceback import install
 from rich.logging import RichHandler
-from PySide2 import QtCore, QtGui, QtQml
+from PySide6 import QtCore, QtGui, QtQml
 import sentry_sdk
 
 # Constants
@@ -17,7 +17,7 @@ MINOR_VERSION = 0
 
 if __name__ == '__main__':
   # Install rich traceback handler
-  install(show_locals=True)
+  # install(show_locals=True)
 
   # Install rich logging handler
   logging.basicConfig(
@@ -45,10 +45,10 @@ if __name__ == '__main__':
   signal.signal(signal.SIGINT, signal.SIG_DFL)
 
   # Enable retina support
-  QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+  # QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
   # Use render loop that supports persistent 60fps
-  os.environ['QSG_RENDER_LOOP'] = 'windows'
+  os.environ['QSG_RENDER_LOOP'] = 'basic'
 
   # Create QML components from Python classes
   # major_version and minor_version represent major and minor version numbers for when we import it in QML

@@ -1,6 +1,6 @@
 import logging
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from util.lastfm import LastfmApiWrapper
 from datatypes.Scrobble import Scrobble

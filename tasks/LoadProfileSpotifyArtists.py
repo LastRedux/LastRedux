@@ -1,6 +1,6 @@
 from typing import List
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from util.spotify_api import SpotifyApiWrapper
 from datatypes.ProfileStatistic import ProfileStatistic

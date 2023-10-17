@@ -1,4 +1,4 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from datatypes.FriendScrobble import FriendScrobble
 from util.lastfm import LastfmApiWrapper

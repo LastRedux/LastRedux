@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from HistoryViewModel import HistoryViewModel
 from ApplicationViewModel import ApplicationViewModel

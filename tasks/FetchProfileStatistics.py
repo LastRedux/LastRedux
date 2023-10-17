@@ -2,7 +2,7 @@ from dataclasses import asdict
 from typing import List
 from datetime import datetime
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from util.lastfm import LastfmApiWrapper, LastfmArtist
 from datatypes.ProfileStatistic import ProfileStatistic

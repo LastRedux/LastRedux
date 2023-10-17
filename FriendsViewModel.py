@@ -2,7 +2,7 @@ import logging
 import copy
 from typing import List
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from ApplicationViewModel import ApplicationViewModel
 from tasks import FetchFriends, FetchFriendScrobble, FetchFriendScrobbleArt

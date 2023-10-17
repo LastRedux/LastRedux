@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from PySide2 import QtCore, QtNetwork
+from PySide6 import QtCore, QtNetwork
 
 from shared.components.NetworkImage import NetworkImage
 from util.lastfm import LastfmApiWrapper, LastfmSession
