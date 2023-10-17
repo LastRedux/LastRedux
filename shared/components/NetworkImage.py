@@ -1,4 +1,6 @@
 from PySide6 import QtCore, QtGui, QtQuick, QtQml, QtNetwork
+from PySide6.QtCore import QUrl
+
 
 class NetworkImage(QtQuick.QQuickItem):
   has_image_changed = QtCore.Signal()
@@ -30,7 +32,7 @@ class NetworkImage(QtQuick.QQuickItem):
   
   def updatePaintNode(self, old_node, data):
     if self.__has_image:
-      if self.__node is None:
+      if self.__node is None or self.__node.firstChild() is None:
         self.__node = QtQuick.QSGNode()
         new_texture_node = QtQuick.QSGSimpleTextureNode()
         self.__node.appendChildNode(new_texture_node)
@@ -79,14 +81,14 @@ class NetworkImage(QtQuick.QQuickItem):
     '''Convert recieved network data into QImage and update'''
 
     if self.__reply:
-      if self.__reply.error() == QtNetwork.QNetworkReply.NoError:
-        image = QtGui.QImage.fromData(self.__reply.readAll())
+      # if self.__reply.error() == QtNetwork.QNetworkReply.NoError:
+      image = QtGui.QImage.fromData(self.__reply.readAll())
 
-        # Add image to cache if not in cache
-        if self.__source not in NetworkImage.RAM_IMAGE_CACHE:
-          NetworkImage.RAM_IMAGE_CACHE[self.__source] = image
-        
-        self.update_image(image)
+      # Add image to cache if not in cache
+      if self.__source not in NetworkImage.RAM_IMAGE_CACHE:
+        NetworkImage.RAM_IMAGE_CACHE[self.__source] = image
+
+      self.update_image(image)
     
     # Delete reply as it's not needed anymore
     self.__reply = None
@@ -128,4 +130,4 @@ class NetworkImage(QtQuick.QQuickItem):
   shouldBlankOnNewSource = QtCore.Property(bool, lambda self: self.__should_blank_on_new_source, set_should_blank_on_new_source, notify=should_blank_on_new_source_changed) # Controls whether the view should immediately blank or keep showing cached content when a new URL is set. Should be true when the view needs to swap between entirely different images. (e.g. album art view in track details) Needs additional view to cover image view like in Picture component.
 
   # Set the source of the view. QUrl doesn't allow blank string - only None/undefined.
-  source = QtCore.Property('QUrl', lambda self: self.__source, set_source, notify=source_changed)
+  source = QtCore.Property(QUrl, lambda self: self.__source, set_source, notify=source_changed)
