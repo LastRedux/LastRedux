@@ -88,4 +88,4 @@ if __name__ == '__main__':
   WindowStyle.applyMacOsWindowTreatment()
 
   # Use the app's status as an exit code
-  sys.exit(app.exec_()) # exec_ to avoid collision with built in exec function
+  sys.exit(app.exec()) # exec_ to avoid collision with built in exec function
