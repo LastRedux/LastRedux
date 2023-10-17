@@ -3,7 +3,7 @@ from PySide6 import QtCore
 from plugins.MediaPlayerPlugin import MediaPlayerPlugin
 
 class FetchPlayerPosition(QtCore.QObject, QtCore.QRunnable):  
-  finished = QtCore.Signal(dict)
+  finished = QtCore.Signal(float)
 
   def __init__(self, media_player: MediaPlayerPlugin):
     QtCore.QObject.__init__(self)
