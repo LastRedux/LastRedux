@@ -2,6 +2,8 @@
 
 [![Screen-Shot-2020-12-26-at-1-15-36-AM.png](https://i.postimg.cc/C5gJ1FM8/Screen-Shot-2020-12-26-at-1-15-36-AM.png)](https://postimg.cc/TLtnNvD2)
 
+# ⚠️ Disclaimer ⚠️ - LastRedux does not work on macOS 13+ and the project is not currently maintained
+
 ### Download ⚡️
 
 Download the latest release from the [releases](https://github.com/LastRedux/LastRedux/releases) page
