@@ -15,43 +15,47 @@ db_helper.connect()
 session = db_helper.get_lastfm_session()
 
 if session:
-  # Set Last.fm wrapper session key and username from database
-  lastfm.log_in_with_session(session)
-  logging.info(f'Logged in from database as {session.username}')
+    # Set Last.fm wrapper session key and username from database
+    lastfm.log_in_with_session(session)
+    logging.info(f"Logged in from database as {session.username}")
 else:
-  logging.error('No login details saved, run lastfm_api_test.py to save a session to the database')
-  sys.exit(1)
+    logging.error(
+        "No login details saved, run lastfm_api_test.py to save a session to the database"
+    )
+    sys.exit(1)
 
 art_provider = ArtProvider(lastfm)
 spotify_api = SpotifyApiWrapper()
 
-print('\n***** SPOTIFY ARTISTS *****\n')
-print(spotify_api.get_artist('RIOT'))
-print(spotify_api.get_artist('Ariana Grande'))
-print(spotify_api.get_artist('Madeon'))
+print("\n***** SPOTIFY ARTISTS *****\n")
+print(spotify_api.get_artist("RIOT"))
+print(spotify_api.get_artist("Ariana Grande"))
+print(spotify_api.get_artist("Madeon"))
 
-print('\n***** ALBUM ART AND ARTIST IMAGES (MOCK TRACKS) *****\n')
-for mock_track in json.load(open('mock_data/mock_tracks.json')):
-  # Remove unneeded key for unpacking later
-  del mock_track['reason']
+print("\n***** ALBUM ART AND ARTIST IMAGES (MOCK TRACKS) *****\n")
+for mock_track in json.load(open("mock_data/mock_tracks.json")):
+    # Remove unneeded key for unpacking later
+    del mock_track["reason"]
 
-  print(f'** {mock_track["artist_name"]} - {mock_track["track_title"]} | {mock_track.get("album_title", None)} ** ')
+    print(
+        f'** {mock_track["artist_name"]} - {mock_track["track_title"]} | {mock_track.get("album_title", None)} ** '
+    )
 
-  # Search Spotify for album art and artist images
-  print('Spotify results:')
-  print(spotify_api.get_track_images(**mock_track))
+    # Search Spotify for album art and artist images
+    print("Spotify results:")
+    print(spotify_api.get_track_images(**mock_track))
 
-  # Search Last.fm
-  if 'album_title' not in mock_track:
-    continue
+    # Search Last.fm
+    if "album_title" not in mock_track:
+        continue
 
-  image_set = art_provider.get_album_art(**mock_track)
+    image_set = art_provider.get_album_art(**mock_track)
 
-  print('\nAlbum art results:')
-  if image_set:
-    print(image_set)
-  else:
-    print('No album art found')
-  
-  # Separator
-  print()
+    print("\nAlbum art results:")
+    if image_set:
+        print(image_set)
+    else:
+        print("No album art found")
+
+    # Separator
+    print()
