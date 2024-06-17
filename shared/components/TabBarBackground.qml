@@ -2,7 +2,7 @@ import QtQuick 2.14
 
 Image {
   fillMode: Image.TileHorizontally
-  source: '../resources/effects/tabBarGradient.png'
+  source: 'shared/resources/effects/tabBarGradient.png'
 
   height: 22 + 44
 
