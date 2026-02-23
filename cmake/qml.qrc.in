@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/view">
+@QML@
+	</qresource>
+</RCC>
+

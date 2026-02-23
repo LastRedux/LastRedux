@@ -1,0 +1,30 @@
+import QtQuick
+import QtQuick.Layouts
+Item{
+	Flickable{
+		anchors.fill:parent
+		id:xFlick
+		contentHeight:xColumn.height
+		ColumnLayout{
+			id:xColumn
+			width:parent.width
+			spacing:0
+			LRProfileLink{
+				name:"name"
+				user:"user1"
+				song:"song"
+				artist:"artist"
+				play:true
+			}
+			LRProfileLink{
+				user:"user2"
+				song:"song"
+				artist:"artist"
+			}
+		}
+	}
+	LRScroll{
+		anchors.fill:xFlick
+		hook:xFlick
+	}
+}
