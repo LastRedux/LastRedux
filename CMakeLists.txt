@@ -56,10 +56,12 @@ configure_file(
 set(SRC
 	main.cpp
 	src/LRViewModel.cpp
+	src/net/LRAPIWrapper.cpp
 	${BIN}/qml.qrc
 )
 set(H
 	src/LRViewModel.h
+	src/net/LRAPIWrapper.h
 )
 
 

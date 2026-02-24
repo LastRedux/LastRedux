@@ -14,6 +14,10 @@ Rectangle{
 	color:"#111"
 	ColumnLayout{
 		width:parent.width
+		Button{
+			text:'Fetch Track'
+			onClicked:vm.fetchTrack()
+		}
 		Rectangle{
 			id:xSong
 			Layout.fillWidth:true

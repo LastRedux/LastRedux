@@ -10,10 +10,6 @@ Item{
 			user:vm.user
 			z:2
 		}
-		Button{
-			text:'change names'
-			onClicked:vm.testFunc()
-		}
 		Rectangle{
 			Layout.fillWidth:true
 			color:'#1b1b1b'

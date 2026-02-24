@@ -1,7 +1,7 @@
 #include "LRViewModel.h"
-void LRViewModel::testFunc(){
-	mName="ChangedName";
-	mUser="ChangedUser";
+void LRViewModel::fetchTrack(){
+	mAPI.getTrack("Madeon", "No Fear No More");
 	emit nameChanged();
-	emit userChanged();
+	emit artistChanged();
+	emit albumChanged();
 }

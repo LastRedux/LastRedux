@@ -6,16 +6,20 @@
 class LRViewModel:public QObject{
 	Q_OBJECT
 	Q_PROPERTY(QString name MEMBER mName NOTIFY nameChanged)
-	Q_PROPERTY(QString user MEMBER mUser NOTIFY userChanged)
+	Q_PROPERTY(QString artist MEMBER mArtist NOTIFY artistChanged)
+	Q_PROPERTY(QString album MEMBER mAlbum NOTIFY albumChanged)
 public:
 	explicit LRViewModel(QObject* parent=nullptr):QObject(parent){}
 signals:
 	void nameChanged();
-	void userChanged();
+	void artistChanged();
+	void albumChanged();
 public slots:
-	void testFunc();
+	void fetchTrack();
 private:
+	LRAPIWrapper mAPI;
 	QString mName="test";
-	QString mUser="test";
+	QString mArtist="test";
+	QString mAlbum="test";
 };
 #endif
