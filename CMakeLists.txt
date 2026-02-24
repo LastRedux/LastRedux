@@ -25,7 +25,7 @@ endif()
 
 
 #Resources
-file(GLOB RESDIR CONFIGURE_DEPENDS "${_}/res/*.png")
+file(GLOB RESDIR CONFIGURE_DEPENDS "${_}/res/*.png" "${_}/res/fonts/*.ttf" "${_}/res/fonts/*.otf")
 set(RES "")
 foreach(RESFILE ${RESDIR})
 	get_filename_component(RESNAME ${RESFILE} NAME)

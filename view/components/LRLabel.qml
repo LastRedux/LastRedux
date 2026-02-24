@@ -10,9 +10,10 @@ Label{
 	property real alpha:size==="h4"?0.81:1
 	property real alphaMod:1
 	opacity:alphaMod===1?alpha:alpha*alphaMod
-	style:Text.Sunken
+	style:Qt.platform.os==='osx'?Text.Sunken:Text.Normal
 	styleColor:Qt.rgba(0,0,0,0.19)
 	font{
+		family:xFonts.name
 		letterSpacing:{
 			switch(size){
 				case'h1':return -0.84
@@ -42,5 +43,4 @@ Label{
 			}
 		}
 	}
-	//Rectangle{anchors.fill:parent;color:'#22ffffff';z:-1}
 }

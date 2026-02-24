@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 ApplicationWindow{
+	LRFonts{id:xFonts}
 	property int section:2
 	id:app
 	visible:true
