@@ -5,13 +5,12 @@ Item{
 	property string content:''
 	property bool enabled:true
 	property bool hovered:mEnabled&&xHover.hovered
-	property bool pressed:mEnabled&&(mMenuShow||xLeft.active)
+	property bool pressed:mEnabled&&(mMenuShow||(!mMenuShow&&xMouse.containsPress))
 	property bool mEnabled:enabled&&href
 	property alias mHook:xRoot.parent
 	property bool mHasLabel:mHook.font!==undefined
 	property string mContent:(content!==''?content:(mHasLabel?mHook.content:content)).trim()
-	property string mEngine:'Google'
-	property string mEngineUrl:'https://www.google.com/search?q='
+	property string mEngineLink:'https://www.google.com/search?q='
 	property bool mMenuShow:false
 	property bool mCanLookup:Qt.platform.os==='osx'&&mContent
 	signal clicked
@@ -41,30 +40,28 @@ Item{
 	}
 	HoverHandler{
 		id:xHover
-		cursorShape:mEnabled?Qt.PointingHandCursor:Qt.ArrowCursor
+		cursorShape:mHasLabel&&mEnabled?Qt.PointingHandCursor:Qt.ArrowCursor
 	}
-	TapHandler{
-		enabled:mEnabled
-		onTapped:{
+	MouseArea{
+		id:xMouse
+		anchors.fill:parent
+		acceptedButtons:Qt.LeftButton|Qt.RightButton
+		focusPolicy:Qt.NoFocus
+		enabled:!mMenuShow
+		visible:!mMenuShow
+		onClicked:function(mouse){
+			if(mouse.button!==Qt.LeftButton)return
 			xRoot.clicked()
 			if(href)Qt.openUrlExternally(href)
 		}
-	}
-	PointHandler{
-		id:xLeft
-		enabled:mEnabled
-		acceptedButtons:Qt.LeftButton
-	}
-	PointHandler{
-		acceptedButtons:Qt.RightButton
-		onActiveChanged:{
-			if(active){
-				if(!xHover.hovered)return
+		onPressed:function(mouse){
+			if(!active||mouse.button!==Qt.RightButton)return
+			if(mCanLookup){
 				var cropped=mContent
 				if(cropped.length>30)cropped=cropped.substring(0,30).trim()+'...'
-				xLookup.text=/*href?('Search With '+mEngine):*/'Look Up "'+cropped+'"'
-				menu.open()
+				xLookup.text='Look Up "'+cropped+'"'
 			}
+			menu.open()
 		}
 	}
 	Menu{
@@ -98,7 +95,7 @@ Item{
 			visible:mCanLookup
 			onTriggered:{
 				if(!mCanLookup)return
-				Qt.openUrlExternally(mEngineUrl+encodeURIComponent(mContent))
+				Qt.openUrlExternally(mEngineLink+encodeURIComponent(mContent))
 			}
 		}
 		MenuSeparator{visible:Qt.platform.os==='osx'&&mContent}

@@ -24,7 +24,7 @@ Item{
 		id:xColumn
 		spacing:5
 		width:parent.width
-		opacity:xLink.hovered&&xLink.pressed?0.5:1
+		opacity:xLink.pressed?0.5:1
 		RowLayout{
 			Layout.rightMargin:15
 			Layout.leftMargin:15
