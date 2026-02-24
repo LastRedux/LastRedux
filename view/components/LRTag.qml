@@ -23,11 +23,10 @@ Item{
 			Layout.leftMargin:8
 			Layout.alignment:Qt.AlignVCenter
 		}
-		Image{
+		LRIcon{
 			Layout.rightMargin:3
-			width:height
-			height:parent.height-6
-			source:'qrc:/ic_link.png'
+			res:'link'
+			size:14
 		}
 	}
 	LRLink{

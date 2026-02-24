@@ -81,7 +81,7 @@ Rectangle{
 				height:139
 				x:30
 				y:30
-				LRTexture{res:'cover_lg'}
+				LRTexture{res:'cover_m'}
 				LRIcon{
 					anchors.centerIn:parent
 					res:'artist_lg'

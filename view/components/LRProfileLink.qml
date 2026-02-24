@@ -48,10 +48,9 @@ Item{
 					alpha:0.81
 				}
 			}
-			Image{
-				source:'qrc:/ic_link_web.png'
-				width:16
-				height:16
+			LRIcon{
+				res:'link_web'
+				size:14
 			}
 		}
 		RowLayout{
