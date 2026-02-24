@@ -9,6 +9,7 @@ Label{
 	property alias align:root.horizontalAlignment
 	property real alpha:size==="h4"?0.81:1
 	property real alphaMod:1
+	color:'#fff'
 	opacity:alphaMod===1?alpha:alpha*alphaMod
 	renderType:Qt.platform.os==='osx'?Text.NativeRendering:Text.QtRendering
 	style:Text.Sunken
