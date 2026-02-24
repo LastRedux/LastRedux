@@ -1,4 +1,8 @@
-#include <QGuiApplication>
+#ifdef __linux__
+  #include <QApplication>
+#else
+  #include <QGuiApplication>
+#endif
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QUrl>
@@ -12,8 +16,12 @@ int main(int argc,char* argv[]){
 		QQuickStyle::setStyle("Fusion");
 	#endif
 	qmlRegisterType<LRViewModel>("LastRedux",1,0,"LRViewModel");
-	QGuiApplication app(argc,argv);
-	app.setApplicationName("LastRedux");
+  #ifdef __linux__
+    QApplication app(argc,argv);
+  #else
+    QGuiApplication app(argc,argv);
+  #endif	
+  app.setApplicationName("LastRedux");
 	#ifdef __APPLE__
 		app.setQuitOnLastWindowClosed(false);
 		qputenv("QML_DISABLE_DISTANCEFIELD","1");

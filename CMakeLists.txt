@@ -76,6 +76,10 @@ else()
 	target_link_options(LastRedux PRIVATE -flto -Wl,--gc-sections)
 	target_link_libraries(LastRedux PRIVATE stdc++)
 endif()
+if(UNIX AND NOT APPLE)
+  find_package(Qt6 6.2 COMPONENTS Widgets QUIET)
+  target_link_libraries(LastRedux PRIVATE Qt6::Widgets)
+endif()
 find_package(Qt6 6.2 COMPONENTS Core Network Quick QuickControls2 LabsPlatform QUIET)
 target_link_libraries(LastRedux PRIVATE
 	Qt6::Core
