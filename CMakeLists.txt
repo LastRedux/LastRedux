@@ -63,8 +63,15 @@ set(SRC
 add_executable(LastRedux MACOSX_BUNDLE ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/res.qrc)
 set(CMAKE_FIND_FRAMEWORK LAST)
 set(CMAKE_FIND_APPBUNDLE LAST)
-target_compile_options(LastRedux PRIVATE -flto=full -O3 -Wall -Wextra)
-target_link_options(LastRedux PRIVATE -flto=full -Wl,-dead_strip)
+target_compile_options(LastRedux PRIVATE -O3 -Wall -Wextra)
+if(APPLE)
+	target_compile_options(LastRedux PRIVATE -flto=full)
+	target_link_options(LastRedux PRIVATE -flto=full -Wl,-dead_strip)
+else()
+	target_compile_options(LastRedux PRIVATE -fdata-sections -ffunction-sections -flto)
+	target_link_options(LastRedux PRIVATE -flto -Wl,--gc-sections)
+	target_link_libraries(LastRedux PRIVATE stdc++)
+endif()
 find_package(Qt6 6.2 COMPONENTS Core Network Quick QuickControls2 LabsPlatform QUIET)
 target_link_libraries(LastRedux PRIVATE
 	Qt6::Core
