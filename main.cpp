@@ -6,6 +6,10 @@
 int main(int argc,char* argv[]){
 	#ifdef __APPLE__
 		QQuickStyle::setStyle("macOS");
+	#elif defined(_WIN32)
+		QQuickStyle::setStyle("Windows");
+	#else
+		QQuickStyle::setStyle("Fusion");
 	#endif
 	qmlRegisterType<LRViewModel>("LastRedux",1,0,"LRViewModel");
 	QGuiApplication app(argc,argv);
