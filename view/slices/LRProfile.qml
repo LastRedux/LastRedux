@@ -1,13 +1,18 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 Item{
 	ColumnLayout{
 		anchors.fill:parent
 		spacing:0
 		LRProfileLink{
-			name:'TC64'
-			user:'TC64music'
+			name:vm.name
+			user:vm.user
 			z:2
+		}
+		Button{
+			text:'change names'
+			onClicked:vm.testFunc()
 		}
 		Rectangle{
 			Layout.fillWidth:true

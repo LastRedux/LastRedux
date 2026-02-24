@@ -1,10 +1,11 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import LastRedux
 ApplicationWindow{
 	LRFonts{id:xFonts}
 	property int section:2
-	id:app
+	id:xApp
 	visible:true
 	title:'LastRedux'
 	color:'#0c0c0c'
@@ -12,8 +13,9 @@ ApplicationWindow{
 	height:600
 
 
+	LRViewModel{id:vm}
 	Rectangle{
-		id:sidebar
+		id:xSidebar
 		anchors.top:parent.top
 		anchors.left:parent.left
 		anchors.bottom:parent.bottom
@@ -56,7 +58,7 @@ ApplicationWindow{
 	}
 	LRDetails{
 		anchors.top:parent.top
-		anchors.left:sidebar.right
+		anchors.left:xSidebar.right
 		anchors.bottom:parent.bottom
 		anchors.right:parent.right
 		anchors.leftMargin:1

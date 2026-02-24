@@ -2,10 +2,12 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QUrl>
+#include "src/LRViewModel.h"
 int main(int argc,char* argv[]){
 	#ifdef __APPLE__
 		QQuickStyle::setStyle("macOS");
 	#endif
+	qmlRegisterType<LRViewModel>("LastRedux",1,0,"LRViewModel");
 	QGuiApplication app(argc,argv);
 	app.setApplicationName("LastRedux");
 	app.setQuitOnLastWindowClosed(false);

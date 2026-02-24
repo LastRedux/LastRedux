@@ -54,13 +54,17 @@ configure_file(
 
 #Sources
 set(SRC
-	src/main.cpp
+	main.cpp
+	src/LRViewModel.cpp
 	${BIN}/qml.qrc
+)
+set(H
+	src/LRViewModel.h
 )
 
 
 #Target
-add_executable(LastRedux MACOSX_BUNDLE ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/res.qrc)
+add_executable(LastRedux MACOSX_BUNDLE ${SRC} ${HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/res.qrc)
 set(CMAKE_FIND_FRAMEWORK LAST)
 set(CMAKE_FIND_APPBUNDLE LAST)
 target_compile_options(LastRedux PRIVATE -O3 -Wall -Wextra)
