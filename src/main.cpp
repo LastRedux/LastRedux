@@ -9,7 +9,13 @@ int main(int argc,char* argv[]){
 	QGuiApplication app(argc,argv);
 	app.setApplicationName("LastRedux");
 	app.setQuitOnLastWindowClosed(false);
-	qputenv("QML_DISABLE_DISTANCEFIELD","1");
+	#ifdef __APPLE__
+		qputenv("QML_DISABLE_DISTANCEFIELD","1");
+	#elif defined(_WIN32)
+		qputenv("QML_DISABLE_DISTANCEFIELD","1");
+	#else
+		qputenv("QML_DISABLE_DISTANCEFIELD","0");
+	#endif
 	QQmlApplicationEngine engine;
 	engine.load(QUrl("qrc:/view/Main.qml"));
 	return app.exec();
