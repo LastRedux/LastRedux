@@ -10,6 +10,7 @@ Label{
 	property real alpha:size==="h4"?0.81:1
 	property real alphaMod:1
 	opacity:alphaMod===1?alpha:alpha*alphaMod
+	renderType:Qt.platform.os==='osx'?Text.NativeRendering:Text.QtRendering
 	style:Qt.platform.os==='osx'?Text.Sunken:Text.Normal
 	styleColor:Qt.rgba(0,0,0,0.19)
 	font{
