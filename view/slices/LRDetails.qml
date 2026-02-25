@@ -71,9 +71,13 @@ Rectangle{
 				}
 				RowLayout{
 					spacing:8
-					LRTag{content:'electronic'}
-					LRTag{content:'j-pop'}
-					LRTag{content:'electropop'}
+					Repeater{
+						model:vm.tags
+						LRTag{
+							content:modelData.name
+							href:modelData.url
+						}
+					}
 				}
 			}
 		}

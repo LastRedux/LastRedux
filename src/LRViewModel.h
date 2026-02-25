@@ -10,6 +10,7 @@ class LRViewModel:public QObject{
 	Q_PROPERTY(QString artist MEMBER mArtist NOTIFY artistChanged)
 	Q_PROPERTY(QString album MEMBER mAlbum NOTIFY albumChanged)
 	Q_PROPERTY(QString albumArt MEMBER mAlbumArt NOTIFY albumArtChanged)
+	Q_PROPERTY(QVariantList tags MEMBER mTags NOTIFY tagsChanged)
 public:
 	explicit LRViewModel(QObject* parent=nullptr);
 signals:
@@ -17,6 +18,7 @@ signals:
 	void artistChanged();
 	void albumChanged();
 	void albumArtChanged();
+	void tagsChanged();
 public slots:
 	void fetchTrack();
 private:
@@ -25,5 +27,6 @@ private:
 	QString mArtist="test";
 	QString mAlbum="test";
 	QString mAlbumArt="";
+	QVariantList mTags;
 };
 #endif

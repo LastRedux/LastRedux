@@ -5,12 +5,20 @@ LRViewModel::LRViewModel(QObject* parent):QObject(parent){
 			mArtist = track.artist.name;
 			mAlbum = track.album;
 			mAlbumArt = track.image;
+			mTags.clear();
+			for(const LRTag& tag : track.tags){
+				QVariantMap tagMap;
+				tagMap["name"] = tag.name;
+				tagMap["url"] = tag.url;
+				mTags.append(tagMap);
+			}
 			emit nameChanged();
 			emit artistChanged();
 			emit albumChanged();
 			emit albumArtChanged();
+			emit tagsChanged();
 			});
-	connect(&mAPI, &LRAPIWrapper::trackError, this, [this](const QString& error){
+	connect(&mAPI, &LRAPIWrapper::trackError, [this](const QString& error){
 			qWarning() << "failed to get track: " << error;
 			});
 
