@@ -36,15 +36,15 @@ struct LRTrack {
 
 class LRAPIWrapper : public QObject {
 	Q_OBJECT
-  public:
+public:
 	explicit LRAPIWrapper(QObject* parent = nullptr);
 	void setUsername(const QString& username);
 	void getTrack(const QString& artist, const QString& name);
-  signals:
+signals:
 	void trackGot(const LRTrack& track);
 	void trackError(const QString& errorMessage);
 
-  private:
+private:
 	static constexpr const char* KEY = "c9205aee76c576c84dc372de469dcb00";
 	static constexpr const char* BASE = "https://ws.audioscrobbler.com/2.0/";
 	static constexpr const char* UA = "LastRedux/1.0";
