@@ -6,8 +6,8 @@ Item{
 		anchors.fill:parent
 		spacing:0
 		LRProfileLink{
-			name:vm.name
-			user:vm.user
+			name:"TC64"
+			user:"TC64music"
 			z:2
 		}
 		Rectangle{

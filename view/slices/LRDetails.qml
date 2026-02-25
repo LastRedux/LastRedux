@@ -1,9 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
+import LastRedux 1.0
 Rectangle{
-	property string song:'song'
-	property string artist:'artist'
-	property string album:'album'
+	LRViewModel{
+		id: vm
+	}
+	property string song:vm.name
+	property string artist:vm.artist
+	property string album:vm.album
 	property string songListeners:'0'
 	property string songScrobbles:'0'
 	property string songPlays:'0'
@@ -24,18 +29,15 @@ Rectangle{
 			height:Math.max(xCover.height+30*2,xSongInfo.height+40*2)
 			color:'#06ffffff'
 			LRShadow{}
-			Item{
+			LRCover{
 				id:xCover
 				width:181
 				height:181
 				x:30
 				y:30
-				LRTexture{res:'cover_lg'}
-				LRIcon{
-					anchors.centerIn:parent
-					res:'song_lg'
-					size:161
-				}
+				base:'song_lg'
+				iconSize:161
+				image:vm.albumArt
 			}
 			ColumnLayout{
 				id:xSongInfo
