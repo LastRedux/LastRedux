@@ -59,14 +59,10 @@ set(SRC
 	src/net/LRAPIWrapper.cpp
 	${BIN}/qml.qrc
 )
-set(H
-	src/LRViewModel.h
-	src/net/LRAPIWrapper.h
-)
 
 
 #Target
-add_executable(LastRedux MACOSX_BUNDLE ${SRC} ${HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/res.qrc)
+add_executable(LastRedux MACOSX_BUNDLE ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/res.qrc)
 set(CMAKE_FIND_FRAMEWORK LAST)
 set(CMAKE_FIND_APPBUNDLE LAST)
 target_compile_options(LastRedux PRIVATE -O3 -Wall -Wextra)
@@ -90,6 +86,13 @@ target_link_libraries(LastRedux PRIVATE
 	Qt6::QuickControls2
 	Qt6::LabsPlatform
 )
+
+
+#Tools
+option(LR_BUILD_MINIFY "Build the minify tool" OFF)
+if(LR_BUILD_MINIFY)
+	add_executable(minify tools/minify.c)
+endif()
 
 
 #Deploy/Mac
